@@ -9,11 +9,3 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-build/captain/*
-resources/captain
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec

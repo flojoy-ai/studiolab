@@ -8,7 +8,7 @@ dev-electron:
   pnpm dev
 
 build-captain:
-  poetry run pyinstaller main.py --clean --onefile -n captain --hiddenimport uvicorn -y
+  echo "Stub..."
 
 build-win: build-captain
   pnpm run build:win
