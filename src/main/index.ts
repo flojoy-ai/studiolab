@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { PythonShell } from 'python-shell'
 
 function createWindow(): void {
   // Create the browser window.
@@ -55,6 +56,20 @@ app.whenReady().then(() => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  })
+
+  console.log('Spawning captain...')
+  let shell = new PythonShell('main.py', {
+    pythonPath: '/opt/homebrew/Caskroom/miniconda/base/envs/flojoy-studio/bin/python'
+  })
+
+  app.on('quit', () => {
+    shell.kill()
+    if (shell.terminated) {
+      console.log('Successfully terminated captain :)')
+    } else {
+      console.error('Something went wrong when terminating captain!')
+    }
   })
 })
 

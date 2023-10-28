@@ -1,16 +1,26 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from captain.routers import blocks
+from captain.routers import blocks, status
 
 app = FastAPI()
 
 app.include_router(blocks.router)
+app.include_router(status.router)
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+origins = [
+    "http://localhost",
+    "http://localhost:2334",
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     import uvicorn
