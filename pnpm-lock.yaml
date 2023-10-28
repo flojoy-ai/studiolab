@@ -9,10 +9,10 @@ dependencies:
     specifier: ^2.0.0
     version: 2.0.0(electron@25.9.3)
   '@electron-toolkit/utils':
-    specifier: ^2.0.0
+    specifier: ^2.0.1
     version: 2.0.1(electron@25.9.3)
   electron-updater:
-    specifier: ^6.1.1
+    specifier: ^6.1.4
     version: 6.1.4
 
 devDependencies:
@@ -26,31 +26,31 @@ devDependencies:
     specifier: ^1.0.1
     version: 1.0.1(@types/node@18.18.7)
   '@types/node':
-    specifier: ^18.17.5
+    specifier: ^18.18.7
     version: 18.18.7
   '@types/react':
-    specifier: ^18.2.20
+    specifier: ^18.2.33
     version: 18.2.33
   '@types/react-dom':
-    specifier: ^18.2.7
+    specifier: ^18.2.14
     version: 18.2.14
   '@vitejs/plugin-react':
-    specifier: ^4.0.4
+    specifier: ^4.1.0
     version: 4.1.0(vite@4.5.0)
   autoprefixer:
     specifier: ^10.4.16
     version: 10.4.16(postcss@8.4.31)
   electron:
-    specifier: ^25.6.0
+    specifier: ^25.9.3
     version: 25.9.3
   electron-builder:
-    specifier: ^24.6.3
+    specifier: ^24.6.4
     version: 24.6.4
   electron-vite:
-    specifier: ^1.0.27
+    specifier: ^1.0.28
     version: 1.0.28(vite@4.5.0)
   eslint:
-    specifier: ^8.47.0
+    specifier: ^8.52.0
     version: 8.52.0
   eslint-plugin-react:
     specifier: ^7.33.2
@@ -59,7 +59,7 @@ devDependencies:
     specifier: ^8.4.31
     version: 8.4.31
   prettier:
-    specifier: ^3.0.2
+    specifier: ^3.0.3
     version: 3.0.3
   react:
     specifier: ^18.2.0
@@ -71,10 +71,10 @@ devDependencies:
     specifier: ^3.3.5
     version: 3.3.5
   typescript:
-    specifier: ^5.1.6
+    specifier: ^5.2.2
     version: 5.2.2
   vite:
-    specifier: ^4.4.9
+    specifier: ^4.5.0
     version: 4.5.0(@types/node@18.18.7)
 
 packages:
