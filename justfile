@@ -6,3 +6,15 @@ dev-captain:
 
 dev-electron:
   pnpm dev
+
+build-captain:
+  poetry run pyinstaller main.py -y
+
+build-win: build-captain
+  pnpm run build:win
+
+build-mac: build-captain
+  pnpm run build:mac
+
+build-linux: build-captain
+  pnpm run build:linux
