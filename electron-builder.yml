@@ -8,13 +8,13 @@ directories:
 files:
   - '!**/.venv/*'
   - '!**/.vscode/*'
-  - '!build/main/*' # pyinstaller stuff
+  - '!build/captain/*' # pyinstaller stuff
   - '!captain/*'
   - '!src/*'
   - '!{.eslintignore,.eslintrc.cjs,.npmrc,.prettierignore,.prettierrc.yaml,dev-app-update.yml}'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!justfile'
-  - '!{main.py,main.spec}'
+  - '!{main.py,captain.spec}'
   - '!{.env,.env.*,pnpm-lock.yaml}'
   - '!{poetry.lock,postcss.config.js,pyproject.toml,tailwind.config.js}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'

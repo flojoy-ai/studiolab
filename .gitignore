@@ -9,7 +9,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-build/main/*
+build/captain/*
+resources/captain
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
