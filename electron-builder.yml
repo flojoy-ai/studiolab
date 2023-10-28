@@ -4,20 +4,8 @@ productName: electron-react-fastapi
 directories:
   buildResources: build
 
-# Joey: please write the exclude list in order
 files:
-  - '!**/.venv/*'
-  - '!**/.vscode/*'
-  - '!build/captain/*' # pyinstaller stuff
-  - '!captain/*'
-  - '!src/*'
-  - '!{.eslintignore,.eslintrc.cjs,.npmrc,.prettierignore,.prettierrc.yaml,dev-app-update.yml}'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!justfile'
-  - '!{main.py,captain.spec}'
-  - '!{.env,.env.*,pnpm-lock.yaml}'
-  - '!{poetry.lock,postcss.config.js,pyproject.toml,tailwind.config.js}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - 'out/**/*'
 asarUnpack:
   - resources/**
 
