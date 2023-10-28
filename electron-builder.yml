@@ -1,16 +1,26 @@
 appId: com.electron.app
 productName: electron-react-fastapi
+
 directories:
   buildResources: build
+
+# Joey: please write the exclude list in order
 files:
+  - '!**/.venv/*'
   - '!**/.vscode/*'
+  - '!build/main/*' # pyinstaller stuff
+  - '!captain/*'
   - '!src/*'
+  - '!{.eslintignore,.eslintrc.cjs,.npmrc,.prettierignore,.prettierrc.yaml,dev-app-update.yml}'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!justfile'
+  - '!{main.py,main.spec}'
+  - '!{.env,.env.*,pnpm-lock.yaml}'
+  - '!{poetry.lock,postcss.config.js,pyproject.toml,tailwind.config.js}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+
 win:
   executableName: electron-react-fastapi
 nsis:
@@ -18,6 +28,7 @@ nsis:
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -28,6 +39,7 @@ mac:
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
+
 linux:
   target:
     - AppImage
@@ -37,6 +49,7 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
+
 npmRebuild: false
 publish:
   provider: generic
