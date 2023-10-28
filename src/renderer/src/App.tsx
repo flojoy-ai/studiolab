@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import { Status } from './types/status'
+import { Status } from '@renderer/types/status'
+import { useState } from 'react'
 
 function App(): JSX.Element {
   const { data, isSuccess, isLoading } = useQuery({
@@ -16,6 +17,8 @@ function App(): JSX.Element {
     }
   })
 
+  const [envs, setEnvs] = useState<string[]>([])
+
   if (isLoading) {
     return <div>Loading...</div>
   }
@@ -28,6 +31,20 @@ function App(): JSX.Element {
     <div className="">
       <div>
         {data.status}: {data.message}
+      </div>
+      <button
+        onClick={async (): Promise<void> => {
+          const data = await window.api.getCondaEnvList()
+          const parsed = JSON.parse(data)
+          setEnvs(parsed['envs'])
+        }}
+      >
+        CHECK
+      </button>
+      <div>
+        {envs.map((env) => (
+          <div key={env}>{env}</div>
+        ))}
       </div>
     </div>
   )

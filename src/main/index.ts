@@ -1,8 +1,9 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PythonShell } from 'python-shell'
+import { getCondaEnvList } from './conda'
 
 function createWindow(): void {
   // Create the browser window.
@@ -58,8 +59,10 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
+  ipcMain.handle('get-conda-env-list', getCondaEnvList)
+
   console.log('Spawning captain...')
-  let shell = new PythonShell('main.py', {
+  const shell = new PythonShell('main.py', {
     pythonPath: '/opt/homebrew/Caskroom/miniconda/base/envs/flojoy-studio/bin/python'
   })
 
