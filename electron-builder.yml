@@ -8,6 +8,9 @@ files:
   - 'out/**/*'
 asarUnpack:
   - resources/**
+extraResources:
+  - from: "dist/captain"
+    to: "captain"
 
 win:
   executableName: electron-react-fastapi
