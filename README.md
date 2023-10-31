@@ -1,4 +1,4 @@
-# electron-react-fastapi
+# flojoy-studio
 
 An Electron application with React and TypeScript
 

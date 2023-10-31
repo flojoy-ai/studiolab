@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: electron-react-fastapi
+productName: flojoy-studio
 
 directories:
   buildResources: build
@@ -10,7 +10,7 @@ asarUnpack:
   - resources/**
 
 win:
-  executableName: electron-react-fastapi
+  executableName: flojoy-studio
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
