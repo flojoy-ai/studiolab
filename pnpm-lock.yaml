@@ -77,6 +77,9 @@ dependencies:
   electron-updater:
     specifier: ^6.1.4
     version: 6.1.4
+  gamepad.js:
+    specifier: ^2.1.0
+    version: 2.1.0
   python-shell:
     specifier: ^5.0.0
     version: 5.0.0
@@ -3713,6 +3716,13 @@ packages:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
     dev: true
 
+  /gamepad.js@2.1.0:
+    resolution: {integrity: sha512-DmOuDwT4nYH7+whhtZOTdNTXq3AFL8n2YZCoa10AkKHBa8Dh28dUTQudH0fH8kJAbOZbcYkyiFWp6x7HroT5IA==}
+    dependencies:
+      option-resolver.js: 1.1.0
+      tom32i-event-emitter.js: 2.0.5
+    dev: false
+
   /gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
@@ -4639,6 +4649,10 @@ packages:
       is-inside-container: 1.0.0
       is-wsl: 2.2.0
     dev: true
+
+  /option-resolver.js@1.1.0:
+    resolution: {integrity: sha512-gckuegIqAloPysPLK/mN3S88IcKfvPbSZntfpyqThbCKoPDmcC5kVM/2qpXglhrpab7GdWdd63XrttzTSMHUiw==}
+    dev: false
 
   /optionator@0.9.3:
     resolution: {integrity: sha512-JjCoypp+jKn1ttEFExxhetCKeJt9zhAgAve5FXHixTvFDW/5aEktX9bufBKLRRMdU7bNtpLfcGu94B3cdEJgjg==}
@@ -5575,6 +5589,10 @@ packages:
     engines: {node: '>=8.0'}
     dependencies:
       is-number: 7.0.0
+
+  /tom32i-event-emitter.js@2.0.5:
+    resolution: {integrity: sha512-7wYTrHfV3gWRZXZQniMLOO5hh01szsTVulTWwcNheESvRUrveQCKKEz2YMceYQZdfpmXMC8PGpzOpUcnfXSXiw==}
+    dev: false
 
   /tree-kill@1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}

@@ -44,6 +44,7 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "electron-updater": "^6.1.4",
+    "gamepad.js": "^2.1.0",
     "python-shell": "^5.0.0",
     "react-use-websocket": "^4.5.0",
     "sonner": "^1.1.0",
