@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import useWebSocket, {ReadyState} from "react-use-websocket";
 
 export const Index = (): JSX.Element => {
-  const socketURL = 'http://localhost:2333/blocks/ws'
+  const socketURL = 'ws://localhost:2333/blocks/ws'
   const [messageHistory, setMessageHistory] = useState<any>([])
   const {sendMessage, lastMessage, readyState} = useWebSocket(socketURL)
 
