@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import reactivex
 from fastapi import APIRouter, WebSocket
-from reactivex.operators import debounce, flat_map_latest
+from reactivex.operators import flat_map_latest
 from reactivex import operators as ops
 from reactivex.subject import BehaviorSubject
 from reactivex import create
