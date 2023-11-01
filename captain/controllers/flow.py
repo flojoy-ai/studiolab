@@ -176,20 +176,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# def build_node(fn, inputObservables, output_obs, render):
-#     def start_next_observable(x):
-#         output_obs.on_next(x)
-#
-#     node: BehaviorSubject[FlojoyNodeIO] = BehaviorSubject(FlojoyNodeIO("payload", "name", is_default=True))
-#     node.pipe(ops.map(lambda vals: fn(*vals)), ops.flat_map_latest(render)).subscribe(on_next=start_next_observable)
-#
-#     source = rx.zip(*inputObservables)
-#     source.subscribe(node.on_next)
-#     return node
-#
-# @dataclass
-# class FlojoyNodeIO:
-#     payload: str
-#     name: str
-#     is_default: bool = False
