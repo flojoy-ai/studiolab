@@ -78,27 +78,32 @@ def build_flowchart(fc_json: str, start_observable: BehaviorSubject, publish_fn=
 
   in_subjects = [inp for blk, inp, outp in itertools.chain(*graph_subjects) if len(blk.ins) == 0]
 
-  def call_all_ins(_):
+  def call_all_ins(x):
     for subj in in_subjects:
       # TODO: Figure out a better start value
-      subj.on_next(None)
+      if x is None:
+        print("No value")
+      else:
+        subj.on_next(x)
 
   start_observable.subscribe(on_next=call_all_ins)
 
   for _, out, blk in itertools.chain(*graph_subjects):
-    out.subscribe(publish_fn)
+    out.subscribe(on_next=lambda x: publish_fn((x, blk)))
 
   return graph_subjects
 
 
-def build_graph(blocks: dict[str, FCBlock], island: list[FCBlock], subjects: dict[str, BehaviorSubject]) -> list[Tuple[FCBlock, BehaviorSubject, Observable]]:
+def build_graph(blocks: dict[str, FCBlock], island: list[FCBlock], subjects: dict[str, Tuple[BehaviorSubject, Observable]]) -> list[Tuple[FCBlock, BehaviorSubject, Observable]]:
   terminals = list(filter(lambda b: len(b.outs) == 0, island))
 
   def rec_build_graph(block: FCBlock) -> Tuple[FCBlock, BehaviorSubject, Observable]:
-    input, output = subjects.get(block.id)
-    if input is None:
-      input = BehaviorSubject(None)
+    tup = subjects.get(block.id)
+    if tup is None:
+      input = BehaviorSubject(None) # TODO: deliberate node input type with flag for first run
       output = input.pipe(ops.map(lambda x: FUNCTIONS[block.block](**x)))
+    else:
+      input, output = tup
 
     if len(block.ins) == 0:
       return block, input, output
@@ -134,7 +139,13 @@ def find_islands(blocks: dict[str, FCBlock]):
 
 
 def main():
-  build_flowchart(FLOWCHART)
+  sobs = BehaviorSubject(0)
+  fc = build_flowchart(fc_json=FLOWCHART, start_observable=sobs, publish_fn=lambda x: print(f"Got {x}"))
+
+  i = 0
+  while i < 100:
+    i = i + 21
+    sobs.on_next(i)
 
 
 if __name__ == "__main__":
