@@ -1,37 +1,30 @@
-import {useCallback, useEffect, useState} from "react";
-import useWebSocket, {ReadyState} from "react-use-websocket";
+import { useCallback, useEffect, useState } from 'react'
+import useWebSocket, { ReadyState } from 'react-use-websocket'
 
 export const Index = (): JSX.Element => {
   const socketURL = 'ws://localhost:2333/blocks/ws'
   const [messageHistory, setMessageHistory] = useState<any>([])
-  const {sendMessage, lastMessage, readyState} = useWebSocket(socketURL)
-
-
-
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL)
 
   useEffect(() => {
     if (lastMessage !== null) {
-      setMessageHistory((prev) => prev.concat(lastMessage));
+      setMessageHistory((prev) => prev.concat(lastMessage))
     }
-  }, [lastMessage, setMessageHistory]);
+  }, [lastMessage, setMessageHistory])
 
-
-  const handleClickSendMessage = useCallback(() => sendMessage('1'), []);
+  const handleClickSendMessage = useCallback(() => sendMessage('1'), [])
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Open',
     [ReadyState.CLOSING]: 'Closing',
     [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated'
+  }[readyState]
 
   return (
     <div>
-      <button
-        onClick={handleClickSendMessage}
-        disabled={readyState !== ReadyState.OPEN}
-      >
+      <button onClick={handleClickSendMessage} disabled={readyState !== ReadyState.OPEN}>
         Click Me to send 1
       </button>
       <span>The WebSocket is currently {connectionStatus}</span>
@@ -42,6 +35,5 @@ export const Index = (): JSX.Element => {
         ))}
       </ul>
     </div>
-  );
-
+  )
 }

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, WebSocket
-from reactivex import Subject
+from reactivex.subject import BehaviorSubject
+import asyncio
 
 router = APIRouter(tags=["blocks"], prefix="/blocks")
 
@@ -12,12 +13,25 @@ async def read_blocks():
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    data = await websocket.receive_text()
-    subject = Subject()
+    subject = BehaviorSubject(0)
 
-    def destruct():
+    async def destruct():
+        print("completed")
         subject.on_completed()
         subject.dispose()
-        websocket.close()
+        await websocket.close()
 
-    subject.subscribe(on_next=lambda x: websocket.send_text(x), on_error=lambda e: print(e), on_completed=destruct)
+    async def on_next(x: str):
+        print(x)
+        await websocket.send_text(x)
+
+
+    subject.subscribe(on_next=lambda x: run_sync(on_next(str(x))), on_error=lambda e: print(e), on_completed=lambda: run_sync(destruct))
+    while True:
+        data = await websocket.receive_text()
+        subject.on_next(int(data))
+
+
+def run_sync(func):
+    loop = asyncio.get_event_loop()
+    return loop.run_until_complete(asyncio.create_task(func))
