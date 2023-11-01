@@ -1,5 +1,5 @@
 import { lazyRouteComponent, Route, RootRoute } from '@tanstack/react-router'
-import { rootRoute } from '../root/rootRoute'
+import { rootRoute } from '@renderer/routes/root/rootRoute'
 
 export const indexRoute = new Route({
   getParentRoute: (): RootRoute => rootRoute,
