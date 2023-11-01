@@ -18,7 +18,7 @@ FLOWCHART = """
           "source": "slider1",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "x"
+          "targetParam": "a"
         }
       ]
     },
@@ -31,7 +31,7 @@ FLOWCHART = """
           "source": "slider2",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "y"
+          "targetParam": "b"
         }
       ]
     },
@@ -43,13 +43,13 @@ FLOWCHART = """
           "source": "slider1",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "x"
+          "targetParam": "a"
         },
         {
           "source": "slider2",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "y"
+          "targetParam": "b"
         }
       ],
       "outs": [
@@ -185,7 +185,8 @@ def build_graph(
       input: BehaviorSubject[Any] = BehaviorSubject(None)
       input.subscribe(on_next=lambda x: print(f"Got {x} for {block.id} from initial creation"))
       output = input.pipe(ops.map(lambda x: FUNCTIONS[block.block](x)))
-      output.subscribe(on_next=lambda x: print(f"Got {x} for {block.id} from initial creation after pipe"))
+      output.subscribe(on_next=lambda x: print(f"Got {x} for {block.id} from initial creation after pipe"), on_error=print)
+      print(f"Created output pipe for {block.id} with {output}")
       subjects[block.id] = (block, input, output)
     else:
       _, input, output = tup
@@ -194,24 +195,37 @@ def build_graph(
       print("reached terminal block with no inputs " + block.id)
       return block, input, output
 
+    def destruct_subj(x, edge):
+        print(f"destructing {x} for {edge.source} -> {edge.target} with {edge.sourceParam} -> {edge.targetParam}")
+        if x is None:
+          return x;
+        if type(x) == "tuple" or type(x) == "list" or type(x) == "dict" or type(x) == "set" or type(x) == "object":
+          return (edge.targetParam, x[edge.sourceParam])
+        else:
+          return (edge.targetParam, x)
+
     in_subjects = [
-      rec_build_graph(blocks[edge.source])[1].pipe(
-        ops.map(lambda x: (edge.targetParam, getattr(x, edge.sourceParam)))
-      )
+      rec_build_graph(blocks[edge.source])[2]
+      .pipe( ops.map(lambda x: destruct_subj(x, edge)))
       for edge in block.ins
     ]
 
+    print(f"in subject is {in_subjects}")
+
+
     for subject in in_subjects:
-      subject.subscribe(on_next=lambda x: f"Got {x} from in subjects of {block.id} whose length is {len(in_subjects)}")
+      subject.subscribe(on_next=lambda x: print(f"Got {x} from in subjects of {block.id} whose length is {len(in_subjects)}"))
 
 
     print(f"wiring up graph, block {block.id} is being connected to {len(in_subjects)} inputs")
 
-
     zipped_in = rx.zip(*in_subjects).pipe(
-      ops.map(lambda ins: {param: sub for param, sub in ins})
+      ops.map(lambda ins: {f"{param}": sub for param, sub in ins})
     )
+
     zipped_in.subscribe(on_next=lambda x: input.on_next(x))
+
+    input.subscribe(on_next=lambda x: print(f"Input got {x} for {block.id} after zip"))
 
     zipped_in.subscribe(on_next=lambda x: print(f"Got {x} for {block.id} after zip"))
 
