@@ -2,8 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { PythonShell } from 'python-shell'
+// import { PythonShell } from 'python-shell'
 import { getCondaEnvList } from './conda'
+// import { spawnCaptain } from './captain'
 
 function createWindow(): void {
   // Create the browser window.
@@ -61,19 +62,20 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-conda-env-list', getCondaEnvList)
 
-  console.log('Spawning captain...')
-  const shell = new PythonShell('main.py', {
-    pythonPath: '/opt/homebrew/Caskroom/miniconda/base/envs/flojoy-studio/bin/python'
-  })
-
-  app.on('quit', () => {
-    shell.kill()
-    if (shell.terminated) {
-      console.log('Successfully terminated captain :)')
-    } else {
-      console.error('Something went wrong when terminating captain!')
-    }
-  })
+  // console.log('Spawning captain...')
+  // spawnCaptain('', '')
+  // const shell = new PythonShell('main.py', {
+  //   pythonPath: '/opt/homebrew/Caskroom/miniconda/base/envs/flojoy-studio/bin/python'
+  // })
+  //
+  // app.on('quit', () => {
+  //   shell.kill()
+  //   if (shell.terminated) {
+  //     console.log('Successfully terminated captain :)')
+  //   } else {
+  //     console.error('Something went wrong when terminating captain!')
+  //   }
+  // })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
