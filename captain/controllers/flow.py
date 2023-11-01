@@ -1,4 +1,4 @@
-from typing import List, Literal, Tuple
+from typing import List, Literal, Tuple, Any
 from pydantic import BaseModel
 import reactivex as rx
 from reactivex import Observable
@@ -108,9 +108,8 @@ def build_graph(
     def rec_build_graph(block: FCBlock) -> Tuple[FCBlock, BehaviorSubject, Observable]:
         tup = subjects.get(block.id)
         if tup is None:
-            input = BehaviorSubject(
-                None
-            )  # TODO: deliberate node input type with flag for first run
+            # TODO: deliberate node input type with flag for first run
+            input: BehaviorSubject[Any] = BehaviorSubject(None)
             input.subscribe(on_next=lambda x: print(f"Got {x} for {block.id}"))
             output = input.pipe(ops.map(lambda x: FUNCTIONS[block.block](**x)))
             output.subscribe(on_next=print)
