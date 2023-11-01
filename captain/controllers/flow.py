@@ -74,9 +74,9 @@ def build_flowchart(fc_json: str, start_observable: BehaviorSubject, publish_fn=
   islands = find_islands(blocks)
 
   all_subjects = {}
-  graph_subjects = [build_graph(blocks, island, all_subjects) for island in islands]
+  graph_subjects = [build_graph(blocks, island, subjects=all_subjects) for island in islands]
 
-  in_subjects = [inp for blk, inp, outp in itertools.chain(*graph_subjects) if len(blk.ins) == 0]
+  in_subjects = [inp for blk, inp, outp in all_subjects.values() if len(blk.ins) == 0]
 
   def call_all_ins(x):
     for subj in in_subjects:
@@ -88,22 +88,25 @@ def build_flowchart(fc_json: str, start_observable: BehaviorSubject, publish_fn=
 
   start_observable.subscribe(on_next=call_all_ins)
 
-  for _, out, blk in itertools.chain(*graph_subjects):
+  for blk, inp, out in itertools.chain(*graph_subjects):
     out.subscribe(on_next=lambda x: publish_fn((x, blk)))
 
   return graph_subjects
 
 
-def build_graph(blocks: dict[str, FCBlock], island: list[FCBlock], subjects: dict[str, Tuple[BehaviorSubject, Observable]]) -> list[Tuple[FCBlock, BehaviorSubject, Observable]]:
+def build_graph(blocks: dict[str, FCBlock], island: list[FCBlock], subjects: dict[str, Tuple[FCBlock, BehaviorSubject, Observable]]) -> list[Tuple[FCBlock, BehaviorSubject, Observable]]:
   terminals = list(filter(lambda b: len(b.outs) == 0, island))
 
   def rec_build_graph(block: FCBlock) -> Tuple[FCBlock, BehaviorSubject, Observable]:
     tup = subjects.get(block.id)
     if tup is None:
-      input = BehaviorSubject(None) # TODO: deliberate node input type with flag for first run
+      input = BehaviorSubject(None)  # TODO: deliberate node input type with flag for first run
+      input.subscribe(on_next=lambda x: print(f"Got {x} for {block.id}"))
       output = input.pipe(ops.map(lambda x: FUNCTIONS[block.block](**x)))
+      output.subscribe(on_next=print)
+      subjects[block.id] = (block, input, output)
     else:
-      input, output = tup
+      _, input, output = tup
 
     if len(block.ins) == 0:
       return block, input, output
@@ -140,12 +143,18 @@ def find_islands(blocks: dict[str, FCBlock]):
 
 def main():
   sobs = BehaviorSubject(0)
-  fc = build_flowchart(fc_json=FLOWCHART, start_observable=sobs, publish_fn=lambda x: print(f"Got {x}"))
 
-  i = 0
-  while i < 100:
-    i = i + 21
-    sobs.on_next(i)
+  def publish_fn(x):
+    if x is None:
+      print("No value")
+    if type(x) == tuple:
+      print(f"Got {x[0]}, {x[1].id}")
+    else:
+      print(x)
+
+  fc = build_flowchart(fc_json=FLOWCHART, start_observable=sobs, publish_fn=publish_fn)
+
+  sobs.on_next(21)
 
 
 if __name__ == "__main__":
