@@ -22,6 +22,40 @@ class FCBlock(BaseModel):
 class FlowChart(BaseModel):
     blocks: List[FCBlock]
 
+
+def slider(x):
+    print(f"slider: {x}")
+    return x
+
+def gamepad(x):
+    print(f"gamepad: {x}")
+    return x
+
+def button(x: bool):
+    print(f"button: {x}")
+    return x
+
+def bignum(x):
+    print(f"bignum: {x}")
+    return x
+
+def add(x, y):
+    print(f"add: {x} + {y}")
+    return x + y
+
+def subtract(x, y):
+    print(f"subtract: {x} - {y}")
+    return x - y
+
+FUNCTIONS = {
+    'slider': slider,
+    'gamepad': gamepad,
+    'button': button,
+    'bignum': bignum,
+    'add': add,
+    'subtract': subtract,
+}
+
 def build_flowchart(fc_json: str, start_observable: BehaviorSubject):
     fc = FlowChart.model_validate_json(fc_json)
 
@@ -44,8 +78,11 @@ def build_flowchart(fc_json: str, start_observable: BehaviorSubject):
 def build_graph(blocks: dict[str, FCBlock], island: list[FCBlock], subjects: dict[str, BehaviorSubject]):
     terminals = list(filter(lambda b: len(b.outs) == 0, island))
 
-    def rec_build_graph(block: FCBlock) -> Tuple[FCBlock, BehaviorSubject]:
-        subject = subjects.get(block.id, BehaviorSubject(None))
+    def rec_build_graph(block: FCBlock) -> Tuple[FCBlock, rx.Observable]:
+        subject = subjects.get(block.id)
+        if subject is None:
+            subject = BehaviorSubject(None)
+
 
         if len(block.ins) == 0:
             return (block, subject)
