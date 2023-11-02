@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Literal, Any
+from types import NoneType
+from typing import List, Literal, Any, Tuple
 
-import reactivex
 from pydantic import BaseModel
+import reactivex as rx
 from reactivex import Observable
 from reactivex.subject import BehaviorSubject
 import reactivex.operators as ops
@@ -19,7 +20,7 @@ fc_json = """
           "source": "slider1",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "a"
+          "targetParam": "x"
         }
       ]
     },
@@ -32,7 +33,7 @@ fc_json = """
           "source": "slider2",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "b"
+          "targetParam": "y"
         }
       ]
     },
@@ -44,13 +45,13 @@ fc_json = """
           "source": "slider1",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "a"
+          "targetParam": "x"
         },
         {
           "source": "slider2",
           "target": "add1",
           "sourceParam": "value",
-          "targetParam": "b"
+          "targetParam": "y"
         }
       ],
       "outs": [
@@ -58,7 +59,7 @@ fc_json = """
           "source": "add1",
           "target": "bignum1",
           "sourceParam": "value",
-          "targetParam": "value"
+          "targetParam": "x"
         }
       ]
     },
@@ -70,7 +71,7 @@ fc_json = """
           "source": "add1",
           "target": "bignum1",
           "sourceParam": "value",
-          "targetParam": "value"
+          "targetParam": "x"
         }
       ],
       "outs": []
@@ -80,54 +81,46 @@ fc_json = """
 """
 
 
-@dataclass
-class FCBlockFnProps:  # TODO: use typed dict for kwargs
-    is_init: bool = False
-    kwargs: dict[str, Any] = None
-    const_value: Any = None
+# @dataclass
+# class FCBlockFnProps:  # TODO: use typed dict for kwargs
+#     is_init: bool = False
+#     kwargs: dict[str, Any] = None
+#     const_value: Any = None
 
 
-def subtract(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"subtract: {args}")
-    return {"x": args["x"] - args["y"]}
+def subtract(x, y):
+    print(f"subtract: {x} - {y}")
+    return x - y
 
 
-def slider(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"slider: {args}")
-    return {"x": args}
+def add(x, y):
+    print(f"add: {x} + {y}")
+    return x + y
 
 
-def constant(props: FCBlockFnProps):
-    print("constant")
-    return {"x": props.const_value}
+def slider(x):
+    print(f"slider: {x}")
+    return x
 
 
-def gamepad(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"gamepad: {args}")
-    return {"x": args["x"]}
+def constant():
+    print("constant: 2")
+    return 2
 
 
-def button(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"button: {args}")
-    return {"x": args["x"]}
+def gamepad(x):
+    print(f"gamepad: {x}")
+    return x
 
 
-def bignum(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"bignum: {args}")
-    if "x" not in args:
-        return {"x": 0}
-    return {"x": args["x"]}
+def button(x):
+    print(f"button: {x}")
+    return x
 
 
-def add(props: FCBlockFnProps):
-    args = props.kwargs
-    print(f"add: {args}")
-    return {"x": args["x"] + args["y"]}
+def bignum(x):
+    print(f"bignum: {x}")
+    return x
 
 
 FUNCTIONS = {
@@ -138,6 +131,9 @@ FUNCTIONS = {
     "add": add,
     "subtract": subtract,
 }
+
+INITIAL_DUMMY_INPUT = None
+InitialInput = NoneType
 
 
 class FCBlockConnection(BaseModel):
@@ -204,27 +200,40 @@ def wire_flowchart(
         for block in island:
             fn = FUNCTIONS[block.block.block]
 
-            def run_block(x: FCBlockFnProps):
-                return fn(x)
+            def run_block(kwargs: dict[str, Any] | None):
+                print(f"Running block {block.id}")
+                if kwargs is None:
+                    print("Received None for input (initial value), returning None")
+                    return
+                return fn(**kwargs)
 
-            def make_fc_block_fn_props(x):
-                if block.block.block == "constant":
-                    return FCBlockFnProps(const_value=24601, kwargs=dict())
-                elif block.block.block != "add" and block.block.block != "subtract":
-                    prop_dict = dict()
-                    for connection in block.block.ins:
-                        prop_dict[connection.targetParam] = x
-                else:
-                    prop_dict = dict()
-                    print("ADD/SUBTRACT")  # TODO
-                    prop_dict["x"] = 1
-                    prop_dict["y"] = 2
+            def make_block_fn_props(
+                inputs: list[Tuple[str, Any]] | None
+            ) -> dict[str, Any] | None:
+                print(f"Making params for block {block.id} with {inputs}")
+                if inputs is None:
+                    print("Received None for input (initial value), returning None")
+                    return inputs
+                return dict(inputs)
 
-                print(f"Transforming {x} to {prop_dict}")
-                return FCBlockFnProps(kwargs=prop_dict)
-
-            def name_output(x):
-                return (x, block.id)
+            # def make_fc_block_fn_props(x):
+            #     if block.block.block == "constant":
+            #         return FCBlockFnProps(const_value=24601, kwargs=dict())
+            #     elif block.block.block != "add" and block.block.block != "subtract":
+            #         prop_dict = dict()
+            #         for connection in block.block.ins:
+            #             prop_dict[connection.targetParam] = x
+            #     else:
+            #         prop_dict = dict()
+            #         print("ADD/SUBTRACT")  # TODO
+            #         prop_dict["x"] = 1
+            #         prop_dict["y"] = 2
+            #
+            #     print(f"Transforming {x} to {prop_dict}")
+            #     return FCBlockFnProps(kwargs=prop_dict)
+            #
+            # def name_output(x):
+            #     return (x, block.id)
 
             block.i = BehaviorSubject(None)
             block.i.subscribe(
@@ -234,10 +243,12 @@ def wire_flowchart(
                 ui_inputs[block.block.id].subscribe(
                     block.i.on_next, block.i.on_error, block.i.on_completed
                 )
+
+            # TODO: Use ops.skip?
             block.o = block.i.pipe(
-                ops.map(make_fc_block_fn_props),
+                ops.map(make_block_fn_props),
                 ops.map(run_block),
-                ops.map(name_output),
+                # ops.map(name_output),
             )
 
             block.o.subscribe(
@@ -254,14 +265,22 @@ def wire_flowchart(
     def rec_connect_blocks(block: FCBlockIO):
         if len(block.block.ins) == 0:
             starter.subscribe(block.i.on_next, block.i.on_error, block.i.on_completed)
-        else:
-            in_zip = reactivex.zip(*(blocks[conn.source].o for conn in block.block.ins))
-            in_zip.subscribe(block.i.on_next, block.i.on_error, block.i.on_completed)
-            for conn in block.block.ins:
-                if conn.source + conn.target in vistedConns:
-                    continue
-                vistedConns.add(conn.source + conn.target)
-                rec_connect_blocks(blocks[conn.source])
+            return
+
+        in_zip = rx.zip(
+            *(
+                blocks[conn.source].o.pipe(ops.map(lambda v: (conn.targetParam, v)))
+                for conn in block.block.ins
+            )
+        )
+
+        # in_zip = rx.zip(*(blocks[conn.source].o for conn in block.block.ins))
+        in_zip.subscribe(block.i.on_next, block.i.on_error, block.i.on_completed)
+        for conn in block.block.ins:
+            if conn.source + conn.target in vistedConns:
+                continue
+            vistedConns.add(conn.source + conn.target)
+            rec_connect_blocks(blocks[conn.source])
 
     for block in blocks.values():
         rec_connect_blocks(block)
@@ -282,8 +301,8 @@ def main():
     fc = FlowChart.model_validate_json(fc_json)
 
     ui_inputs = {
-        "slider1": reactivex.interval(1).pipe(ops.take(1000)),
-        "slider2": reactivex.interval(1.2).pipe(ops.take(2000)),
+        "slider1": rx.interval(1).pipe(ops.take(1000)),
+        "slider2": rx.interval(1.2).pipe(ops.take(2000)),
     }
 
     wire_flowchart(
