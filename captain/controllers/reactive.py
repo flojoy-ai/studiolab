@@ -7,17 +7,18 @@ import reactivex as rx
 from reactivex import Observable
 from reactivex.subject import BehaviorSubject
 import reactivex.operators as ops
+from functools import partial
 
 fc_json = """
 {
   "blocks": [
     {
-      "block": "slider",
-      "id": "slider1",
+      "block_type": "constant",
+      "id": "constant1",
       "ins": [],
       "outs": [
         {
-          "source": "slider1",
+          "source": "constant1",
           "target": "add1",
           "sourceParam": "value",
           "targetParam": "x"
@@ -25,12 +26,12 @@ fc_json = """
       ]
     },
     {
-      "block": "slider",
-      "id": "slider2",
+      "block_type": "constant",
+      "id": "constant2",
       "ins": [],
       "outs": [
         {
-          "source": "slider2",
+          "source": "constant2",
           "target": "add1",
           "sourceParam": "value",
           "targetParam": "y"
@@ -38,17 +39,17 @@ fc_json = """
       ]
     },
     {
-      "block": "add",
+      "block_type": "add",
       "id": "add1",
       "ins": [
         {
-          "source": "slider1",
+          "source": "constant1",
           "target": "add1",
           "sourceParam": "value",
           "targetParam": "x"
         },
         {
-          "source": "slider2",
+          "source": "constant2",
           "target": "add1",
           "sourceParam": "value",
           "targetParam": "y"
@@ -64,7 +65,7 @@ fc_json = """
       ]
     },
     {
-      "block": "bignum",
+      "block_type": "bignum",
       "id": "bignum1",
       "ins": [
         {
@@ -130,6 +131,7 @@ FUNCTIONS = {
     "bignum": bignum,
     "add": add,
     "subtract": subtract,
+    "constant": constant,
 }
 
 INITIAL_DUMMY_INPUT = None
@@ -145,7 +147,9 @@ class FCBlockConnection(BaseModel):
 
 class FCBlock(BaseModel):
     id: str
-    block: Literal["slider", "gamepad", "button", "bignum", "add", "subtract"]
+    block_type: Literal[
+        "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
+    ]
     ins: List[FCBlockConnection]
     outs: List[FCBlockConnection]
 
@@ -157,29 +161,26 @@ class FlowChart(BaseModel):
 @dataclass
 class FCBlockIO:
     block: FCBlock
-    id: str
     i: BehaviorSubject
     o: Observable
 
 
-def find_islands(blocks: dict[str, FCBlockIO]) -> list[list[FCBlockIO]]:
+def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
     visited = set()
 
-    def dfs(block: FCBlockIO, island: list[FCBlockIO]):
+    def dfs(block: FCBlock, island: list[FCBlock]):
         visited.add(block.id)
         island.append(block)
-        neighbors = [i.source for i in block.block.ins] + [
-            o.target for o in block.block.outs
-        ]
+        neighbors = [i.source for i in block.ins] + [o.target for o in block.outs]
         for connection in neighbors:
             if connection in visited:
                 continue
             dfs(blocks[connection], island)
 
-    islands: list[list[FCBlockIO]] = []
+    islands: list[list[FCBlock]] = []
     for block in blocks.values():
         if block.id not in visited:
-            island: list[FCBlockIO] = []
+            island: list[FCBlock] = []
             dfs(block, island)
             islands.append(island)
 
@@ -192,102 +193,106 @@ def wire_flowchart(
     starter: Observable | BehaviorSubject,
     ui_inputs: dict[str, BehaviorSubject | Observable],
 ):
-    blocks: dict[str, FCBlockIO] = {
-        b.id: FCBlockIO(block=b, id=b.id, i=None, o=None) for b in flowchart.blocks
-    }
+    blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
+    block_ios: dict[str, FCBlockIO] = {}
+
     for island in islands:
         for block in island:
-            fn = FUNCTIONS[block.block.block]
 
-            def run_block(kwargs: dict[str, Any] | None):
-                print(f"Running block {block.id}")
+            def run_block(blk: FCBlock, kwargs: dict[str, Any] | None):
+                fn = FUNCTIONS[blk.block_type]
+                print(f"Running block {blk.id}")
                 if kwargs is None:
                     print("Received None for input (initial value), returning None")
                     return
                 return fn(**kwargs)
 
             def make_block_fn_props(
-                inputs: list[Tuple[str, Any]] | None
+                blk: FCBlock, inputs: list[Tuple[str, Any]] | None
             ) -> dict[str, Any] | None:
-                print(f"Making params for block {block.id} with {inputs}")
+                print(f"Making params for block {blk.id} with {inputs}")
                 if inputs is None:
                     print("Received None for input (initial value), returning None")
                     return inputs
                 return dict(inputs)
 
-            # def make_fc_block_fn_props(x):
-            #     if block.block.block == "constant":
-            #         return FCBlockFnProps(const_value=24601, kwargs=dict())
-            #     elif block.block.block != "add" and block.block.block != "subtract":
-            #         prop_dict = dict()
-            #         for connection in block.block.ins:
-            #             prop_dict[connection.targetParam] = x
-            #     else:
-            #         prop_dict = dict()
-            #         print("ADD/SUBTRACT")  # TODO
-            #         prop_dict["x"] = 1
-            #         prop_dict["y"] = 2
-            #
-            #     print(f"Transforming {x} to {prop_dict}")
-            #     return FCBlockFnProps(kwargs=prop_dict)
-            #
-            # def name_output(x):
-            #     return (x, block.id)
-
-            block.i = BehaviorSubject(None)
-            block.i.subscribe(
-                lambda x: print(f"Input got {x} for {block.id} regardless of zip")
-            )
-            if block.block.id in ui_inputs:
-                ui_inputs[block.block.id].subscribe(
-                    block.i.on_next, block.i.on_error, block.i.on_completed
+            input_subject = BehaviorSubject(None)
+            input_subject.subscribe(
+                partial(
+                    lambda blk, x: print(
+                        f"Input got {x} for {blk.id} regardless of zip"
+                    ),
+                    block,
                 )
+            )
 
             # TODO: Use ops.skip?
-            block.o = block.i.pipe(
-                ops.map(make_block_fn_props),
-                ops.map(run_block),
-                # ops.map(name_output),
+            output_observable = input_subject.pipe(
+                ops.skip(1),  # ignore initial starting value
+                ops.map(partial(make_block_fn_props, block)),
+                ops.map(partial(run_block, block)),
             )
+            # if block.block.id in ui_inputs:
+            #     ui_inputs[block.block.id].subscribe(
+            #         block.i.on_next, block.i.on_error, block.i.on_completed
+            #     )
 
-            block.o.subscribe(
-                lambda x: print(f"Got {x} for {block.id} after zip and transform")
+            output_observable.subscribe(
+                partial(
+                    lambda blk, x: print(
+                        f"Got {x} for {blk.id} after zip and transform"
+                    ),
+                    block,
+                )
             )
-            block.o.subscribe(
-                lambda x: on_publish(x, block.id),
+            output_observable.subscribe(
+                partial(lambda blk, x: on_publish(x, blk.id), block),
                 on_error=lambda e: print(e),
                 on_completed=lambda: print("completed"),
             )
 
+            block_ios[block.id] = FCBlockIO(
+                block=block, i=input_subject, o=output_observable
+            )
+
     vistedConns = set()
 
-    def rec_connect_blocks(block: FCBlockIO):
-        if len(block.block.ins) == 0:
-            starter.subscribe(block.i.on_next, block.i.on_error, block.i.on_completed)
+    def rec_connect_blocks(io: FCBlockIO):
+        print(f"Recursively connecting {io.block.id} to its inputs")
+        if len(io.block.ins) == 0:
+            print(f"Connected {io.block.id} to start observable")
+            starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
+
+        print(f"Connecting {io.block.id}")
 
         in_zip = rx.zip(
             *(
-                blocks[conn.source].o.pipe(ops.map(lambda v: (conn.targetParam, v)))
-                for conn in block.block.ins
+                block_ios[conn.source].o.pipe(
+                    ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+                )
+                for conn in io.block.ins
             )
         )
+        print(f"Connected {io.block.id} to {io.block.ins}")
 
-        # in_zip = rx.zip(*(blocks[conn.source].o for conn in block.block.ins))
-        in_zip.subscribe(block.i.on_next, block.i.on_error, block.i.on_completed)
-        for conn in block.block.ins:
+        in_zip.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
+        for conn in io.block.ins:
+            print(conn)
             if conn.source + conn.target in vistedConns:
                 continue
             vistedConns.add(conn.source + conn.target)
-            rec_connect_blocks(blocks[conn.source])
+            rec_connect_blocks(block_ios[conn.source])
 
-    for block in blocks.values():
-        rec_connect_blocks(block)
+    # Connect the graph backwards starting from the terminal nodes
+    terminals = filter(lambda b: not b.outs, blocks.values())
+    for block in terminals:
+        rec_connect_blocks(block_ios[block.id])
 
 
 def main():
-    sobs = BehaviorSubject(0)
+    sobs = BehaviorSubject({})
 
     def publish_fn(x, id):
         print(f"Publishing for id {id}")
@@ -309,10 +314,10 @@ def main():
         flowchart=fc, on_publish=publish_fn, starter=sobs, ui_inputs=ui_inputs
     )
 
-    sobs.on_next(21)
+    # sobs.on_next(21)
 
-    while True:
-        pass
+    # while True:
+    #     pass
 
     # incrememnt sliders by 1 per second
 
