@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from types import NoneType
 from typing import List, Literal, Any, Tuple
 
 from pydantic import BaseModel
 import reactivex as rx
-from reactivex import Observable
-from reactivex.subject import BehaviorSubject
+from reactivex import Observable, Subject
 import reactivex.operators as ops
 from functools import partial
 
@@ -50,6 +48,78 @@ fc_json = """
         },
         {
           "source": "constant2",
+          "target": "add1",
+          "sourceParam": "value",
+          "targetParam": "y"
+        }
+      ],
+      "outs": [
+        {
+          "source": "add1",
+          "target": "bignum1",
+          "sourceParam": "value",
+          "targetParam": "x"
+        }
+      ]
+    },
+    {
+      "block_type": "bignum",
+      "id": "bignum1",
+      "ins": [
+        {
+          "source": "add1",
+          "target": "bignum1",
+          "sourceParam": "value",
+          "targetParam": "x"
+        }
+      ],
+      "outs": []
+    }
+  ]
+  }
+"""
+
+slider_fc_json = """
+{
+  "blocks": [
+    {
+      "block_type": "slider",
+      "id": "slider1",
+      "ins": [],
+      "outs": [
+        {
+          "source": "slider1",
+          "target": "add1",
+          "sourceParam": "value",
+          "targetParam": "x"
+        }
+      ]
+    },
+    {
+      "block_type": "slider",
+      "id": "slider2",
+      "ins": [],
+      "outs": [
+        {
+          "source": "slider2",
+          "target": "add1",
+          "sourceParam": "value",
+          "targetParam": "y"
+        }
+      ]
+    },
+    {
+      "block_type": "add",
+      "id": "add1",
+      "ins": [
+        {
+          "source": "slider1",
+          "target": "add1",
+          "sourceParam": "value",
+          "targetParam": "x"
+        },
+        {
+          "source": "slider2",
           "target": "add1",
           "sourceParam": "value",
           "targetParam": "y"
@@ -134,9 +204,6 @@ FUNCTIONS = {
     "constant": constant,
 }
 
-INITIAL_DUMMY_INPUT = None
-InitialInput = NoneType
-
 
 class FCBlockConnection(BaseModel):
     target: str
@@ -161,7 +228,7 @@ class FlowChart(BaseModel):
 @dataclass
 class FCBlockIO:
     block: FCBlock
-    i: BehaviorSubject
+    i: Subject
     o: Observable
 
 
@@ -190,8 +257,8 @@ def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
 def wire_flowchart(
     flowchart: FlowChart,
     on_publish,
-    starter: Observable | BehaviorSubject,
-    ui_inputs: dict[str, BehaviorSubject | Observable],
+    starter: Observable,
+    ui_inputs: dict[str, Observable],
 ):
     blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
@@ -200,24 +267,18 @@ def wire_flowchart(
     for island in islands:
         for block in island:
 
-            def run_block(blk: FCBlock, kwargs: dict[str, Any] | None):
+            def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                 fn = FUNCTIONS[blk.block_type]
                 print(f"Running block {blk.id}")
-                if kwargs is None:
-                    print("Received None for input (initial value), returning None")
-                    return
                 return fn(**kwargs)
 
             def make_block_fn_props(
-                blk: FCBlock, inputs: list[Tuple[str, Any]] | None
-            ) -> dict[str, Any] | None:
+                blk: FCBlock, inputs: list[Tuple[str, Any]]
+            ) -> dict[str, Any]:
                 print(f"Making params for block {blk.id} with {inputs}")
-                if inputs is None:
-                    print("Received None for input (initial value), returning None")
-                    return inputs
                 return dict(inputs)
 
-            input_subject = BehaviorSubject(None)
+            input_subject = Subject()
             input_subject.subscribe(
                 partial(
                     lambda blk, x: print(
@@ -227,16 +288,11 @@ def wire_flowchart(
                 )
             )
 
-            # TODO: Use ops.skip?
             output_observable = input_subject.pipe(
-                ops.skip(1),  # ignore initial starting value
                 ops.map(partial(make_block_fn_props, block)),
                 ops.map(partial(run_block, block)),
+                ops.publish(),
             )
-            # if block.block.id in ui_inputs:
-            #     ui_inputs[block.block.id].subscribe(
-            #         block.i.on_next, block.i.on_error, block.i.on_completed
-            #     )
 
             output_observable.subscribe(
                 partial(
@@ -252,11 +308,20 @@ def wire_flowchart(
                 on_completed=lambda: print("completed"),
             )
 
+            output_observable.connect()
+
+            if block.id in ui_inputs:
+                ui_inputs[block.id].subscribe(
+                    input_subject.on_next,
+                    input_subject.on_error,
+                    input_subject.on_completed,
+                )
+
             block_ios[block.id] = FCBlockIO(
                 block=block, i=input_subject, o=output_observable
             )
 
-    vistedConns = set()
+    visitedBlocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
         print(f"Recursively connecting {io.block.id} to its inputs")
@@ -280,46 +345,39 @@ def wire_flowchart(
         in_zip.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
             print(conn)
-            if conn.source + conn.target in vistedConns:
+            if conn.source in visitedBlocks:
                 continue
-            vistedConns.add(conn.source + conn.target)
+            visitedBlocks.add(conn.source)
             rec_connect_blocks(block_ios[conn.source])
 
     # Connect the graph backwards starting from the terminal nodes
     terminals = filter(lambda b: not b.outs, blocks.values())
     for block in terminals:
+        visitedBlocks.add(block.id)
         rec_connect_blocks(block_ios[block.id])
 
 
 def main():
-    sobs = BehaviorSubject({})
+    sobs = Subject()
 
     def publish_fn(x, id):
         print(f"Publishing for id {id}")
-        if x is None:
-            print("No value")
-        if type(x) == tuple:
-            print(f"Got {x[0]}, {x[1].id}")
-        else:
-            print(x)
+        print(x)
 
-    fc = FlowChart.model_validate_json(fc_json)
+    fc = FlowChart.model_validate_json(slider_fc_json)
 
     ui_inputs = {
-        "slider1": rx.interval(1).pipe(ops.take(1000)),
-        "slider2": rx.interval(1.2).pipe(ops.take(2000)),
+        "slider1": rx.interval(1).pipe(ops.take(1000), ops.map(lambda x: [("x", x)])),
+        "slider2": rx.interval(1.2).pipe(ops.take(2000), ops.map(lambda x: [("x", x)])),
     }
 
     wire_flowchart(
         flowchart=fc, on_publish=publish_fn, starter=sobs, ui_inputs=ui_inputs
     )
+    sobs.on_next([("x", 1)])
 
-    # sobs.on_next(21)
-
-    # while True:
-    #     pass
-
-    # incrememnt sliders by 1 per second
+    while True:
+        pass
 
 
 if __name__ == "__main__":
