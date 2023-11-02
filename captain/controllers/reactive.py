@@ -205,17 +205,37 @@ class FCBlockConnection(BaseModel):
     targetParam: str
 
 
-class FCBlock(BaseModel):
+class Block(BaseModel):
     id: str
     block_type: Literal[
         "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
     ]
+
+
+class FCBlock(Block):
     ins: List[FCBlockConnection]
     outs: List[FCBlockConnection]
+
+    @classmethod
+    def from_block(cls, block: Block):
+        return FCBlock(id=block.id, block_type=block.block_type, ins=[], outs=[])
 
 
 class FlowChart(BaseModel):
     blocks: List[FCBlock]
+
+    @classmethod
+    def from_blocks_edges(cls, blocks: list[Block], edges: list[FCBlockConnection]):
+        lookup = {block.id: block for block in blocks}
+        fc_blocks: dict[str, FCBlock] = {}
+
+        for edge in edges:
+            if edge.target not in fc_blocks:
+                fc_blocks[edge.target] = FCBlock.from_block(lookup[edge.target])
+            if edge.source not in fc_blocks:
+                fc_blocks[edge.source] = FCBlock.from_block(lookup[edge.source])
+            fc_blocks[edge.target].ins.append(edge)
+            fc_blocks[edge.source].outs.append(edge)
 
 
 @dataclass
@@ -368,7 +388,9 @@ def main():
     wire_flowchart(
         flowchart=fc, on_publish=publish_fn, starter=sobs, ui_inputs=ui_inputs
     )
-    sobs.on_next([("x", 1)])
+
+    # sobs.on_next({})
+    # sobs.on_next([("x", 1)])
 
     while True:
         pass
