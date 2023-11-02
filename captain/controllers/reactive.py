@@ -200,28 +200,22 @@ def wire_flowchart(
     for island in islands:
         for block in island:
 
-            def run_block_wrapper(blk: FCBlock):
-                def run_block(kwargs: dict[str, Any] | None):
-                    fn = FUNCTIONS[blk.block_type]
-                    print(f"Running block {blk.id}")
-                    if kwargs is None:
-                        print("Received None for input (initial value), returning None")
-                        return
-                    return fn(**kwargs)
+            def run_block(blk: FCBlock, kwargs: dict[str, Any] | None):
+                fn = FUNCTIONS[blk.block_type]
+                print(f"Running block {blk.id}")
+                if kwargs is None:
+                    print("Received None for input (initial value), returning None")
+                    return
+                return fn(**kwargs)
 
-                return run_block
-
-            def make_block_fn_props_wrapper(blk: FCBlock):
-                def make_block_fn_props(
-                    inputs: list[Tuple[str, Any]] | None
-                ) -> dict[str, Any] | None:
-                    print(f"Making params for block {blk.id} with {inputs}")
-                    if inputs is None:
-                        print("Received None for input (initial value), returning None")
-                        return inputs
-                    return dict(inputs)
-
-                return make_block_fn_props
+            def make_block_fn_props(
+                blk: FCBlock, inputs: list[Tuple[str, Any]] | None
+            ) -> dict[str, Any] | None:
+                print(f"Making params for block {blk.id} with {inputs}")
+                if inputs is None:
+                    print("Received None for input (initial value), returning None")
+                    return inputs
+                return dict(inputs)
 
             input_subject = BehaviorSubject(None)
             input_subject.subscribe(
@@ -236,8 +230,8 @@ def wire_flowchart(
             # TODO: Use ops.skip?
             output_observable = input_subject.pipe(
                 ops.skip(1),  # ignore initial starting value
-                ops.map(make_block_fn_props_wrapper(block)),
-                ops.map(run_block_wrapper(block)),
+                ops.map(partial(make_block_fn_props, block)),
+                ops.map(partial(run_block, block)),
             )
             # if block.block.id in ui_inputs:
             #     ui_inputs[block.block.id].subscribe(
