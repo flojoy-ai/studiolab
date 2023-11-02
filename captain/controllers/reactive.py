@@ -152,13 +152,6 @@ slider_fc_json = """
 """
 
 
-# @dataclass
-# class FCBlockFnProps:  # TODO: use typed dict for kwargs
-#     is_init: bool = False
-#     kwargs: dict[str, Any] = None
-#     const_value: Any = None
-
-
 def subtract(x, y):
     print(f"subtract: {x} - {y}")
     return x - y
@@ -291,7 +284,7 @@ def wire_flowchart(
             output_observable = input_subject.pipe(
                 ops.map(partial(make_block_fn_props, block)),
                 ops.map(partial(run_block, block)),
-                ops.publish(),
+                ops.publish(),  # Makes it so values are not emitted on each subscribe
             )
 
             output_observable.subscribe(
@@ -308,6 +301,7 @@ def wire_flowchart(
                 on_completed=lambda: print("completed"),
             )
 
+            # Start emitting values for outputs
             output_observable.connect()
 
             if block.id in ui_inputs:
