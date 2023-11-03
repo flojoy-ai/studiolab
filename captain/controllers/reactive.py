@@ -209,6 +209,8 @@ FN_REQUIRED_PARAMS = {
 
 EVENT_BLOCKS = ["slider", "gamepad", "button"]
 
+ZIPPED_BLOCKS = [] # TODO: I (sasha) am anti zip in all cases.
+
 
 class FCBlockConnection(BaseModel):
     target: str
@@ -365,26 +367,30 @@ def wire_flowchart(
 
         print(f"Connecting {io.block.id}")
 
-        # in_zip = rx.zip(
-        #     *(
-        #         block_ios[conn.source].o.pipe(
-        #             ops.map(partial(lambda param, v: (param, v), conn.targetParam))
-        #         )
-        #         for conn in io.block.ins
-        #     )
-        # )
-        # print(f"Connected {io.block.id} to {io.block.ins}")
-        # for conn in io.block.ins:
-        #     print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru zip via {conn.targetParam}")
-
-        in_combined = rx.combine_latest(
-            *(
-                block_ios[conn.source].o.pipe(
-                    ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+        in_combined = None
+        if io.block.block_type in ZIPPED_BLOCKS:
+            in_zip = rx.zip(
+                *(
+                    block_ios[conn.source].o.pipe(
+                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+                    )
+                    for conn in io.block.ins
                 )
-                for conn in io.block.ins
             )
-        )
+            in_combined = in_zip
+
+        else:
+            in_combined = rx.combine_latest(
+                *(
+                    block_ios[conn.source].o.pipe(
+                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+                    )
+                    for conn in io.block.ins
+                )
+            )
+        for conn in io.block.ins:
+            print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}")
+
 
         in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
