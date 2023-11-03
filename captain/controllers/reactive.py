@@ -7,14 +7,14 @@ from reactivex import Observable, Subject
 import reactivex.operators as ops
 from functools import partial
 
-fc_json = """
+test_fc_json = """
 {
   "blocks": [
     {
       "block_type": "constant",
       "id": "constant1",
       "ins": [],
-      "outs": [
+   x,.   "outs": [
         {
           "source": "constant1",
           "target": "add1",

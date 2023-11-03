@@ -1,61 +1,74 @@
-import {FC, useCallback, useEffect, useState} from "react";
-import useWebSocket, {ReadyState} from "react-use-websocket";
-const adder: FlowChart = {blocks: [{
-    block: "slider",
-    id: "slider1",
-    ins: [],
-    outs: [{
-      source: "slider1",
-      target: "add1",
-      sourceParam: "value",
-      targetParam: "x"
-    }]
-  },
+import { FC, useCallback, useEffect, useState } from 'react'
+import useWebSocket, { ReadyState } from 'react-use-websocket'
+const adder: FlowChart = {
+  blocks: [
     {
-      block: "slider",
-      id: "slider2",
+      block: 'slider',
+      id: 'slider1',
       ins: [],
-      outs: [{
-        source: "slider2",
-        target: "add1",
-        sourceParam: "value",
-        targetParam: "y"
-      }]
-    },
-    {
-      block: "add",
-      id: "add1",
-      ins: [{
-        source: "slider1",
-        target: "add1",
-        sourceParam: "value",
-        targetParam: "x"
-      },
+      outs: [
         {
-          source: "slider2",
-          target: "add1",
-          sourceParam: "value",
-          targetParam: "y"
-        }],
-      outs: [{
-        source: "add1",
-        target: "bignum1",
-        sourceParam: "value",
-        targetParam: "value"
-      }]
+          source: 'slider1',
+          target: 'add1',
+          sourceParam: 'value',
+          targetParam: 'x'
+        }
+      ]
     },
     {
-      block: "bignum",
-      id: "bignum1",
-      ins: [{
-        source: "add1",
-        target: "bignum1",
-        sourceParam: "value",
-        targetParam: "value"
-      }],
+      block: 'slider',
+      id: 'slider2',
+      ins: [],
+      outs: [
+        {
+          source: 'slider2',
+          target: 'add1',
+          sourceParam: 'value',
+          targetParam: 'y'
+        }
+      ]
+    },
+    {
+      block: 'add',
+      id: 'add1',
+      ins: [
+        {
+          source: 'slider1',
+          target: 'add1',
+          sourceParam: 'value',
+          targetParam: 'x'
+        },
+        {
+          source: 'slider2',
+          target: 'add1',
+          sourceParam: 'value',
+          targetParam: 'y'
+        }
+      ],
+      outs: [
+        {
+          source: 'add1',
+          target: 'bignum1',
+          sourceParam: 'value',
+          targetParam: 'value'
+        }
+      ]
+    },
+    {
+      block: 'bignum',
+      id: 'bignum1',
+      ins: [
+        {
+          source: 'add1',
+          target: 'bignum1',
+          sourceParam: 'value',
+          targetParam: 'value'
+        }
+      ],
       outs: []
     }
-  ]}
+  ]
+}
 
 export const FlowchartWS: FC = () => {
   // const initURL = 'http://localhost:2333/blocks/setup_flowchart'
@@ -81,21 +94,15 @@ export const FlowchartWS: FC = () => {
 
   return (
     <>
-    <code>
-      <pre>
-        {JSON.stringify(adder, null, 2)}
-      </pre>
-    </code>
-    <div>
-      <button onClick={handleClickSendMessage} disabled={readyState !== ReadyState.OPEN}>
-        Click Me to send 1
-      </button>
-      <span>The WebSocket is currently {connectionStatus}</span>
-      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
-    </div>
-      </>
+      <div>
+        <button onClick={handleClickSendMessage} disabled={readyState !== ReadyState.OPEN}>
+          Click Me to send 1
+        </button>
+        <span>The WebSocket is currently {connectionStatus}</span>
+        {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      </div>
+    </>
   )
-
 }
 
 interface BlockConnection {
@@ -114,4 +121,3 @@ interface FCBlock {
 interface FlowChart {
   blocks: Array<FCBlock>
 }
-
