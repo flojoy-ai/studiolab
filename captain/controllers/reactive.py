@@ -365,7 +365,19 @@ def wire_flowchart(
 
         print(f"Connecting {io.block.id}")
 
-        in_zip = rx.zip(
+        # in_zip = rx.zip(
+        #     *(
+        #         block_ios[conn.source].o.pipe(
+        #             ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+        #         )
+        #         for conn in io.block.ins
+        #     )
+        # )
+        # print(f"Connected {io.block.id} to {io.block.ins}")
+        # for conn in io.block.ins:
+        #     print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru zip via {conn.targetParam}")
+
+        in_combined = rx.combine_latest(
             *(
                 block_ios[conn.source].o.pipe(
                     ops.map(partial(lambda param, v: (param, v), conn.targetParam))
@@ -373,11 +385,8 @@ def wire_flowchart(
                 for conn in io.block.ins
             )
         )
-        print(f"Connected {io.block.id} to {io.block.ins}")
-        for conn in io.block.ins:
-            print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru zip via {conn.targetParam}")
 
-        in_zip.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
+        in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
             print(conn)
             if conn.source in visitedBlocks:
