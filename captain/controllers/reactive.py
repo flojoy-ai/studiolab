@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import List, Literal, Any, Tuple
+from typing import List, Literal, Any, Mapping, Tuple
 
 from pydantic import BaseModel
 import reactivex as rx
-from reactivex import Observable, Subject
+from reactivex import Observable, Subject, combine_latest
 import reactivex.operators as ops
 from functools import partial
 
@@ -14,7 +14,7 @@ test_fc_json = """
       "block_type": "constant",
       "id": "constant1",
       "ins": [],
-   x,.   "outs": [
+      "outs": [
         {
           "source": "constant1",
           "target": "add1",
@@ -168,7 +168,9 @@ def slider(x):
 
 
 def constant():
-    print("constant: 2") # TODO: problem: A constant mixed with a live value breaks zip.
+    print(
+        "constant: 2"
+    )  # TODO: problem: A constant mixed with a live value breaks zip.
     return 2
 
 
@@ -209,7 +211,7 @@ FN_REQUIRED_PARAMS = {
 
 EVENT_BLOCKS = ["slider", "gamepad", "button"]
 
-ZIPPED_BLOCKS = [] # TODO: I (sasha) am anti zip in all cases.
+ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 
 
 class FCBlockConnection(BaseModel):
@@ -230,16 +232,16 @@ class FCBlock(Block):
     ins: List[FCBlockConnection]
     outs: List[FCBlockConnection]
 
-    @classmethod
-    def from_block(cls, block: Block):
+    @staticmethod
+    def from_block(block: Block):
         return FCBlock(id=block.id, block_type=block.block_type, ins=[], outs=[])
 
 
 class FlowChart(BaseModel):
     blocks: List[FCBlock]
 
-    @classmethod
-    def from_blocks_edges(cls, blocks: list[Block], edges: list[FCBlockConnection]):
+    @staticmethod
+    def from_blocks_edges(blocks: list[Block], edges: list[FCBlockConnection]):
         lookup = {block.id: block for block in blocks}
         fc_blocks: dict[str, FCBlock] = {}
 
@@ -285,7 +287,7 @@ def wire_flowchart(
     flowchart: FlowChart,
     on_publish,
     starter: Observable,
-    ui_inputs: dict[str, Observable],
+    ui_inputs: Mapping[str, Observable],
 ):
     blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
@@ -349,7 +351,9 @@ def wire_flowchart(
                     input_subject.on_error,
                     input_subject.on_completed,
                 )
-                ui_inputs[block.id].subscribe(on_next=lambda x: print(f"Got {x} from the UI input subject") )
+                ui_inputs[block.id].subscribe(
+                    on_next=lambda x: print(f"Got {x} from the UI input subject")
+                )
 
             block_ios[block.id] = FCBlockIO(
                 block=block, i=input_subject, o=output_observable
@@ -359,38 +363,39 @@ def wire_flowchart(
 
     def rec_connect_blocks(io: FCBlockIO):
         print(f"Recursively connecting {io.block.id} to its inputs")
-        if (len(io.block.ins) == 0) and (io.block.id not in ui_inputs) and (io.block.block_type in EVENT_BLOCKS):
-            print(f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}")
+        if (
+            len(io.block.ins) == 0
+            and io.block.id not in ui_inputs
+            and io.block.block_type in EVENT_BLOCKS
+        ):
+            print(
+                f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}"
+            )
             print(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
             starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
 
+        if len(io.block.ins) == 0 and io.block.id in ui_inputs:
+            return
+
         print(f"Connecting {io.block.id}")
 
-        in_combined = None
-        if io.block.block_type in ZIPPED_BLOCKS:
-            in_zip = rx.zip(
-                *(
-                    block_ios[conn.source].o.pipe(
-                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
-                    )
-                    for conn in io.block.ins
+        combine_strategy = (
+            rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
+        )
+        in_combined = combine_strategy(
+            *(
+                block_ios[conn.source].o.pipe(
+                    ops.map(partial(lambda param, v: (param, v), conn.targetParam))
                 )
+                for conn in io.block.ins
             )
-            in_combined = in_zip
+        )
 
-        else:
-            in_combined = rx.combine_latest(
-                *(
-                    block_ios[conn.source].o.pipe(
-                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
-                    )
-                    for conn in io.block.ins
-                )
-            )
         for conn in io.block.ins:
-            print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}")
-
+            print(
+                f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}"
+            )
 
         in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:

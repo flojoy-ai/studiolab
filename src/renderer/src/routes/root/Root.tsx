@@ -1,6 +1,6 @@
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Link, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Link, Outlet } from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 
 export const Root = (): JSX.Element => {
   return (
@@ -21,7 +21,7 @@ export const Root = (): JSX.Element => {
       <TanStackRouterDevtools position="bottom-right" />
       <ReactQueryDevtools buttonPosition="bottom-left" />
     </>
-  )
-}
+  );
+};
 
-export const tanner = 'hello'
+export const tanner = 'hello';

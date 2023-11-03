@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useState } from 'react'
-import useWebSocket, { ReadyState } from 'react-use-websocket'
+import { useCallback, useEffect, useState } from 'react';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { GamepadListener } from 'gamepad.js';
-import {FlowchartWS} from "../../components/FlowchartWS";
+import { FlowchartWS } from '../../components/FlowchartWS';
 
 export const Index = (): JSX.Element => {
-  const socketURL = 'ws://localhost:2333/blocks/ws'
-  const [messageHistory, setMessageHistory] = useState<any>([])
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL)
+  const socketURL = 'ws://localhost:2333/blocks/ws';
+  const [messageHistory, setMessageHistory] = useState<any>([]);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL);
 
   useEffect(() => {
     if (lastMessage !== null) {
-      setMessageHistory((prev) => prev.concat(lastMessage))
+      setMessageHistory((prev) => prev.concat(lastMessage));
     }
-  }, [lastMessage, setMessageHistory])
+  }, [lastMessage, setMessageHistory]);
 
-  const handleClickSendMessage = useCallback(() => sendMessage('1'), [])
+  const handleClickSendMessage = useCallback(() => sendMessage('1'), []);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -22,17 +22,17 @@ export const Index = (): JSX.Element => {
     [ReadyState.CLOSING]: 'Closing',
     [ReadyState.CLOSED]: 'Closed',
     [ReadyState.UNINSTANTIATED]: 'Uninstantiated'
-  }[readyState]
+  }[readyState];
 
   let lastMSG = 0;
 
   const onButtonChange = (button): void => {
-    console.dir(button)
-    if (!button.detail.pressed && (window.performance.now() - lastMSG) > 100) {
+    console.dir(button);
+    if (!button.detail.pressed && window.performance.now() - lastMSG > 100) {
       lastMSG = window.performance.now();
       sendMessage(button.detail.button);
     }
-  }
+  };
 
   const listener = new GamepadListener({
     button: {
@@ -42,21 +42,19 @@ export const Index = (): JSX.Element => {
 
   listener.on('gamepad:button', onButtonChange);
 
-  listener.on('gamepad:axis', event => {
+  listener.on('gamepad:axis', (event) => {
     const {
       // index,// Gamepad index: Number [0-3].
       axis, // Axis index: Number [0-N].
-      value, // Current value: Number between -1 and 1. Float in analog mode, integer otherwise.
+      value // Current value: Number between -1 and 1. Float in analog mode, integer otherwise.
       // gamepad, // Native Gamepad object
     } = event.detail;
-    if (axis === 2){
+    if (axis === 2) {
       sendMessage(`axis ${axis} ${value}`);
     }
   });
 
   listener.start();
 
-  return (
-    <FlowchartWS/>
-  )
-}
+  return <FlowchartWS />;
+};
