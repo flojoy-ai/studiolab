@@ -1,78 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 
-const adder: FlowChart = JSON.parse(
-  '{\n' +
-    '  "blocks": [\n' +
-    '    {\n' +
-    '      "block_type": "slider",\n' +
-    '      "id": "slider1",\n' +
-    '      "ins": [],\n' +
-    '      "outs": [\n' +
-    '        {\n' +
-    '          "source": "slider1",\n' +
-    '          "target": "add1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "x"\n' +
-    '        }\n' +
-    '      ]\n' +
-    '    },\n' +
-    '     {\n' +
-    '      "block_type": "constant",\n' +
-    '      "id": "constant1",\n' +
-    '      "ins": [],\n' +
-    '      "outs": [\n' +
-    '        {\n' +
-    '          "source": "constant1",\n' +
-    '          "target": "add1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "y"\n' +
-    '        }\n' +
-    '      ]\n' +
-    '    },' +
-    '    {\n' +
-    '      "block_type": "add",\n' +
-    '      "id": "add1",\n' +
-    '      "ins": [\n' +
-    '        {\n' +
-    '          "source": "slider1",\n' +
-    '          "target": "add1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "x"\n' +
-    '        },\n' +
-    '        {\n' +
-    '          "source": "constant1",\n' +
-    '          "target": "add1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "y"\n' +
-    '        }\n' +
-    '      ],\n' +
-    '      "outs": [\n' +
-    '        {\n' +
-    '          "source": "add1",\n' +
-    '          "target": "bignum1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "x"\n' +
-    '        }\n' +
-    '      ]\n' +
-    '    },\n' +
-    '    {\n' +
-    '      "block_type": "bignum",\n' +
-    '      "id": "bignum1",\n' +
-    '      "ins": [\n' +
-    '        {\n' +
-    '          "source": "add1",\n' +
-    '          "target": "bignum1",\n' +
-    '          "sourceParam": "value",\n' +
-    '          "targetParam": "x"\n' +
-    '        }\n' +
-    '      ],\n' +
-    '      "outs": []\n' +
-    '    }\n' +
-    '  ]\n' +
-    '  }'
-) as FlowChart
-
 export const FlowchartWS: FC = () => {
   const socketURL = 'ws://localhost:2333/blocks/flowchart'
   const [curFC, setCurFC] = useState<any>({ blocks: [] })
@@ -100,6 +28,8 @@ export const FlowchartWS: FC = () => {
     )
   }
 
+  const [adderJSON, setAdder] = useState<string>('')
+
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Open',
@@ -109,11 +39,12 @@ export const FlowchartWS: FC = () => {
   }[readyState]
 
   useEffect(() => {
-    if (connectionStatus === 'Open') {
+    if (connectionStatus === 'Open' && adderJSON !== '') {
       sendMessage(JSON.stringify(adder))
     }
-  }, [connectionStatus])
+  }, [connectionStatus, adderJSON])
 
+  const adder = adderJSON !== '' ? JSON.parse(adderJSON) : undefined
   const handleStart = (): void => {
     sendMessage('start')
   }
@@ -124,9 +55,23 @@ export const FlowchartWS: FC = () => {
         <button onClick={handleStart} disabled={readyState !== ReadyState.OPEN}>
           Start Flowchart
         </button>
+        <label htmlFor="file">Upload a flowchart</label>
+        <input
+          type="file"
+          accept={'.json'}
+          onChange={(event) => {
+            const file = event.target.files[0]
+            const reader = new FileReader()
+            reader.onload = (event) => {
+              const text = event.target.result
+              setAdder(text as string)
+            }
+            reader.readAsText(file)
+          }}
+        ></input>
         <span>The WebSocket is currently {connectionStatus}</span>
         {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
-        {adder.blocks.map((block) => {
+        {adder !== undefined && adder.blocks.map((block) => {
           if (block.block_type === 'slider') {
             return (
               <div key={block.id}>

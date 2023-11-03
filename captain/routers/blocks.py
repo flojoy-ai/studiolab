@@ -152,7 +152,7 @@ async def websocket_flowchart(websocket: WebSocket):
                 print(f"Got FCUIFeedback {fc_ui_feedback}")
                 if fc_ui_feedback.id in ui_inputs.keys():
                     print(f"Publishing FCUIFeedback {fc_ui_feedback.value} for {fc_ui_feedback.id}")
-                    ui_inputs[fc_ui_feedback.id].on_next([("x", fc_ui_feedback.value)])
+                    ui_inputs[fc_ui_feedback.id].on_next([("x", float(fc_ui_feedback.value))])
                 else:
                     print(f"Unknown id {fc_ui_feedback.id} with ui input keys {ui_inputs.keys()}")
             except Exception as e:

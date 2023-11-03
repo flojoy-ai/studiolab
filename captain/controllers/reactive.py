@@ -359,6 +359,7 @@ def wire_flowchart(
         print(f"Recursively connecting {io.block.id} to its inputs")
         if (len(io.block.ins) == 0) and (io.block.id not in ui_inputs) and (io.block.block_type in EVENT_BLOCKS):
             print(f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}")
+            print(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
             starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
 
@@ -373,6 +374,8 @@ def wire_flowchart(
             )
         )
         print(f"Connected {io.block.id} to {io.block.ins}")
+        for conn in io.block.ins:
+            print(f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru zip via {conn.targetParam}")
 
         in_zip.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
