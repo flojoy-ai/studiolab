@@ -168,7 +168,7 @@ def slider(x):
 
 
 def constant():
-    print("constant: 2")
+    print("constant: 2") # TODO: problem: A constant mixed with a live value breaks zip.
     return 2
 
 
@@ -196,6 +196,18 @@ FUNCTIONS = {
     "subtract": subtract,
     "constant": constant,
 }
+
+FN_REQUIRED_PARAMS = {
+    "slider": ["x"],
+    "gamepad": ["x"],
+    "button": ["x"],
+    "bignum": ["x"],
+    "add": ["x", "y"],
+    "subtract": ["x", "y"],
+    "constant": [],
+}
+
+EVENT_BLOCKS = ["slider", "gamepad", "button"]
 
 
 class FCBlockConnection(BaseModel):
@@ -283,6 +295,10 @@ def wire_flowchart(
             def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                 fn = FUNCTIONS[blk.block_type]
                 print(f"Running block {blk.id}")
+                for key in FN_REQUIRED_PARAMS[blk.block_type]:
+                    if key not in kwargs:
+                        err = f"ERROR! Missing required param {key} for {blk.id}"
+                        raise ValueError(err)
                 return fn(**kwargs)
 
             def make_block_fn_props(
@@ -325,11 +341,13 @@ def wire_flowchart(
             output_observable.connect()
 
             if block.id in ui_inputs:
+                print(f"Connecting {block.id} to ui input {ui_inputs[block.id]}")
                 ui_inputs[block.id].subscribe(
                     input_subject.on_next,
                     input_subject.on_error,
                     input_subject.on_completed,
                 )
+                ui_inputs[block.id].subscribe(on_next=lambda x: print(f"Got {x} from the UI input subject") )
 
             block_ios[block.id] = FCBlockIO(
                 block=block, i=input_subject, o=output_observable
@@ -339,8 +357,8 @@ def wire_flowchart(
 
     def rec_connect_blocks(io: FCBlockIO):
         print(f"Recursively connecting {io.block.id} to its inputs")
-        if len(io.block.ins) == 0:
-            print(f"Connected {io.block.id} to start observable")
+        if (len(io.block.ins) == 0) and (io.block.id not in ui_inputs) and (io.block.block_type in EVENT_BLOCKS):
+            print(f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}")
             starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
 
@@ -390,7 +408,7 @@ def main():
     )
 
     # sobs.on_next({})
-    # sobs.on_next([("x", 1)])
+    sobs.on_next([("x", 1)])
 
     while True:
         pass

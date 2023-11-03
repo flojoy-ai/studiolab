@@ -1,11 +1,16 @@
 from asyncio import Future
+from dataclasses import dataclass
+from typing import Literal
 
 from fastapi import APIRouter, WebSocket
+from pydantic import BaseModel
 from reactivex.operators import flat_map_latest
-from reactivex import operators as ops
+from reactivex import operators as ops, Subject
 from reactivex.subject import BehaviorSubject
 from reactivex import create
 import asyncio
+
+from captain.controllers.reactive import FlowChart, wire_flowchart
 
 router = APIRouter(tags=["blocks"], prefix="/blocks")
 
@@ -100,6 +105,61 @@ async def websocket_endpoint_nodes(websocket: WebSocket):
             break
 
 
+class FCUIFeedback(BaseModel):
+    id: str
+    value: str
+    __discriminator: Literal['FCUIFeedback'] = "FCUIFeedback"
+
+
+@router.websocket("/flowchart")
+async def websocket_flowchart(websocket: WebSocket):
+    send_msg = send_message_factory(websocket)
+
+    start_obs = Subject()
+
+    start_obs.subscribe(on_next=lambda x: print(f"Got start {x}") )
+
+    def publish_fn(x, id):
+        print(f"Publishing {x} for {id}")
+        send_msg({"id": id, "data": str(x)})
+
+    await websocket.accept()
+
+    ui_inputs = dict()
+
+    fc = None
+
+    while True:
+        data = await websocket.receive_text()
+        print(f"Got data: {data}")
+        if fc is None:
+            try:
+                fc = FlowChart.model_validate_json(data)
+                for block in fc.blocks:
+                    if block.block_type == "slider":
+                        print(f"Creating slider {block.id}")
+                        ui_inputs[block.id] = Subject()
+                wire_flowchart(flowchart=fc, on_publish=publish_fn, starter=start_obs, ui_inputs=ui_inputs)
+            except Exception as e:
+                print(f"Error in parsing flowchart {e}")
+        if fc is not None and data.startswith("start"):
+            print("Starting flowchart")
+            start_obs.on_next({})
+        elif fc is not None and data.startswith("{"):
+            print(f"Got possible json data {data}")
+            try:
+                fc_ui_feedback = FCUIFeedback.model_validate_json(data)
+                print(f"Got FCUIFeedback {fc_ui_feedback}")
+                if fc_ui_feedback.id in ui_inputs.keys():
+                    print(f"Publishing FCUIFeedback {fc_ui_feedback.value} for {fc_ui_feedback.id}")
+                    ui_inputs[fc_ui_feedback.id].on_next([("x", fc_ui_feedback.value)])
+                else:
+                    print(f"Unknown id {fc_ui_feedback.id} with ui input keys {ui_inputs.keys()}")
+            except Exception as e:
+                print(f"Error in parsing UI Feedback {e}")
+        else:
+            print("Got unknown data {}".format(data))
+
 def send_message_factory(websocket):
     def send_message(x) -> Future[None]:
         """
@@ -107,6 +167,7 @@ def send_message_factory(websocket):
         :param x:
         :return:
         """
+        print(f"supposed to send {x}")
         return asyncio.ensure_future(websocket.send_text(str(x)))
 
     return send_message

@@ -1,88 +1,104 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
-const adder: FlowChart = {
-  blocks: [
-    {
-      block: 'slider',
-      id: 'slider1',
-      ins: [],
-      outs: [
-        {
-          source: 'slider1',
-          target: 'add1',
-          sourceParam: 'value',
-          targetParam: 'x'
-        }
-      ]
-    },
-    {
-      block: 'slider',
-      id: 'slider2',
-      ins: [],
-      outs: [
-        {
-          source: 'slider2',
-          target: 'add1',
-          sourceParam: 'value',
-          targetParam: 'y'
-        }
-      ]
-    },
-    {
-      block: 'add',
-      id: 'add1',
-      ins: [
-        {
-          source: 'slider1',
-          target: 'add1',
-          sourceParam: 'value',
-          targetParam: 'x'
-        },
-        {
-          source: 'slider2',
-          target: 'add1',
-          sourceParam: 'value',
-          targetParam: 'y'
-        }
-      ],
-      outs: [
-        {
-          source: 'add1',
-          target: 'bignum1',
-          sourceParam: 'value',
-          targetParam: 'value'
-        }
-      ]
-    },
-    {
-      block: 'bignum',
-      id: 'bignum1',
-      ins: [
-        {
-          source: 'add1',
-          target: 'bignum1',
-          sourceParam: 'value',
-          targetParam: 'value'
-        }
-      ],
-      outs: []
-    }
-  ]
-}
+
+const adder: FlowChart = JSON.parse(
+  '{\n' +
+    '  "blocks": [\n' +
+    '    {\n' +
+    '      "block_type": "slider",\n' +
+    '      "id": "slider1",\n' +
+    '      "ins": [],\n' +
+    '      "outs": [\n' +
+    '        {\n' +
+    '          "source": "slider1",\n' +
+    '          "target": "add1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "x"\n' +
+    '        }\n' +
+    '      ]\n' +
+    '    },\n' +
+    '     {\n' +
+    '      "block_type": "constant",\n' +
+    '      "id": "constant1",\n' +
+    '      "ins": [],\n' +
+    '      "outs": [\n' +
+    '        {\n' +
+    '          "source": "constant1",\n' +
+    '          "target": "add1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "y"\n' +
+    '        }\n' +
+    '      ]\n' +
+    '    },' +
+    '    {\n' +
+    '      "block_type": "add",\n' +
+    '      "id": "add1",\n' +
+    '      "ins": [\n' +
+    '        {\n' +
+    '          "source": "slider1",\n' +
+    '          "target": "add1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "x"\n' +
+    '        },\n' +
+    '        {\n' +
+    '          "source": "constant1",\n' +
+    '          "target": "add1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "y"\n' +
+    '        }\n' +
+    '      ],\n' +
+    '      "outs": [\n' +
+    '        {\n' +
+    '          "source": "add1",\n' +
+    '          "target": "bignum1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "x"\n' +
+    '        }\n' +
+    '      ]\n' +
+    '    },\n' +
+    '    {\n' +
+    '      "block_type": "bignum",\n' +
+    '      "id": "bignum1",\n' +
+    '      "ins": [\n' +
+    '        {\n' +
+    '          "source": "add1",\n' +
+    '          "target": "bignum1",\n' +
+    '          "sourceParam": "value",\n' +
+    '          "targetParam": "x"\n' +
+    '        }\n' +
+    '      ],\n' +
+    '      "outs": []\n' +
+    '    }\n' +
+    '  ]\n' +
+    '  }'
+) as FlowChart
 
 export const FlowchartWS: FC = () => {
-  // const initURL = 'http://localhost:2333/blocks/setup_flowchart'
-  const socketURL = 'ws://localhost:2333/blocks/nodes'
-  const [messageHistory, setMessageHistory] = useState<any>([])
+  const socketURL = 'ws://localhost:2333/blocks/flowchart'
+  const [curFC, setCurFC] = useState<any>({ blocks: [] })
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL)
 
   useEffect(() => {
     if (lastMessage !== null) {
-      setMessageHistory((prev) => prev.concat(lastMessage))
+      const jsonMsg = lastMessage.data.replace(/'/g, '"')
+      console.log('GOT MESSAGE: ' + jsonMsg)
+      const msgObg = JSON.parse(jsonMsg)
+      const new_fc = { ...curFC }.blocks.filter((block) => block.id !== msgObg.id)
+      new_fc.push(msgObg)
+      setCurFC({ blocks: new_fc })
     }
-  }, [lastMessage, setMessageHistory])
+  }, [lastMessage, setCurFC])
 
-  const handleClickSendMessage = useCallback(() => sendMessage('hello wrold'), [])
+  const handleSetSlider = (event, slider_id): void => {
+    const value = event.target.value
+    sendMessage(
+      JSON.stringify({
+        __discriminator: 'FCUIFeedback',
+        id: slider_id,
+        value: value
+      })
+    )
+  }
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -92,14 +108,47 @@ export const FlowchartWS: FC = () => {
     [ReadyState.UNINSTANTIATED]: 'Uninstantiated'
   }[readyState]
 
+  useEffect(() => {
+    if (connectionStatus === 'Open') {
+      sendMessage(JSON.stringify(adder))
+    }
+  }, [connectionStatus])
+
+  const handleStart = (): void => {
+    sendMessage('start')
+  }
+
   return (
     <>
       <div>
-        <button onClick={handleClickSendMessage} disabled={readyState !== ReadyState.OPEN}>
-          Click Me to send 1
+        <button onClick={handleStart} disabled={readyState !== ReadyState.OPEN}>
+          Start Flowchart
         </button>
         <span>The WebSocket is currently {connectionStatus}</span>
         {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+        {adder.blocks.map((block) => {
+          if (block.block_type === 'slider') {
+            return (
+              <div key={block.id}>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  onChange={(event) => handleSetSlider(event, block.id)}
+                />
+                <pre>
+                  <code>{JSON.stringify(curFC.blocks.find((b) => b.id === block.id) || {})}</code>
+                </pre>
+              </div>
+            )
+          } else {
+            return (
+              <pre key={block.id}>
+                <code>{JSON.stringify(curFC.blocks.find((b) => b.id === block.id) || {})}</code>
+              </pre>
+            )
+          }
+        })}
       </div>
     </>
   )
@@ -113,7 +162,7 @@ interface BlockConnection {
 }
 interface FCBlock {
   id: string
-  block: 'slider' | 'gamepad' | 'button' | 'bignum' | 'add' | 'subtract'
+  block_type: 'slider' | 'gamepad' | 'button' | 'bignum' | 'add' | 'subtract'
   ins: Array<BlockConnection>
   outs: Array<BlockConnection>
 }
