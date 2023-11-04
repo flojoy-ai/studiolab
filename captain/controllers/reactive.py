@@ -213,6 +213,10 @@ EVENT_BLOCKS = ["slider", "gamepad", "button"]
 
 ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 
+BlockType = Literal[
+    "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
+]
+
 
 class FCBlockConnection(BaseModel):
     target: str
@@ -223,9 +227,7 @@ class FCBlockConnection(BaseModel):
 
 class Block(BaseModel):
     id: str
-    block_type: Literal[
-        "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
-    ]
+    block_type: BlockType
 
 
 class FCBlock(Block):
@@ -235,6 +237,27 @@ class FCBlock(Block):
     @staticmethod
     def from_block(block: Block):
         return FCBlock(id=block.id, block_type=block.block_type, ins=[], outs=[])
+
+
+class RFNodeData(BaseModel):
+    block_type: BlockType
+
+
+class RFNode(BaseModel):
+    id: str
+    data: RFNodeData
+
+
+class RFEdge(BaseModel):
+    target: str
+    source: str
+    targetHandle: str
+    sourceHandle: str
+
+
+class ReactFlow(BaseModel):
+    nodes: list[RFNode]
+    edges: list[RFEdge]
 
 
 class FlowChart(BaseModel):
@@ -252,6 +275,22 @@ class FlowChart(BaseModel):
                 fc_blocks[edge.source] = FCBlock.from_block(lookup[edge.source])
             fc_blocks[edge.target].ins.append(edge)
             fc_blocks[edge.source].outs.append(edge)
+
+        return FlowChart(blocks=list(fc_blocks.values()))
+
+    @staticmethod
+    def from_react_flow(rf: ReactFlow):
+        blocks = [Block(id=n.id, block_type=n.data.block_type) for n in rf.nodes]
+        edges = [
+            FCBlockConnection(
+                target=e.target,
+                source=e.source,
+                sourceParam=e.sourceHandle,
+                targetParam=e.targetHandle,
+            )
+            for e in rf.edges
+        ]
+        return FlowChart.from_blocks_edges(blocks, edges)
 
 
 @dataclass

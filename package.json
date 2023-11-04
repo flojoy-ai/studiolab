@@ -46,6 +46,7 @@
     "electron-updater": "^6.1.4",
     "gamepad.js": "^2.1.0",
     "immer": "^10.0.3",
+    "jotai": "^2.5.0",
     "python-shell": "^5.0.0",
     "react-use-websocket": "^4.5.0",
     "reactflow": "^11.9.4",
@@ -53,6 +54,7 @@
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
     "use-immer": "^0.9.0",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -62,6 +64,7 @@
     "@types/node": "^20.8.10",
     "@types/react": "^18.2.33",
     "@types/react-dom": "^18.2.14",
+    "@types/uuid": "^9.0.6",
     "@vitejs/plugin-react": "^4.1.0",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",

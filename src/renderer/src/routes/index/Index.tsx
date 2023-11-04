@@ -6,7 +6,7 @@ import { FlowchartWS } from '../../components/FlowchartWS';
 export const Index = (): JSX.Element => {
   const socketURL = 'ws://localhost:2333/blocks/ws';
   const [messageHistory, setMessageHistory] = useState<any>([]);
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL);
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketURL, { share: true });
 
   useEffect(() => {
     if (lastMessage !== null) {

@@ -9,7 +9,7 @@ from reactivex.subject import BehaviorSubject
 from reactivex import create
 import asyncio
 
-from captain.controllers.reactive import FlowChart, wire_flowchart
+from captain.controllers.reactive import FlowChart, ReactFlow, wire_flowchart
 from captain.logging import logger
 
 router = APIRouter(tags=["blocks"], prefix="/blocks")
@@ -107,13 +107,13 @@ async def websocket_endpoint_nodes(websocket: WebSocket):
 
 class FlowStartEvent(BaseModel):
     event_type: Literal["start"]
-    flowchart: FlowChart
+    rf: ReactFlow
 
 
 class FlowUIEvent(BaseModel):
     event_type: Literal["ui"]
     ui_input_id: str
-    value: str
+    value: Any
 
 
 class FlowStateUpdateEvent(BaseModel):
@@ -152,7 +152,7 @@ class Flow:
         return cls(fc, publish_fn, start_obs)
 
     def process_ui_event(self, event: FlowUIEvent):
-        self.ui_inputs[event.ui_input_id].on_next([("x", float(event.value))])
+        self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])
 
 
 @router.websocket("/flowchart")
@@ -173,15 +173,16 @@ async def websocket_flowchart(websocket: WebSocket):
     while True:
         data = await websocket.receive_text()
         try:
-            logger.info(f"Received message: {data}")
             message = FlowSocketMessage.model_validate_json(data)
         except ValidationError as e:
             logger.error(str(e))
             continue
 
         match message.event:
-            case FlowStartEvent(flowchart=fc):
+            case FlowStartEvent(rf=rf):
+                fc = FlowChart.from_react_flow(rf)
                 if flow is None:
+                    logger.info("Creating flow from react flow instance")
                     flow = Flow(fc, publish_fn, start_obs)
             case FlowUIEvent():
                 if flow is None:
