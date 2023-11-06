@@ -26,8 +26,6 @@ export const FlowchartWS = () => {
 
   useUpdateBlockState();
 
-  console.log(nodes, edges);
-
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
     [ReadyState.OPEN]: 'Open',
@@ -48,24 +46,6 @@ export const FlowchartWS = () => {
       });
     }
   };
-
-  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>): void => {
-  //   if (!event.target.files) {
-  //     return;
-  //   }
-  //
-  //   const file = event.target.files[0];
-  //   const reader = new FileReader();
-  //   reader.onload = (event): void => {
-  //     if (!event.target?.result) {
-  //       throw new Error('Failed to read uploaded JSON file.');
-  //     }
-  //     const text = event.target.result.toString();
-  //     setFlowchart(JSON.parse(text));
-  //   };
-  //
-  //   reader.readAsText(file, 'UTF-8');
-  // };
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -99,7 +79,6 @@ export const FlowchartWS = () => {
       <Button onClick={handleStart} disabled={readyState !== ReadyState.OPEN || nodes.length === 0}>
         Start Flowchart
       </Button>
-      {/* <input type="file" accept={'.json'} onChange={handleFileUpload}></input> */}
       <Button variant="ghost" onClick={handleAddSlider}>
         Add Slider
       </Button>
