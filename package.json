@@ -44,11 +44,13 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "electron-updater": "^6.1.4",
+    "lucide-react": "^0.292.0",
     "python-shell": "^5.0.0",
     "sonner": "^1.1.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^4.4.6"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
