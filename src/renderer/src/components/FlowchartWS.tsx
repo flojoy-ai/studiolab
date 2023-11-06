@@ -10,8 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import SliderBlock from './blocks/SliderBlock';
 import BigNumberBlock from './blocks/BigNumberBlock';
 import AddBlock from './blocks/AddBlock';
-import { useSetAtom } from 'jotai';
-import { flowRunningAtom } from '@/hooks/useBlockState';
+import { useFlowchartStore } from '@/hooks/useFlowchartStore';
 
 const nodeTypes = {
   slider: SliderBlock,
@@ -23,7 +22,7 @@ export const FlowchartWS = () => {
   const { sendMessage, lastMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
   const [nodes, setNodes, onNodesChange] = useNodesState<BlockData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const setFlowRunning = useSetAtom(flowRunningAtom);
+  const runFlow = useFlowchartStore((state) => state.runFlow);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -43,7 +42,7 @@ export const FlowchartWS = () => {
           }
         })
       );
-      setFlowRunning(true);
+      runFlow();
     }
   };
 

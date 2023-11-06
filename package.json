@@ -46,7 +46,6 @@
     "electron-updater": "^6.1.4",
     "gamepad.js": "^2.1.0",
     "immer": "^10.0.3",
-    "jotai": "^2.5.0",
     "python-shell": "^5.0.0",
     "react-use-websocket": "^4.5.0",
     "reactflow": "^11.9.4",
@@ -55,7 +54,8 @@
     "tailwindcss-animate": "^1.0.7",
     "use-immer": "^0.9.0",
     "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^4.4.6"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",

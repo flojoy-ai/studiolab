@@ -2,17 +2,15 @@ import { FlowStateUpdateEvent } from '@/types/flow';
 import { SOCKET_URL } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { atom, useAtomValue } from 'jotai';
-
-export const flowRunningAtom = atom(false);
+import { useFlowchartStore } from './useFlowchartStore';
 
 export const useBlockState = <T>(
   id: string,
   defaultValue?: T
 ): [T | undefined, (data: T) => void] => {
   const [state, setState] = useState<T | undefined>(defaultValue);
-  const running = useAtomValue(flowRunningAtom);
   const { sendMessage, lastMessage } = useWebSocket(SOCKET_URL, { share: true });
+  const running = useFlowchartStore((state) => state.running);
 
   useEffect(() => {
     if (lastMessage !== null) {
