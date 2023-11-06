@@ -4,14 +4,14 @@ import { Button } from './ui/Button';
 import { Separator } from './ui/Separator';
 import ReactFlow, { useEdgesState, useNodesState, addEdge } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { FlowSocketMessage } from '@/types/flow';
 import { SOCKET_URL } from '@/utils/constants';
-import { useUpdateBlockState } from '@/hooks/useBlockState';
 import { BlockData, BlockType } from '@/types/block';
 import { v4 as uuidv4 } from 'uuid';
 import SliderBlock from './blocks/SliderBlock';
 import BigNumberBlock from './blocks/BigNumberBlock';
 import AddBlock from './blocks/AddBlock';
+import { useSetAtom } from 'jotai';
+import { flowRunningAtom } from '@/hooks/useBlockState';
 
 const nodeTypes = {
   slider: SliderBlock,
@@ -23,8 +23,7 @@ export const FlowchartWS = () => {
   const { sendMessage, lastMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
   const [nodes, setNodes, onNodesChange] = useNodesState<BlockData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-
-  useUpdateBlockState();
+  const setFlowRunning = useSetAtom(flowRunningAtom);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -34,16 +33,17 @@ export const FlowchartWS = () => {
     [ReadyState.UNINSTANTIATED]: 'Uninstantiated'
   }[readyState];
 
-  const sendSocketEvent = (message: FlowSocketMessage['event']): void => {
-    sendMessage(JSON.stringify({ event: message }));
-  };
-
   const handleStart = (): void => {
     if (connectionStatus === 'Open') {
-      sendSocketEvent({
-        event_type: 'start',
-        rf: { nodes, edges }
-      });
+      sendMessage(
+        JSON.stringify({
+          event: {
+            event_type: 'start',
+            rf: { nodes, edges }
+          }
+        })
+      );
+      setFlowRunning(true);
     }
   };
 
