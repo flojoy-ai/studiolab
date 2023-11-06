@@ -1,26 +1,6 @@
 import { Node, Edge } from 'reactflow';
 import { BlockData } from './block';
 
-export interface BlockConnection {
-  source: string;
-  target: string;
-  sourceParam: string;
-  targetParam: string;
-}
-
-export interface FCBlock {
-  id: string;
-  block_type: 'slider' | 'gamepad' | 'button' | 'bignum' | 'add' | 'subtract';
-  ins: BlockConnection[];
-  outs: BlockConnection[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state?: any;
-}
-
-export interface FlowChart {
-  blocks: FCBlock[];
-}
-
 export interface FlowStartEvent {
   event_type: 'start';
   rf: {
