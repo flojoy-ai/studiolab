@@ -3,6 +3,7 @@ import { SOCKET_URL } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useFlowchartStore } from './useFlowchartStore';
+import { sendEvent } from '@/utils/sendEvent';
 
 export const useBlockState = <T>(
   id: string,
@@ -33,15 +34,11 @@ export const useBlockState = <T>(
 
   const update = (data: T) => {
     if (running) {
-      sendMessage(
-        JSON.stringify({
-          event: {
-            event_type: 'ui',
-            ui_input_id: id,
-            value: data
-          }
-        })
-      );
+      sendEvent(sendMessage, {
+        event_type: 'ui',
+        ui_input_id: id,
+        value: data
+      });
     } else {
       setState(data);
     }

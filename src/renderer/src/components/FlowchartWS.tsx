@@ -11,6 +11,7 @@ import SliderBlock from './blocks/SliderBlock';
 import BigNumberBlock from './blocks/BigNumberBlock';
 import AddBlock from './blocks/AddBlock';
 import { useFlowchartStore } from '@/hooks/useFlowchartStore';
+import { sendEvent } from '@/utils/sendEvent';
 
 const nodeTypes = {
   slider: SliderBlock,
@@ -34,14 +35,10 @@ export const FlowchartWS = () => {
 
   const handleStart = (): void => {
     if (connectionStatus === 'Open') {
-      sendMessage(
-        JSON.stringify({
-          event: {
-            event_type: 'start',
-            rf: { nodes, edges }
-          }
-        })
-      );
+      sendEvent(sendMessage, {
+        event_type: 'start',
+        rf: { nodes, edges }
+      });
       runFlow();
     }
   };
