@@ -132,7 +132,7 @@ def wire_flowchart(
             starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
 
-        if len(io.block.ins) == 0 and io.block.id in ui_inputs:
+        if not io.block.ins and io.block.id in ui_inputs:
             return
 
         logger.debug(f"Connecting {io.block.id}")
