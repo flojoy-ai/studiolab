@@ -1,296 +1,21 @@
+import os
+import importlib
+import importlib.util
 from dataclasses import dataclass
-from typing import List, Literal, Any, Mapping, Tuple
-
-from pydantic import BaseModel
-import reactivex as rx
-from reactivex import Observable, Subject, combine_latest
-import reactivex.operators as ops
 from functools import partial
+from typing import Any, Callable, Mapping, Tuple
 
-test_fc_json = """
-{
-  "blocks": [
-    {
-      "block_type": "constant",
-      "id": "constant1",
-      "ins": [],
-      "outs": [
-        {
-          "source": "constant1",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ]
-    },
-    {
-      "block_type": "constant",
-      "id": "constant2",
-      "ins": [],
-      "outs": [
-        {
-          "source": "constant2",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "y"
-        }
-      ]
-    },
-    {
-      "block_type": "add",
-      "id": "add1",
-      "ins": [
-        {
-          "source": "constant1",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        },
-        {
-          "source": "constant2",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "y"
-        }
-      ],
-      "outs": [
-        {
-          "source": "add1",
-          "target": "bignum1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ]
-    },
-    {
-      "block_type": "bignum",
-      "id": "bignum1",
-      "ins": [
-        {
-          "source": "add1",
-          "target": "bignum1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ],
-      "outs": []
-    }
-  ]
-  }
-"""
+import reactivex as rx
+import reactivex.operators as ops
+from reactivex import Observable, Subject
 
-slider_fc_json = """
-{
-  "blocks": [
-    {
-      "block_type": "slider",
-      "id": "slider1",
-      "ins": [],
-      "outs": [
-        {
-          "source": "slider1",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ]
-    },
-    {
-      "block_type": "slider",
-      "id": "slider2",
-      "ins": [],
-      "outs": [
-        {
-          "source": "slider2",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "y"
-        }
-      ]
-    },
-    {
-      "block_type": "add",
-      "id": "add1",
-      "ins": [
-        {
-          "source": "slider1",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        },
-        {
-          "source": "slider2",
-          "target": "add1",
-          "sourceParam": "value",
-          "targetParam": "y"
-        }
-      ],
-      "outs": [
-        {
-          "source": "add1",
-          "target": "bignum1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ]
-    },
-    {
-      "block_type": "bignum",
-      "id": "bignum1",
-      "ins": [
-        {
-          "source": "add1",
-          "target": "bignum1",
-          "sourceParam": "value",
-          "targetParam": "x"
-        }
-      ],
-      "outs": []
-    }
-  ]
-  }
-"""
+from captain.logging import logger
+from captain.types.events import FlowUIEvent
+from captain.types.flowchart import FCBlock, FlowChart
 
-
-def subtract(x, y):
-    print(f"subtract: {x} - {y}")
-    return x - y
-
-
-def add(x, y):
-    print(f"add: {x} + {y}")
-    return x + y
-
-
-def slider(x):
-    print(f"slider: {x}")
-    return x
-
-
-def constant():
-    print(
-        "constant: 2"
-    )  # TODO: problem: A constant mixed with a live value breaks zip.
-    return 2
-
-
-def gamepad(x):
-    print(f"gamepad: {x}")
-    return x
-
-
-def button(x):
-    print(f"button: {x}")
-    return x
-
-
-def bignum(x):
-    print(f"bignum: {x}")
-    return x
-
-
-FUNCTIONS = {
-    "slider": slider,
-    "gamepad": gamepad,
-    "button": button,
-    "bignum": bignum,
-    "add": add,
-    "subtract": subtract,
-    "constant": constant,
-}
-
-FN_REQUIRED_PARAMS = {
-    "slider": ["x"],
-    "gamepad": ["x"],
-    "button": ["x"],
-    "bignum": ["x"],
-    "add": ["x", "y"],
-    "subtract": ["x", "y"],
-    "constant": [],
-}
-
-EVENT_BLOCKS = ["slider", "gamepad", "button"]
+BLOCKS_DIR = os.path.join("captain", "blocks")
 
 ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
-
-BlockType = Literal[
-    "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
-]
-
-
-class FCBlockConnection(BaseModel):
-    target: str
-    source: str
-    sourceParam: str
-    targetParam: str
-
-
-class Block(BaseModel):
-    id: str
-    block_type: BlockType
-
-
-class FCBlock(Block):
-    ins: List[FCBlockConnection]
-    outs: List[FCBlockConnection]
-
-    @staticmethod
-    def from_block(block: Block):
-        return FCBlock(id=block.id, block_type=block.block_type, ins=[], outs=[])
-
-
-class RFNodeData(BaseModel):
-    block_type: BlockType
-
-
-class RFNode(BaseModel):
-    id: str
-    data: RFNodeData
-
-
-class RFEdge(BaseModel):
-    target: str
-    source: str
-    targetHandle: str
-    sourceHandle: str
-
-
-class ReactFlow(BaseModel):
-    nodes: list[RFNode]
-    edges: list[RFEdge]
-
-
-class FlowChart(BaseModel):
-    blocks: List[FCBlock]
-
-    @staticmethod
-    def from_blocks_edges(blocks: list[Block], edges: list[FCBlockConnection]):
-        lookup = {block.id: block for block in blocks}
-        fc_blocks: dict[str, FCBlock] = {}
-
-        for edge in edges:
-            if edge.target not in fc_blocks:
-                fc_blocks[edge.target] = FCBlock.from_block(lookup[edge.target])
-            if edge.source not in fc_blocks:
-                fc_blocks[edge.source] = FCBlock.from_block(lookup[edge.source])
-            fc_blocks[edge.target].ins.append(edge)
-            fc_blocks[edge.source].outs.append(edge)
-
-        return FlowChart(blocks=list(fc_blocks.values()))
-
-    @staticmethod
-    def from_react_flow(rf: ReactFlow):
-        blocks = [Block(id=n.id, block_type=n.data.block_type) for n in rf.nodes]
-        edges = [
-            FCBlockConnection(
-                target=e.target,
-                source=e.source,
-                sourceParam=e.sourceHandle,
-                targetParam=e.targetHandle,
-            )
-            for e in rf.edges
-        ]
-        return FlowChart.from_blocks_edges(blocks, edges)
 
 
 @dataclass
@@ -327,6 +52,7 @@ def wire_flowchart(
     on_publish,
     starter: Observable,
     ui_inputs: Mapping[str, Observable],
+    block_funcs: Mapping[str, Callable],
 ):
     blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
@@ -336,24 +62,20 @@ def wire_flowchart(
         for block in island:
 
             def run_block(blk: FCBlock, kwargs: dict[str, Any]):
-                fn = FUNCTIONS[blk.block_type]
-                print(f"Running block {blk.id}")
-                for key in FN_REQUIRED_PARAMS[blk.block_type]:
-                    if key not in kwargs:
-                        err = f"ERROR! Missing required param {key} for {blk.id}"
-                        raise ValueError(err)
+                fn = block_funcs[blk.block_type]
+                logger.debug(f"Running block {blk.id}")
                 return fn(**kwargs)
 
             def make_block_fn_props(
                 blk: FCBlock, inputs: list[Tuple[str, Any]]
             ) -> dict[str, Any]:
-                print(f"Making params for block {blk.id} with {inputs}")
+                logger.debug(f"Making params for block {blk.id} with {inputs}")
                 return dict(inputs)
 
             input_subject = Subject()
             input_subject.subscribe(
                 partial(
-                    lambda blk, x: print(
+                    lambda blk, x: logger.debug(
                         f"Input got {x} for {blk.id} regardless of zip"
                     ),
                     block,
@@ -368,7 +90,7 @@ def wire_flowchart(
 
             output_observable.subscribe(
                 partial(
-                    lambda blk, x: print(
+                    lambda blk, x: logger.info(
                         f"Got {x} for {blk.id} after zip and transform"
                     ),
                     block,
@@ -376,22 +98,22 @@ def wire_flowchart(
             )
             output_observable.subscribe(
                 partial(lambda blk, x: on_publish(x, blk.id), block),
-                on_error=lambda e: print(e),
-                on_completed=lambda: print("completed"),
+                on_error=lambda e: logger.debug(e),
+                on_completed=lambda: logger.debug("completed"),
             )
 
             # Start emitting values for outputs
             output_observable.connect()
 
             if block.id in ui_inputs:
-                print(f"Connecting {block.id} to ui input {ui_inputs[block.id]}")
+                logger.debug(f"Connecting {block.id} to ui input {ui_inputs[block.id]}")
                 ui_inputs[block.id].subscribe(
                     input_subject.on_next,
                     input_subject.on_error,
                     input_subject.on_completed,
                 )
                 ui_inputs[block.id].subscribe(
-                    on_next=lambda x: print(f"Got {x} from the UI input subject")
+                    on_next=lambda x: logger.debug(f"Got {x} from the UI input subject")
                 )
 
             block_ios[block.id] = FCBlockIO(
@@ -401,23 +123,20 @@ def wire_flowchart(
     visitedBlocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
-        print(f"Recursively connecting {io.block.id} to its inputs")
-        if (
-            len(io.block.ins) == 0
-            and io.block.id not in ui_inputs
-            and io.block.block_type in EVENT_BLOCKS
-        ):
-            print(
+        logger.info(f"Recursively connecting {io.block.id} to its inputs")
+
+        if not io.block.ins and io.block.id not in ui_inputs:
+            logger.info(
                 f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}"
             )
-            print(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
+            logger.debug(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
             starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
             return
 
         if len(io.block.ins) == 0 and io.block.id in ui_inputs:
             return
 
-        print(f"Connecting {io.block.id}")
+        logger.debug(f"Connecting {io.block.id}")
 
         combine_strategy = (
             rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
@@ -432,13 +151,13 @@ def wire_flowchart(
         )
 
         for conn in io.block.ins:
-            print(
+            logger.debug(
                 f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}"
             )
 
         in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
-            print(conn)
+            logger.debug(conn)
             if conn.source in visitedBlocks:
                 continue
             visitedBlocks.add(conn.source)
@@ -451,30 +170,60 @@ def wire_flowchart(
         rec_connect_blocks(block_ios[block.id])
 
 
-def main():
-    sobs = Subject()
+def _import_blocks():
+    functions = {}
+    for file in os.listdir(BLOCKS_DIR):
+        full_path = os.path.join(BLOCKS_DIR, file)
+        if not os.path.isfile(full_path) or not file.endswith(".py"):
+            continue
 
-    def publish_fn(x, id):
-        print(f"Publishing for id {id}")
-        print(x)
+        block_name = file.strip(".py")
+        spec = importlib.util.spec_from_file_location(block_name, full_path)
 
-    fc = FlowChart.model_validate_json(slider_fc_json)
+        if not spec:
+            raise ValueError(f"Invalid block spec from {full_path}")
 
-    ui_inputs = {
-        "slider1": rx.interval(1).pipe(ops.take(1000), ops.map(lambda x: [("x", x)])),
-        "slider2": rx.interval(1.2).pipe(ops.take(2000), ops.map(lambda x: [("x", x)])),
-    }
+        module = importlib.util.module_from_spec(spec)
+        if not spec.loader:
+            raise ValueError(f"Could not get loader from {full_path}")
 
-    wire_flowchart(
-        flowchart=fc, on_publish=publish_fn, starter=sobs, ui_inputs=ui_inputs
-    )
+        spec.loader.exec_module(module)
+        func = getattr(module, block_name)
+        functions[block_name] = func
 
-    # sobs.on_next({})
-    sobs.on_next([("x", 1)])
-
-    while True:
-        pass
+    return functions
 
 
-if __name__ == "__main__":
-    main()
+def _is_ui_input(func: Callable):
+    return getattr(func, "ui_input", False)
+
+
+class Flow:
+    flowchart: FlowChart
+    ui_inputs: dict[str, Subject]
+
+    def __init__(
+        self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
+    ) -> None:
+        self.flowchart = flowchart
+        self.ui_inputs = {}
+        funcs = _import_blocks()
+        for block in flowchart.blocks:
+            if _is_ui_input(funcs[block.block_type]):
+                logger.debug(f"Creating UI input for {block.id}")
+                self.ui_inputs[block.id] = Subject()
+        wire_flowchart(
+            flowchart=self.flowchart,
+            on_publish=publish_fn,
+            starter=start_obs,
+            ui_inputs=self.ui_inputs,
+            block_funcs=funcs,
+        )
+
+    @classmethod
+    def from_json(cls, data: str, publish_fn: Callable, start_obs: Observable):
+        fc = FlowChart.model_validate_json(data)
+        return cls(fc, publish_fn, start_obs)
+
+    def process_ui_event(self, event: FlowUIEvent):
+        self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])

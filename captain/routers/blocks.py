@@ -1,16 +1,22 @@
+import asyncio
 from asyncio import Future
-from typing import Any, Literal, Union, Callable
 
 from fastapi import APIRouter, WebSocket
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import ValidationError
+from reactivex import Subject, create
+from reactivex import operators as ops
 from reactivex.operators import flat_map_latest
-from reactivex import Observable, operators as ops, Subject
 from reactivex.subject import BehaviorSubject
-from reactivex import create
-import asyncio
 
-from captain.controllers.reactive import FlowChart, ReactFlow, wire_flowchart
+from captain.controllers.reactive import Flow
 from captain.logging import logger
+from captain.types.events import (
+    FlowSocketMessage,
+    FlowStartEvent,
+    FlowStateUpdateEvent,
+    FlowUIEvent,
+)
+from captain.types.flowchart import FlowChart
 
 router = APIRouter(tags=["blocks"], prefix="/blocks")
 
@@ -75,95 +81,15 @@ async def websocket_endpoint(websocket: WebSocket):
             break
 
 
-flowchart_bootstrap_subject = BehaviorSubject("")
-
-flowchart_display_subject = BehaviorSubject("")
-
-
-@router.websocket("/nodes")
-async def websocket_endpoint_nodes(websocket: WebSocket):
-    send_msg = send_message_factory(websocket)
-    global flowchart_display_subject
-    global flowchart_bootstrap_subject
-
-    flowchart_bootstrap_subject.pipe(ops.map(lambda x: str(x)[::-1])).subscribe(
-        on_next=lambda x: flowchart_display_subject.on_next(x)
-    )
-
-    flowchart_display_subject.pipe(flat_map_latest(send_msg)).subscribe(
-        on_next=print, on_error=lambda e: print(e), on_completed=print("completed")
-    )
-
-    await websocket.accept()
-
-    while True:
-        data = await websocket.receive_text()
-        flowchart_bootstrap_subject.on_next(data)
-        print(f"Got data: {data}")
-        if data == "close":
-            await websocket.close()
-            break
-
-
-class FlowStartEvent(BaseModel):
-    event_type: Literal["start"]
-    rf: ReactFlow
-
-
-class FlowUIEvent(BaseModel):
-    event_type: Literal["ui"]
-    ui_input_id: str
-    value: Any
-
-
-class FlowStateUpdateEvent(BaseModel):
-    event_type: Literal["state_update"] = "state_update"
-    id: str
-    data: Any
-
-
-class FlowSocketMessage(BaseModel):
-    event: Union[FlowStartEvent, FlowUIEvent] = Field(..., discriminator="event_type")
-
-
-class Flow:
-    flowchart: FlowChart
-    ui_inputs: dict[str, Subject]
-
-    def __init__(
-        self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
-    ) -> None:
-        self.flowchart = flowchart
-        self.ui_inputs = {}
-        for block in flowchart.blocks:
-            if block.block_type == "slider":
-                logger.debug(f"CreatingFlowStartEvent slider {block.id}")
-                self.ui_inputs[block.id] = Subject()
-        wire_flowchart(
-            flowchart=self.flowchart,
-            on_publish=publish_fn,
-            starter=start_obs,
-            ui_inputs=self.ui_inputs,
-        )
-
-    @classmethod
-    def from_json(cls, data: str, publish_fn: Callable, start_obs: Observable):
-        fc = FlowChart.model_validate_json(data)
-        return cls(fc, publish_fn, start_obs)
-
-    def process_ui_event(self, event: FlowUIEvent):
-        self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])
-
-
 @router.websocket("/flowchart")
 async def websocket_flowchart(websocket: WebSocket):
     send_msg = send_message_factory(websocket)
 
     start_obs = Subject()
-    start_obs.subscribe(on_next=lambda x: print(f"Got start {x}"))
+    start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
     def publish_fn(x, id):
-        print(f"Publishing {x} for {id}")
+        logger.info(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
     await websocket.accept()
@@ -180,8 +106,8 @@ async def websocket_flowchart(websocket: WebSocket):
 
         match message.event:
             case FlowStartEvent(rf=rf):
-                fc = FlowChart.from_react_flow(rf)
                 if flow is None:
+                    fc = FlowChart.from_react_flow(rf)
                     logger.info("Creating flow from react flow instance")
                     flow = Flow(fc, publish_fn, start_obs)
             case FlowUIEvent():
@@ -198,7 +124,7 @@ def send_message_factory(websocket):
         :param x:
         :return:
         """
-        print(f"supposed to send {x}")
+        logger.debug(f"supposed to send {x}")
         return asyncio.ensure_future(websocket.send_text(str(x)))
 
     return send_message
