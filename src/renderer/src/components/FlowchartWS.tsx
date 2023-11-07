@@ -23,7 +23,7 @@ export const FlowchartWS = () => {
   const { sendMessage, lastMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
   const [nodes, setNodes, onNodesChange] = useNodesState<BlockData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const runFlow = useFlowchartStore((state) => state.runFlow);
+  const setRunning = useFlowchartStore((state) => state.setRunning);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -39,7 +39,7 @@ export const FlowchartWS = () => {
         event_type: 'start',
         rf: { nodes, edges }
       });
-      runFlow();
+      setRunning(true);
     }
   };
 
