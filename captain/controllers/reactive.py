@@ -191,10 +191,10 @@ class Flow:
             block_funcs=funcs,
         )
 
-    @classmethod
-    def from_json(cls, data: str, publish_fn: Callable, start_obs: Observable):
+    @staticmethod
+    def from_json(data: str, publish_fn: Callable, start_obs: Observable):
         fc = FlowChart.model_validate_json(data)
-        return cls(fc, publish_fn, start_obs)
+        return Flow(fc, publish_fn, start_obs)
 
     def process_ui_event(self, event: FlowUIEvent):
         self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])
