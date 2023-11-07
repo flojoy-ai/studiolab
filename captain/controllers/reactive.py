@@ -10,7 +10,7 @@ from reactivex import Observable, Subject
 from captain.logging import logger
 from captain.types.events import FlowUIEvent
 from captain.types.flowchart import FCBlock, FlowChart
-from captain.utils.blocks import is_ui_input, import_blocks
+from captain.utils.blocks import import_blocks, is_ui_input
 
 BLOCKS_DIR = os.path.join("captain", "blocks")
 

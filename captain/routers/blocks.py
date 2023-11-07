@@ -2,11 +2,10 @@ import asyncio
 from asyncio import Future
 from typing import Any
 
+import reactivex.operators as ops
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
 from reactivex import Subject, create
-from reactivex import operators as ops
-from reactivex.operators import flat_map_latest
 from reactivex.subject import BehaviorSubject
 
 from captain.controllers.reactive import Flow
@@ -61,7 +60,7 @@ async def websocket_endpoint(websocket: WebSocket):
         return asyncio.ensure_future(websocket.send_text(str(x)))
 
     button_events.pipe(IgnoreComplete()).pipe(
-        ops.take_with_time(500), flat_map_latest(send_button)
+        ops.take_with_time(500), ops.flat_map_latest(send_button)
     ).subscribe(on_next=print, on_error=lambda e: print(e), on_completed=destruct)
     joy_events.pipe(IgnoreComplete()).subscribe(
         on_next=on_next_joy, on_error=lambda e: print(e), on_completed=destruct
