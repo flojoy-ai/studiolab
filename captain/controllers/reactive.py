@@ -1,6 +1,4 @@
 import os
-import importlib
-import importlib.util
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Mapping, Tuple
@@ -12,6 +10,7 @@ from reactivex import Observable, Subject
 from captain.logging import logger
 from captain.types.events import FlowUIEvent
 from captain.types.flowchart import FCBlock, FlowChart
+from captain.utils.blocks import is_ui_input, import_blocks
 
 BLOCKS_DIR = os.path.join("captain", "blocks")
 
@@ -170,34 +169,6 @@ def wire_flowchart(
         rec_connect_blocks(block_ios[block.id])
 
 
-def _import_blocks():
-    functions = {}
-    for file in os.listdir(BLOCKS_DIR):
-        full_path = os.path.join(BLOCKS_DIR, file)
-        if not os.path.isfile(full_path) or not file.endswith(".py"):
-            continue
-
-        block_name = file.strip(".py")
-        spec = importlib.util.spec_from_file_location(block_name, full_path)
-
-        if not spec:
-            raise ValueError(f"Invalid block spec from {full_path}")
-
-        module = importlib.util.module_from_spec(spec)
-        if not spec.loader:
-            raise ValueError(f"Could not get loader from {full_path}")
-
-        spec.loader.exec_module(module)
-        func = getattr(module, block_name)
-        functions[block_name] = func
-
-    return functions
-
-
-def _is_ui_input(func: Callable):
-    return getattr(func, "ui_input", False)
-
-
 class Flow:
     flowchart: FlowChart
     ui_inputs: dict[str, Subject]
@@ -207,9 +178,9 @@ class Flow:
     ) -> None:
         self.flowchart = flowchart
         self.ui_inputs = {}
-        funcs = _import_blocks()
+        funcs = import_blocks(BLOCKS_DIR)
         for block in flowchart.blocks:
-            if _is_ui_input(funcs[block.block_type]):
+            if is_ui_input(funcs[block.block_type]):
                 logger.debug(f"Creating UI input for {block.id}")
                 self.ui_inputs[block.id] = Subject()
         wire_flowchart(

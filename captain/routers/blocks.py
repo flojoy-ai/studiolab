@@ -1,5 +1,6 @@
 import asyncio
 from asyncio import Future
+from typing import Any
 
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
@@ -118,11 +119,9 @@ async def websocket_flowchart(websocket: WebSocket):
 
 
 def send_message_factory(websocket):
-    def send_message(x) -> Future[None]:
+    def send_message(x: Any) -> Future[None]:
         """
         USAGE: Flat map to this thingy
-        :param x:
-        :return:
         """
         logger.debug(f"supposed to send {x}")
         return asyncio.ensure_future(websocket.send_text(str(x)))
