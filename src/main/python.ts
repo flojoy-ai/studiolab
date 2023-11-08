@@ -25,27 +25,17 @@ export function installPipx(): Promise<string> {
   );
 }
 
-export async function pipxEnsurepath(): Promise<string> {
-  if (process.platform == 'win32'){
-    const pipxBin =
-      "import pipx.commands.ensure_path;import pipx.constants;script=pipx.commands.ensure_path.get_pipx_user_bin_path();bin=pipx.constants.DEFAULT_PIPX_BIN_DIR;print(bin,';',script)";
-    const pipxBinPath = await execCommand(
-      new Command({
-        win32: `python -c "${pipxBin}"`,
-        darwin: '',
-        linux: ''
-      })
-    );
-    process.env.PATH = `${pipxBinPath.trim().split(' ').join('')};${process.env.PATH}`;
-  }
-
-  return execCommand(
+export async function pipxEnsurepath(): Promise<voi> {
+  const pipxBinScript =
+    "import pipx.commands.ensure_path;import pipx.constants;script=pipx.commands.ensure_path.get_pipx_user_bin_path();bin=pipx.constants.DEFAULT_PIPX_BIN_DIR;print(bin,';',script)";
+  const pipxBinPath = await execCommand(
     new Command({
-      darwin: 'python3.11 -m pipx ensurepath',
-      linux: 'python3.11 -m pipx ensurepath',
-      win32: 'python -m pipx ensurepath'
+      win32: `python -c "${pipxBinScript}"`,
+      linux: `python3.11 -c "${pipxBinScript}"`,
+      darwin: `python.11 -c "${pipxBinScript}"`
     })
   );
+  process.env.PATH = `${pipxBinPath.trim().split(' ').join('')};${process.env.PATH}`;
 }
 
 export function installPoetry(): Promise<string> {
