@@ -9,7 +9,7 @@ export function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
       darwin: 'python3.11 --version',
-      win32: 'py -c "import sys; assert sys.version_info >= (3, 11)" && py --version',
+      win32: 'py -c "import sys; assert sys.version_info >= (3, 11)"; if ($?) { py --version }',
       linux: 'python3.11 --version'
     })
   );
