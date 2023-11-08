@@ -9,7 +9,7 @@ export function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
       darwin: 'python3.11 --version',
-      win32: 'python3.11 --version',
+      win32: 'python -c "import sys; assert sys.version_info >= (3, 11)"',
       linux: 'python3.11 --version'
     })
   );
@@ -19,7 +19,7 @@ export function installPipx(): Promise<string> {
   return execCommand(
     new Command({
       darwin: 'python3.11 -m pip install --user pipx',
-      win32: 'python3.11 -m pip install --user pipx',
+      win32: 'python -m pip install --user pipx',
       linux: 'python3.11 -m pip install --user pipx --break-system-packages'
     })
   );
@@ -29,7 +29,7 @@ export function installPoetry(): Promise<string> {
   return execCommand(
     new Command({
       darwin: 'python3.11 -m pipx install poetry',
-      win32: 'python3.11 -m pipx install poetry',
+      win32: 'python -m pipx install poetry',
       linux: 'python3.11 -m pipx install poetry'
     })
   );
