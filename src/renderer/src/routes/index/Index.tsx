@@ -7,29 +7,23 @@ export const Index = (): JSX.Element => {
     {
       status: 'running',
       stage: 'check-python-installation',
-      message: 'Making sure Conda is installed on this machine.'
+      message: 'Making sure Python 3.11 is installed on this machine.'
     },
-    {
-      status: 'pending',
-      stage: 'bootstrap-conda-env',
-      message: 'Setup the Conda environment for Flojoy Studio.'
-    },
-
     {
       status: 'pending',
       stage: 'install-dependencies',
-      message: 'Install all the dependencies for Flojoy Studio.'
+      message: 'Configure all the magic behind Flojoy Studio.'
     },
     {
       status: 'pending',
-      stage: 'starting-captain',
-      message: 'Start the Flojoy Server.'
+      stage: 'spawn-captain',
+      message: 'Start the Flojoy Studio backend.'
     }
   ]);
 
   const [selectedEnv, setSelectedEnv] = useState<string | undefined>(undefined);
 
-  const checkCondaInstallation = async (): Promise<void> => {
+  const checkPythonInstallation = async (): Promise<void> => {
     try {
       const data = await window.api.checkPythonInstallation();
       updateSetupStatus({
@@ -41,40 +35,28 @@ export const Index = (): JSX.Element => {
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'error',
-        message: 'Python is not installed on this machine!'
+        message: 'Cannot find any Python 3.11 installation on this machine :('
       });
     }
   };
 
-  const bootstrapCondaEnv = async (): Promise<void> => {
-    // We will first get all the envs
-    // If the 'flojoy-studio' env exists then we are good
-    // If not we will create the 'flojoy-studio' env
-
+  const installDependencies = async (): Promise<void> => {
     await window.api.installPipx();
     await window.api.installPoetry();
-
-    updateSetupStatus({
-      stage: 'bootstrap-conda-env',
-      status: 'completed',
-      message: 'Successfully bootstrapped the Python environment!'
-    });
-  };
-
-  const startingCaptain = async (): Promise<void> => {
-    await window.api.spawnCaptain(selectedEnv);
-  };
-
-  const installDependencies = async (): Promise<void> => {
     await window.api.installDependencies();
+
     const data = await window.api.getPoetryVenvExecutable();
     setSelectedEnv(data);
 
     updateSetupStatus({
       stage: 'install-dependencies',
       status: 'completed',
-      message: 'Successfully installed Flojoy Studio dependencies.'
+      message: 'Finished setting up all the magic behind Flojoy Studio.'
     });
+  };
+
+  const spawnCaptain = async (): Promise<void> => {
+    await window.api.spawnCaptain(selectedEnv);
   };
 
   const updateSetupStatus = (setupStatus: SetupStatus): void => {
@@ -92,7 +74,7 @@ export const Index = (): JSX.Element => {
 
   useEffect(() => {
     // Kick off the setup process with this useEffect
-    checkCondaInstallation();
+    checkPythonInstallation();
   }, []);
 
   useEffect(() => {
@@ -107,31 +89,22 @@ export const Index = (): JSX.Element => {
 
     const nextStep = setupStatuses.find((status) => status.status === 'pending');
     switch (nextStep?.stage) {
-      case 'bootstrap-conda-env': {
-        updateSetupStatus({
-          stage: 'bootstrap-conda-env',
-          status: 'running',
-          message: 'Bootstrapping the Python environment... (This might take a couple minutes)'
-        });
-        bootstrapCondaEnv();
-        break;
-      }
       case 'install-dependencies': {
         updateSetupStatus({
           stage: 'install-dependencies',
           status: 'running',
-          message: 'Installing dependencies... (This might take a couple minutes)'
+          message: 'Working hard to set everything up! This may take a while for the first time...'
         });
         installDependencies();
         break;
       }
-      case 'starting-captain': {
+      case 'spawn-captain': {
         updateSetupStatus({
-          stage: 'starting-captain',
+          stage: 'spawn-captain',
           status: 'running',
-          message: 'Staring the captain backend'
+          message: 'Almost there, starting Flojoy Studio...'
         });
-        startingCaptain();
+        spawnCaptain();
         break;
       }
     }
