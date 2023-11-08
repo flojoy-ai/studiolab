@@ -38,9 +38,10 @@ export function pipxEnsurepath(): Promise<string> {
 export function installPoetry(): Promise<string> {
   return execCommand(
     new Command({
-      darwin: 'python3.11 -m pipx install poetry',
-      win32: 'python -m pipx install poetry',
-      linux: 'python3.11 -m pipx install poetry'
+      darwin: 'curl -sSL https://install.python-poetry.org | python3 -',
+      win32:
+        '(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -',
+      linux: 'curl -sSL https://install.python-poetry.org | python3 -'
     })
   );
 }
