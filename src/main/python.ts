@@ -2,7 +2,7 @@ import log from 'electron-log/main';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
-import { ChildProcess, exec, spawn } from 'child_process';
+import { ChildProcess, execSync, spawn } from 'child_process';
 import { sendToStatusBar } from './logging';
 
 export function checkPythonInstallation(): Promise<string> {
@@ -101,7 +101,7 @@ export function spawnCaptain(): void {
 
 export function killCaptain(): boolean {
   if (process.platform === 'win32') {
-    exec(`taskkill -F -T -PID ${(global.captainProcess as ChildProcess).pid}`);
+    execSync(`taskkill -F -T -PID ${(global.captainProcess as ChildProcess).pid}`);
   }
   return (global.captainProcess as ChildProcess).kill();
 }
