@@ -53,50 +53,12 @@ export const Index = (): JSX.Element => {
 
     await window.api.installPipx();
     await window.api.installPoetry();
-    // await window.api.poetryEnvUse();
 
     updateSetupStatus({
       stage: 'bootstrap-conda-env',
       status: 'completed',
       message: 'Successfully bootstrapped the Python environment!'
     });
-    // const data = await window.api.getCondaEnvList();
-    // const parsed = JSON.parse(data);
-    //
-    // let flojoyCondaEnv: string | undefined = undefined;
-    // for (const env of parsed['envs']) {
-    //   if (env.endsWith('flojoy-studio')) {
-    //     flojoyCondaEnv = env;
-    //   }
-    // }
-    //
-    // if (flojoyCondaEnv !== undefined) {
-    //   updateSetupStatus({
-    //     stage: 'bootstrap-conda-env',
-    //     status: 'completed',
-    //     message: 'Successfully bootstrapped the Conda environment!'
-    //   });
-    // } else {
-    //   const result = await window.api.createFlojoyStudioEnv();
-    //
-    //   const parsedResult = JSON.parse(result);
-    //   console.log(parsedResult);
-    //   if (parsedResult['success'] === true) {
-    //     updateSetupStatus({
-    //       stage: 'bootstrap-conda-env',
-    //       status: 'completed',
-    //       message: 'Successfully bootstrapped the Conda environment!'
-    //     });
-    //   } else {
-    //     updateSetupStatus({
-    //       stage: 'bootstrap-conda-env',
-    //       status: 'error',
-    //       message: 'Something went wrong when bootsraping the Conda environment.'
-    //     });
-    //   }
-    // }
-    //
-    // setSelectedEnv(flojoyCondaEnv);
   };
 
   const startingCaptain = async (): Promise<void> => {
@@ -104,8 +66,6 @@ export const Index = (): JSX.Element => {
   };
 
   const installDependencies = async (): Promise<void> => {
-    // await window.api.upgradePip();
-    // await window.api.installPoetry();
     await window.api.installDependencies();
     const data = await window.api.getPoetryVenvExecutable();
     setSelectedEnv(data);
