@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { app } from 'electron';
 import log from 'electron-log/main';
 import { Command } from './command';
-import { openLogFolder } from './logging';
+// import { openLogFolder } from './logging';
 
 export function execCommand(command: Command): Promise<string> {
   log.info('execCommand: ' + command);
@@ -13,7 +13,7 @@ export function execCommand(command: Command): Promise<string> {
       (error, stdout, stderr) => {
         if (error) {
           log.error(error.message);
-          openLogFolder();
+          // openLogFolder();
           reject(error.message);
         }
         log.info(stdout);

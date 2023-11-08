@@ -10,7 +10,10 @@ export const api = {
   getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable'),
   spawnCaptain: (pythonPath: string): Promise<void> =>
     ipcRenderer.invoke('spawn-captain', pythonPath),
-  killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain')
+  killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain'),
+
+  openLogFolder: (): Promise<void> => ipcRenderer.invoke('open-log-folder'),
+  restartFlojoyStudio: (): Promise<void> => ipcRenderer.invoke('restart-flojoy-studio')
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

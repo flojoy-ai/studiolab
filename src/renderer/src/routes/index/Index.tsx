@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
 import { SetupStatus } from '@/types/status';
 import SetupStep from '@/components/index/SetupStep';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/AlertDialog';
+import { Button } from '@/components/ui/Button';
 
 export const Index = (): JSX.Element => {
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
@@ -20,8 +31,12 @@ export const Index = (): JSX.Element => {
       message: 'Start the Flojoy Studio backend.'
     }
   ]);
-
   const [selectedEnv, setSelectedEnv] = useState<string | undefined>(undefined);
+
+  const [showError, setShowError] = useState<boolean>(false);
+  const [errorTitle, setErrorTitle] = useState<string>('');
+  const [errorDesc, setErrorDesc] = useState<string>('');
+  const [errorActionName, setErrorActionName] = useState<string>('');
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
@@ -37,26 +52,75 @@ export const Index = (): JSX.Element => {
         status: 'error',
         message: 'Cannot find any Python 3.11 installation on this machine :('
       });
+      setErrorTitle('Could not find Python 3.11 :(');
+      setErrorDesc('Please install Python 3.11 and try again!');
+      setErrorActionName('Download');
     }
   };
 
   const installDependencies = async (): Promise<void> => {
-    await window.api.installPipx();
-    await window.api.installPoetry();
-    await window.api.installDependencies();
+    try {
+      await window.api.installPipx();
+      await window.api.installPoetry();
+      await window.api.installDependencies();
 
-    const data = await window.api.getPoetryVenvExecutable();
-    setSelectedEnv(data);
+      const data = await window.api.getPoetryVenvExecutable();
+      setSelectedEnv(data);
 
-    updateSetupStatus({
-      stage: 'install-dependencies',
-      status: 'completed',
-      message: 'Finished setting up all the magic behind Flojoy Studio.'
-    });
+      updateSetupStatus({
+        stage: 'install-dependencies',
+        status: 'completed',
+        message: 'Finished setting up all the magic behind Flojoy Studio.'
+      });
+    } catch (err) {
+      updateSetupStatus({
+        stage: 'install-dependencies',
+        status: 'error',
+        message: 'Something went wrong when installing dependencies...'
+      });
+      setErrorTitle('Something went wrong :(');
+      // TODO: automate the log reporting part
+      setErrorDesc(
+        'Sorry about that! Please open the log folder and send the log to us on Discord!'
+      );
+      setErrorActionName('Open Log Folder');
+    }
   };
 
   const spawnCaptain = async (): Promise<void> => {
-    await window.api.spawnCaptain(selectedEnv);
+    try {
+      await window.api.spawnCaptain(selectedEnv);
+    } catch (err) {
+      updateSetupStatus({
+        stage: 'spawn-captain',
+        status: 'error',
+        message: 'Something went wrong when starting Flojoy Studio...'
+      });
+      setErrorTitle('Something went wrong :(');
+      // TODO: automate the log reporting part
+      setErrorDesc(
+        'Sorry about that! Please open the log folder and send the log to us on Discord!'
+      );
+      setErrorActionName('Open Log Folder');
+    }
+  };
+
+  const errorAction = async (): Promise<void> => {
+    const setupError = setupStatuses.find((status) => status.status === 'error');
+    switch (setupError?.stage) {
+      case 'check-python-installation': {
+        window.open('https://www.python.org/downloads/release/python-3116/');
+        break;
+      }
+      case 'install-dependencies': {
+        await window.api.openLogFolder();
+        break;
+      }
+      case 'spawn-captain': {
+        await window.api.openLogFolder();
+        break;
+      }
+    }
   };
 
   const updateSetupStatus = (setupStatus: SetupStatus): void => {
@@ -81,9 +145,13 @@ export const Index = (): JSX.Element => {
     // The main logic for the setup process
     const hasError = setupStatuses.find((status) => status.status === 'error');
     const isRunning = setupStatuses.find((status) => status.status === 'running');
-    if (hasError || isRunning) {
+    if (isRunning) {
       // no need to trigger the next step if there is an error
       // or something is already running...
+      return;
+    }
+    if (hasError) {
+      setShowError(true);
       return;
     }
 
@@ -126,6 +194,27 @@ export const Index = (): JSX.Element => {
           <SetupStep status={status.status} key={idx} message={status.message} />
         ))}
       </div>
+
+      <div className="py-4"></div>
+
+      {setupStatuses.find((status) => status.status === 'error') && (
+        <Button onClick={async (): Promise<void> => await window.api.restartFlojoyStudio()}>
+          Retry
+        </Button>
+      )}
+
+      <AlertDialog open={showError} onOpenChange={setShowError}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{errorTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{errorDesc}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={errorAction}>{errorActionName}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

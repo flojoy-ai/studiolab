@@ -14,6 +14,7 @@ import {
 import { PythonShell } from 'python-shell';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
+import { openLogFolder } from './logging';
 
 fixPath();
 
@@ -84,6 +85,13 @@ app.whenReady().then(() => {
   ipcMain.handle('get-poetry-venv-executable', getPoetryVenvExecutable);
   ipcMain.handle('spawn-captain', (_, arg) => spawnCaptain(arg));
   ipcMain.handle('kill-captain', killCaptain);
+
+  ipcMain.handle('open-log-folder', openLogFolder);
+
+  ipcMain.handle('restart-flojoy-studio', () => {
+    app.relaunch();
+    app.exit();
+  });
 });
 
 app.on('quit', () => {
