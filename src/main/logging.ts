@@ -1,5 +1,9 @@
-import { app, shell } from 'electron';
+import { BrowserWindow, app, shell } from 'electron';
 
 export function openLogFolder(): void {
   shell.openPath(app.getPath('logs'));
+}
+
+export function sendToStatusBar(message: string): void {
+  (global.mainWindow as BrowserWindow).webContents.send('message', message);
 }

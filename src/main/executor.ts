@@ -2,26 +2,40 @@ import { exec } from 'child_process';
 import { app } from 'electron';
 import log from 'electron-log/main';
 import { Command } from './command';
+import { sendToStatusBar } from './logging';
 // import { openLogFolder } from './logging';
 
 export function execCommand(command: Command): Promise<string> {
-  log.info('execCommand: ' + command);
+  log.info('execCommand: ' + command.getCommand());
   return new Promise((resolve, reject) => {
-    exec(
-      command.getCommand(),
-      { cwd: app.isPackaged ? process.resourcesPath : undefined },
-      (error, stdout, stderr) => {
-        if (error) {
-          log.error(error.message);
-          // openLogFolder();
-          reject(error.message);
-        }
-        log.info(stdout);
-        if (stderr) {
-          log.error(stderr);
-        }
+    const child = exec(command.getCommand(), {
+      cwd: app.isPackaged ? process.resourcesPath : undefined
+    });
+
+    let stdout = '';
+
+    child.stdout?.on('data', (data) => {
+      log.info(data);
+      stdout += data;
+      sendToStatusBar(data);
+    });
+
+    child.stderr?.on('data', (data) => {
+      log.error(data);
+      sendToStatusBar(data);
+    });
+
+    child.on('error', (error) => {
+      log.error(error.message);
+      reject(error.message);
+      sendToStatusBar(error.message);
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
         resolve(stdout);
       }
-    );
+      reject(new Error(`Command '${command.getCommand()}' exited with code ${code}`));
+    });
   });
 }

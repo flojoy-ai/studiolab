@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '../ui/Badge';
 import { BackendStatus } from '@/types/status';
 import axios from 'axios';
+import { useState } from 'react';
 
 const StatusBar = (): JSX.Element => {
+  const [message, setMessage] = useState<string>('');
   const { data, isSuccess } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<BackendStatus> => {
@@ -21,13 +23,20 @@ const StatusBar = (): JSX.Element => {
     retry: false
   });
 
+  // Listen for messages from the main process
+  window.electron.ipcRenderer.on('message', (_, data) => {
+    console.log(data);
+    setMessage(data);
+  });
+
   return (
-    <div className="flex h-12 items-center bg-background p-4">
+    <div className="flex h-12 items-center gap-2 bg-background p-4">
       {isSuccess && data.status === 'OK' ? (
         <Badge>Operational</Badge>
       ) : (
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
+      <div className="text-sm">{message}</div>
     </div>
   );
 };
