@@ -3,14 +3,13 @@ import { electronAPI } from '@electron-toolkit/preload';
 
 // Custom APIs for renderer
 export const api = {
-  checkPythonInstallation: (): Promise<void> => ipcRenderer.invoke('check-python-installation'),
+  checkPythonInstallation: (): Promise<string> => ipcRenderer.invoke('check-python-installation'),
   installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
-  pipxEnsurepath: (): Promise<string> => ipcRenderer.invoke('pipx-ensurepath'),
+  pipxEnsurepath: (): Promise<void> => ipcRenderer.invoke('pipx-ensurepath'),
   installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),
   installDependencies: (): Promise<string> => ipcRenderer.invoke('install-dependencies'),
   getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable'),
-  spawnCaptain: (pythonPath: string): Promise<void> =>
-    ipcRenderer.invoke('spawn-captain', pythonPath),
+  spawnCaptain: (): Promise<void> => ipcRenderer.invoke('spawn-captain'),
   killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain'),
 
   openLogFolder: (): Promise<void> => ipcRenderer.invoke('open-log-folder'),
