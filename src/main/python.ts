@@ -59,7 +59,7 @@ export function installDependencies(): Promise<string> {
 export function spawnCaptain(): void {
   const command = new Command({
     darwin: 'poetry run python3 main.py',
-    win32: 'poetry run python3 main.py',
+    win32: 'poetry run python main.py',
     linux: 'poetry run python3 main.py'
   });
 
