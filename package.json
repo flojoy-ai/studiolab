@@ -35,9 +35,9 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@tanstack/react-query": "^5.7.2",
-    "@tanstack/react-query-devtools": "^5.7.2",
-    "axios": "^1.6.0",
+    "@tanstack/react-query": "^5.8.1",
+    "@tanstack/react-query-devtools": "^5.8.1",
+    "axios": "^1.6.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -61,9 +61,9 @@
     "@electron-toolkit/eslint-config-prettier": "^1.0.1",
     "@electron-toolkit/eslint-config-ts": "^1.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^20.8.10",
-    "@types/react": "^18.2.36",
-    "@types/react-dom": "^18.2.14",
+    "@types/node": "^20.9.0",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
     "@vitejs/plugin-react": "^4.1.1",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.2",
@@ -74,14 +74,18 @@
     "eslint-plugin-react": "^7.33.2",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
-    "prettier-plugin-tailwindcss": "^0.5.6",
+    "prettier-plugin-tailwindcss": "^0.5.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2",
     "vite": "^4.5.0"
   },
-  "preferWorkspacePackage": {
-    "fix-path": true
+  "pnpm": {
+    "updateConfig": {
+      "ignoreDependencies": [
+        "fix-path"
+      ]
+    }
   }
 }
