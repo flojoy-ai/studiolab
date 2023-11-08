@@ -1,12 +1,13 @@
 import { exec } from 'child_process';
 import { app } from 'electron';
 import log from 'electron-log/main';
+import { Command } from './command';
 
-export function execCommand(command: string): Promise<string> {
+export function execCommand(command: Command): Promise<string> {
   log.info('execCommand: ' + command);
   return new Promise((resolve, reject) => {
     exec(
-      command,
+      command.getCommand(),
       { cwd: app.isPackaged ? process.resourcesPath : undefined },
       (error, stdout, stderr) => {
         if (error) {
