@@ -25,7 +25,7 @@ export function installPipx(): Promise<string> {
   );
 }
 
-export async function pipxEnsurepath(): Promise<voi> {
+export async function pipxEnsurepath(): Promise<void> {
   const pipxBinScript =
     "import pipx.commands.ensure_path;import pipx.constants;script=pipx.commands.ensure_path.get_pipx_user_bin_path();bin=pipx.constants.DEFAULT_PIPX_BIN_DIR;print(bin,';',script)";
   const pipxBinPath = await execCommand(
