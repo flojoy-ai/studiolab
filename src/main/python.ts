@@ -1,9 +1,8 @@
-import { PythonShell } from 'python-shell';
 import log from 'electron-log/main';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
-import { exec } from 'child_process';
+import { ChildProcess, exec } from 'child_process';
 import { sendToStatusBar } from './logging';
 
 export function checkPythonInstallation(): Promise<string> {
@@ -87,5 +86,5 @@ export function spawnCaptain(): void {
 }
 
 export function killCaptain(): void {
-  (global.captainProcess as PythonShell).kill();
+  (global.captainProcess as ChildProcess).kill('SIGKILL');
 }

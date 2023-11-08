@@ -10,10 +10,10 @@ import {
   killCaptain,
   spawnCaptain
 } from './python';
-import { PythonShell } from 'python-shell';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { openLogFolder } from './logging';
+import { ChildProcess } from 'child_process';
 
 fixPath();
 
@@ -97,10 +97,10 @@ app.whenReady().then(() => {
 });
 
 app.on('quit', () => {
-  const captainProcess = global['captainProcess'] as PythonShell;
-  if (captainProcess) {
+  const captainProcess = global['captainProcess'] as ChildProcess;
+  if (captainProcess.exitCode === null) {
     killCaptain();
-    if (captainProcess.terminated) {
+    if (captainProcess.exitCode === 0) {
       log.info('Successfully terminated captain :)');
     } else {
       log.error('Something went wrong when terminating captain!');
