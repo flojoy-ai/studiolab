@@ -145,13 +145,13 @@ export const Index = (): JSX.Element => {
     // The main logic for the setup process
     const hasError = setupStatuses.find((status) => status.status === 'error');
     const isRunning = setupStatuses.find((status) => status.status === 'running');
-    if (isRunning) {
+    if (hasError) {
       // no need to trigger the next step if there is an error
-      // or something is already running...
+      setShowError(true);
       return;
     }
-    if (hasError) {
-      setShowError(true);
+    if (isRunning) {
+      // or something is already running...
       return;
     }
 
