@@ -9,7 +9,8 @@ export function execCommand(command: Command): Promise<string> {
   log.info('execCommand: ' + command.getCommand());
   return new Promise((resolve, reject) => {
     const child = exec(command.getCommand(), {
-      cwd: app.isPackaged ? process.resourcesPath : undefined
+      cwd: app.isPackaged ? process.resourcesPath : undefined,
+      shell: process.platform === 'win32' ? 'powershell.exe' : undefined
     });
 
     let stdout = '';
