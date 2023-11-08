@@ -9,7 +9,7 @@ export function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
       darwin: 'python3.11 --version',
-      win32: 'py -c "import sys; assert sys.version_info >= (3, 11)"; if ($?) { py --version }',
+      win32: 'python -c "import sys; assert sys.version_info >= (3, 11)" && python --version',
       linux: 'python3.11 --version'
     })
   );
@@ -40,7 +40,7 @@ export function installPoetry(): Promise<string> {
     new Command({
       darwin: 'curl -sSL https://install.python-poetry.org | python3 -',
       win32:
-        '(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -',
+        'powershell -command "(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -"',
       linux: 'curl -sSL https://install.python-poetry.org | python3 -'
     })
   );
