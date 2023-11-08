@@ -3,9 +3,11 @@ import { Badge } from '../ui/Badge';
 import { BackendStatus } from '@/types/status';
 import axios from 'axios';
 import { useState } from 'react';
+import { useCaptainStateStore } from '@/stores/lifecycle';
 
 const StatusBar = (): JSX.Element => {
   const [message, setMessage] = useState<string>('');
+  const setCaptainReady = useCaptainStateStore((state) => state.setReady);
   const { data, isSuccess } = useQuery({
     queryKey: ['status'],
     queryFn: async (): Promise<BackendStatus> => {
@@ -13,9 +15,11 @@ const StatusBar = (): JSX.Element => {
       const parsedData = BackendStatus.safeParse(data);
 
       if (!parsedData.success) {
+        setCaptainReady(false);
         throw new Error('captain returned an unknown status');
       }
 
+      setCaptainReady(true);
       return parsedData.data;
     },
     refetchInterval: 1000,

@@ -12,8 +12,12 @@ import {
   AlertDialogTitle
 } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
+import { useCaptainStateStore } from '@/stores/lifecycle';
+import { useNavigate } from 'react-router-dom';
 
 export const Index = (): JSX.Element => {
+  const captainReady = useCaptainStateStore((state) => state.ready);
+
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
     {
       status: 'running',
@@ -37,6 +41,7 @@ export const Index = (): JSX.Element => {
   const [errorTitle, setErrorTitle] = useState<string>('');
   const [errorDesc, setErrorDesc] = useState<string>('');
   const [errorActionName, setErrorActionName] = useState<string>('');
+  const navigate = useNavigate();
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
@@ -177,6 +182,12 @@ export const Index = (): JSX.Element => {
       }
     }
   }, [setupStatuses]);
+
+  useEffect(() => {
+    if (captainReady) {
+      navigate('/flow');
+    }
+  }, [captainReady]);
 
   return (
     <div className="flex grow flex-col items-center p-4">
