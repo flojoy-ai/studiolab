@@ -4,7 +4,7 @@ import { execCommand } from './executor';
 import { app } from 'electron';
 
 export function checkPythonInstallation(): Promise<string> {
-  return execCommand('conda --version');
+  return execCommand('python3.11 --version');
 }
 
 export function installPipx(): Promise<string> {
