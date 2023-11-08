@@ -64,8 +64,8 @@ export const Index = (): JSX.Element => {
 
   const installDependencies = async (): Promise<void> => {
     try {
-      // await window.api.installPipx();
-      // await window.api.pipxEnsurepath();
+      await window.api.installPipx();
+      await window.api.pipxEnsurepath();
       await window.api.installPoetry();
       await window.api.installDependencies();
 
