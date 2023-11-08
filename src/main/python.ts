@@ -86,17 +86,6 @@ export function spawnCaptain(): void {
     log.error(error.message);
     sendToStatusBar(error.message);
   });
-
-  global.captainProcess.on('close', (code) => {
-    if (code === 0) {
-      const msg = 'captain process exited with code 0';
-      log.info(msg);
-      sendToStatusBar(msg);
-    }
-    const msg = 'captain process exited with code 1';
-    log.error(msg);
-    sendToStatusBar(msg);
-  });
 }
 
 export function killCaptain(): boolean {
