@@ -21,7 +21,7 @@ export function installPipx(): Promise<string> {
     new Command({
       darwin: 'python3.11 -m pip install --user pipx',
       win32: 'python3.11 -m pip install --user pipx',
-      linux: 'python3.11 -m pip install --user pipx'
+      linux: 'python3.11 -m pip install --user pipx --break-system-packages'
     })
   );
 }
