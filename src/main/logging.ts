@@ -5,5 +5,7 @@ export function openLogFolder(): void {
 }
 
 export function sendToStatusBar(message: string): void {
-  (global.mainWindow as BrowserWindow).webContents.send('message', message);
+  if (global.mainWindow) {
+    (global.mainWindow as BrowserWindow).webContents.send('message', message);
+  }
 }
