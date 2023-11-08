@@ -25,6 +25,16 @@ export function installPipx(): Promise<string> {
   );
 }
 
+export function pipxEnsurepath(): Promise<string> {
+  return execCommand(
+    new Command({
+      darwin: 'python3.11 -m pipx ensurepath',
+      win32: 'python -m pipx ensurepath',
+      linux: 'python3.11 -m pipx ensurepath'
+    })
+  );
+}
+
 export function installPoetry(): Promise<string> {
   return execCommand(
     new Command({
