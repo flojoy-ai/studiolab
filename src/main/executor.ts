@@ -13,6 +13,7 @@ export function execCommand(command: Command): Promise<string> {
     });
 
     let stdout = '';
+    let errout = '';
 
     child.stdout?.on('data', (data) => {
       log.info(data);
@@ -27,7 +28,7 @@ export function execCommand(command: Command): Promise<string> {
 
     child.on('error', (error) => {
       log.error(error.message);
-      reject(error.message);
+      errout += error.message;
       sendToStatusBar(error.message);
     });
 
@@ -35,7 +36,7 @@ export function execCommand(command: Command): Promise<string> {
       if (code === 0) {
         resolve(stdout);
       }
-      reject(new Error(`Command '${command.getCommand()}' exited with code ${code}`));
+      reject(errout);
     });
   });
 }
