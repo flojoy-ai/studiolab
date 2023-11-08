@@ -31,7 +31,7 @@ export const Index = (): JSX.Element => {
 
   const checkCondaInstallation = async (): Promise<void> => {
     try {
-      const data = await window.api.checkCondaInstallation();
+      const data = await window.api.checkPythonInstallation();
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'completed',

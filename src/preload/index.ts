@@ -3,18 +3,14 @@ import { electronAPI } from '@electron-toolkit/preload';
 
 // Custom APIs for renderer
 export const api = {
-  // getCondaEnvList: (): Promise<string> => ipcRenderer.invoke('get-conda-env-list'),
-  // createFlojoyStudioEnv: (): Promise<string> => ipcRenderer.invoke('create-flojoy-studio-env'),
-  checkCondaInstallation: (): Promise<void> => ipcRenderer.invoke('check-python-installation'),
-  killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain'),
+  checkPythonInstallation: (): Promise<void> => ipcRenderer.invoke('check-python-installation'),
+  installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
+  installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),
+  installDependencies: (): Promise<string> => ipcRenderer.invoke('install-dependencies'),
+  getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable'),
   spawnCaptain: (pythonPath: string): Promise<void> =>
     ipcRenderer.invoke('spawn-captain', pythonPath),
-  installDependencies: (): Promise<string> => ipcRenderer.invoke('install-dependencies'),
-  installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),
-  installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
-  poetryEnvUse: (): Promise<string> => ipcRenderer.invoke('poetry-env-use'),
-  getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable')
-  // upgradePip: (): Promise<string> => ipcRenderer.invoke('upgrade-pip')
+  killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain')
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
