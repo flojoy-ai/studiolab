@@ -5,6 +5,7 @@ import { electronAPI } from '@electron-toolkit/preload';
 export const api = {
   checkPythonInstallation: (): Promise<void> => ipcRenderer.invoke('check-python-installation'),
   installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
+  pipxEnsurepath: (): Promise<string> => ipcRenderer.invoke('pipx-ensurepath'),
   installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),
   installDependencies: (): Promise<string> => ipcRenderer.invoke('install-dependencies'),
   getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable'),
