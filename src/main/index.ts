@@ -57,7 +57,10 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
-  mainWindow.webContents.send('message', 'HELLO WORLD');
+  
+  app.on("before-quit", ()=> {
+    mainWindow.removeAllListeners('close')
+  })
 }
 
 // This method will be called when Electron has finished
