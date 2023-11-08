@@ -3,15 +3,24 @@ import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import {
-  checkCondaInstallation,
-  createFlojoyStudioEnv,
-  getCondaEnvList,
+  checkPythonInstallation,
   installDependencies,
   installPoetry,
-  upgradePip
-} from './conda';
+  installPipx,
+  getPoetryVenvExecutable,
+  killCaptain,
+  spawnCaptain
+} from './python';
 import { PythonShell } from 'python-shell';
-import { killCaptain, spawnCaptain } from './captain';
+import log from 'electron-log/main';
+import fixPath from 'fix-path';
+
+fixPath();
+
+// Optional, initialize the logger for any renderer process
+log.initialize({ preload: true });
+
+log.info('Log from the main process');
 
 function createWindow(): void {
   // Create the browser window.
@@ -29,6 +38,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.maximize();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -67,21 +77,19 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle('get-conda-env-list', getCondaEnvList);
-  ipcMain.handle('spawn-captain', (_, ...args) => {
-    spawnCaptain(...(args as [string, string]));
-  });
-  ipcMain.handle('kill-captain', killCaptain);
-  ipcMain.handle('check-conda-installation', checkCondaInstallation);
-  ipcMain.handle('create-flojoy-studio-env', createFlojoyStudioEnv);
-  ipcMain.handle('install-dependencies', installDependencies);
-  ipcMain.handle('upgrade-pip', upgradePip);
+  ipcMain.handle('check-python-installation', checkPythonInstallation);
+  ipcMain.handle('install-pipx', installPipx);
   ipcMain.handle('install-poetry', installPoetry);
+  ipcMain.handle('install-dependencies', installDependencies);
+  ipcMain.handle('get-poetry-venv-executable', getPoetryVenvExecutable);
+  ipcMain.handle('spawn-captain', (_, arg) => spawnCaptain(arg));
+  ipcMain.handle('kill-captain', killCaptain);
 });
 
 app.on('quit', () => {
   const captainProcess = global['captainProcess'] as PythonShell;
   if (captainProcess) {
+    killCaptain();
     if (captainProcess.terminated) {
       console.log('Successfully terminated captain :)');
     } else {

@@ -10,7 +10,7 @@ export type BackendStatus = z.infer<typeof BackendStatus>;
 export type SetupStatus = {
   status: 'running' | 'completed' | 'pending' | 'error';
   stage:
-    | 'check-conda-installation'
+    | 'check-python-installation'
     | 'bootstrap-conda-env'
     | 'install-dependencies'
     | 'starting-captain';

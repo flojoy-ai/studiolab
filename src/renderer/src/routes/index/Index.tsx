@@ -6,7 +6,7 @@ export const Index = (): JSX.Element => {
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
     {
       status: 'running',
-      stage: 'check-conda-installation',
+      stage: 'check-python-installation',
       message: 'Making sure Conda is installed on this machine.'
     },
     {
@@ -33,15 +33,15 @@ export const Index = (): JSX.Element => {
     try {
       const data = await window.api.checkCondaInstallation();
       updateSetupStatus({
-        stage: 'check-conda-installation',
+        stage: 'check-python-installation',
         status: 'completed',
-        message: `Conda ${data.split(' ')[1]} is installed!`
+        message: `Python ${data.split(' ')[1]} is installed!`
       });
     } catch (err) {
       updateSetupStatus({
-        stage: 'bootstrap-conda-env',
+        stage: 'check-python-installation',
         status: 'error',
-        message: 'Conda is not installed on this machine!'
+        message: 'Python is not installed on this machine!'
       });
     }
   };
@@ -51,53 +51,64 @@ export const Index = (): JSX.Element => {
     // If the 'flojoy-studio' env exists then we are good
     // If not we will create the 'flojoy-studio' env
 
-    const data = await window.api.getCondaEnvList();
-    const parsed = JSON.parse(data);
+    await window.api.installPipx();
+    await window.api.installPoetry();
+    // await window.api.poetryEnvUse();
 
-    let flojoyCondaEnv: string | undefined = undefined;
-    for (const env of parsed['envs']) {
-      if (env.endsWith('flojoy-studio')) {
-        flojoyCondaEnv = env;
-      }
-    }
-
-    if (flojoyCondaEnv !== undefined) {
-      updateSetupStatus({
-        stage: 'bootstrap-conda-env',
-        status: 'completed',
-        message: 'Successfully bootstrapped the Conda environment!'
-      });
-    } else {
-      const result = await window.api.createFlojoyStudioEnv();
-
-      const parsedResult = JSON.parse(result);
-      console.log(parsedResult);
-      if (parsedResult['success'] === true) {
-        updateSetupStatus({
-          stage: 'bootstrap-conda-env',
-          status: 'completed',
-          message: 'Successfully bootstrapped the Conda environment!'
-        });
-      } else {
-        updateSetupStatus({
-          stage: 'bootstrap-conda-env',
-          status: 'error',
-          message: 'Something went wrong when bootsraping the Conda environment.'
-        });
-      }
-    }
-
-    setSelectedEnv(flojoyCondaEnv);
+    updateSetupStatus({
+      stage: 'bootstrap-conda-env',
+      status: 'completed',
+      message: 'Successfully bootstrapped the Python environment!'
+    });
+    // const data = await window.api.getCondaEnvList();
+    // const parsed = JSON.parse(data);
+    //
+    // let flojoyCondaEnv: string | undefined = undefined;
+    // for (const env of parsed['envs']) {
+    //   if (env.endsWith('flojoy-studio')) {
+    //     flojoyCondaEnv = env;
+    //   }
+    // }
+    //
+    // if (flojoyCondaEnv !== undefined) {
+    //   updateSetupStatus({
+    //     stage: 'bootstrap-conda-env',
+    //     status: 'completed',
+    //     message: 'Successfully bootstrapped the Conda environment!'
+    //   });
+    // } else {
+    //   const result = await window.api.createFlojoyStudioEnv();
+    //
+    //   const parsedResult = JSON.parse(result);
+    //   console.log(parsedResult);
+    //   if (parsedResult['success'] === true) {
+    //     updateSetupStatus({
+    //       stage: 'bootstrap-conda-env',
+    //       status: 'completed',
+    //       message: 'Successfully bootstrapped the Conda environment!'
+    //     });
+    //   } else {
+    //     updateSetupStatus({
+    //       stage: 'bootstrap-conda-env',
+    //       status: 'error',
+    //       message: 'Something went wrong when bootsraping the Conda environment.'
+    //     });
+    //   }
+    // }
+    //
+    // setSelectedEnv(flojoyCondaEnv);
   };
 
   const startingCaptain = async (): Promise<void> => {
-    await window.api.spawnCaptain(selectedEnv + '/bin/python', 'main.py');
+    await window.api.spawnCaptain(selectedEnv);
   };
 
   const installDependencies = async (): Promise<void> => {
-    await window.api.upgradePip();
-    await window.api.installPoetry();
+    // await window.api.upgradePip();
+    // await window.api.installPoetry();
     await window.api.installDependencies();
+    const data = await window.api.getPoetryVenvExecutable();
+    setSelectedEnv(data);
 
     updateSetupStatus({
       stage: 'install-dependencies',
@@ -140,7 +151,7 @@ export const Index = (): JSX.Element => {
         updateSetupStatus({
           stage: 'bootstrap-conda-env',
           status: 'running',
-          message: 'Bootstrapping the Conda environment... (This might take a couple minutes)'
+          message: 'Bootstrapping the Python environment... (This might take a couple minutes)'
         });
         bootstrapCondaEnv();
         break;
