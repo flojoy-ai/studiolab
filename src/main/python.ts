@@ -3,6 +3,8 @@ import log from 'electron-log/main';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
+import { exec } from 'child_process';
+import { sendToStatusBar } from './logging';
 
 export function checkPythonInstallation(): Promise<string> {
   return execCommand(
@@ -44,29 +46,44 @@ export function installDependencies(): Promise<string> {
   );
 }
 
-export function getPoetryVenvExecutable(): Promise<string> {
-  return execCommand(
-    new Command({
-      darwin: 'poetry env info --executable',
-      win32: 'poetry env info --executable',
-      linux: 'poetry env info --executable'
-    })
-  );
-}
+export function spawnCaptain(): void {
+  const command = new Command({
+    darwin: 'poetry run python3 main.py',
+    win32: 'poetry run python3 main.py',
+    linux: 'poetry run python3 main.py'
+  });
 
-export function spawnCaptain(pythonPath: string): void {
-  try {
-    global.captainProcess = new PythonShell('main.py', {
-      pythonPath: pythonPath.trim(),
-      cwd: app.isPackaged ? process.resourcesPath : undefined,
-      mode: 'text'
-    });
-    global.captainProcess.on('message', (message: string) => {
-      log.info(message);
-    });
-  } catch (error) {
-    log.error(error);
-  }
+  log.info('execCommand: ' + command.getCommand());
+
+  global.captainProcess = exec(command.getCommand(), {
+    cwd: app.isPackaged ? process.resourcesPath : undefined
+  });
+
+  global.captainProcess.stdout?.on('data', (data) => {
+    log.info(data);
+    sendToStatusBar(data);
+  });
+
+  global.captainProcess.stderr?.on('data', (data) => {
+    log.error(data);
+    sendToStatusBar(data);
+  });
+
+  global.captainProcess.on('error', (error) => {
+    log.error(error.message);
+    sendToStatusBar(error.message);
+  });
+
+  global.captainProcess.on('close', (code) => {
+    if (code === 0) {
+      const msg = 'captain process exited with code 0';
+      log.info(msg);
+      sendToStatusBar(msg);
+    }
+    const msg = 'captain process exited with code 1';
+    log.error(msg);
+    sendToStatusBar(msg);
+  });
 }
 
 export function killCaptain(): void {

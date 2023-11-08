@@ -7,7 +7,6 @@ import {
   installDependencies,
   installPoetry,
   installPipx,
-  getPoetryVenvExecutable,
   killCaptain,
   spawnCaptain
 } from './python';
@@ -86,8 +85,7 @@ app.whenReady().then(() => {
   ipcMain.handle('install-pipx', installPipx);
   ipcMain.handle('install-poetry', installPoetry);
   ipcMain.handle('install-dependencies', installDependencies);
-  ipcMain.handle('get-poetry-venv-executable', getPoetryVenvExecutable);
-  ipcMain.handle('spawn-captain', (_, arg) => spawnCaptain(arg));
+  ipcMain.handle('spawn-captain', spawnCaptain);
   ipcMain.handle('kill-captain', killCaptain);
 
   ipcMain.handle('open-log-folder', openLogFolder);

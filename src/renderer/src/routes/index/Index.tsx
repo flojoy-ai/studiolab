@@ -35,7 +35,6 @@ export const Index = (): JSX.Element => {
       message: 'Start the Flojoy Studio backend.'
     }
   ]);
-  const [selectedEnv, setSelectedEnv] = useState<string | undefined>(undefined);
 
   const [showError, setShowError] = useState<boolean>(false);
   const [errorTitle, setErrorTitle] = useState<string>('');
@@ -69,9 +68,6 @@ export const Index = (): JSX.Element => {
       await window.api.installPoetry();
       await window.api.installDependencies();
 
-      const data = await window.api.getPoetryVenvExecutable();
-      setSelectedEnv(data);
-
       updateSetupStatus({
         stage: 'install-dependencies',
         status: 'completed',
@@ -94,7 +90,7 @@ export const Index = (): JSX.Element => {
 
   const spawnCaptain = async (): Promise<void> => {
     try {
-      await window.api.spawnCaptain(selectedEnv);
+      await window.api.spawnCaptain();
     } catch (err) {
       updateSetupStatus({
         stage: 'spawn-captain',
