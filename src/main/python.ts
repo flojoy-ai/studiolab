@@ -2,7 +2,7 @@ import log from 'electron-log/main';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
-import { ChildProcess, exec } from 'child_process';
+import { ChildProcess, spawn } from 'child_process';
 import { sendToStatusBar } from './logging';
 
 export function checkPythonInstallation(): Promise<string> {
@@ -64,18 +64,22 @@ export function spawnCaptain(): void {
 
   log.info('execCommand: ' + command.getCommand());
 
-  global.captainProcess = exec(command.getCommand(), {
-    cwd: app.isPackaged ? process.resourcesPath : undefined
-  });
+  global.captainProcess = spawn(
+    command.getCommand().split(' ')[0],
+    command.getCommand().split(' ').slice(1),
+    {
+      cwd: app.isPackaged ? process.resourcesPath : undefined
+    }
+  );
 
   global.captainProcess.stdout?.on('data', (data) => {
-    log.info(data);
-    sendToStatusBar(data);
+    log.info(data.toString());
+    sendToStatusBar(data.toString());
   });
 
   global.captainProcess.stderr?.on('data', (data) => {
-    log.error(data);
-    sendToStatusBar(data);
+    log.error(data.toString());
+    sendToStatusBar(data.toString());
   });
 
   global.captainProcess.on('error', (error) => {
