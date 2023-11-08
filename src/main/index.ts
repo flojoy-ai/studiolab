@@ -91,9 +91,9 @@ app.on('quit', () => {
   if (captainProcess) {
     killCaptain();
     if (captainProcess.terminated) {
-      console.log('Successfully terminated captain :)');
+      log.info('Successfully terminated captain :)');
     } else {
-      console.error('Something went wrong when terminating captain!');
+      log.error('Something went wrong when terminating captain!');
     }
   }
 });

@@ -65,7 +65,7 @@ export function spawnCaptain(pythonPath: string): void {
       log.info(message);
     });
   } catch (error) {
-    log.info(error);
+    log.error(error);
   }
 }
 
