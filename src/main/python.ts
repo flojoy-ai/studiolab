@@ -85,6 +85,6 @@ export function spawnCaptain(): void {
   });
 }
 
-export function killCaptain(): void {
-  (global.captainProcess as ChildProcess).kill('SIGKILL');
+export function killCaptain(): boolean {
+  return (global.captainProcess as ChildProcess).kill();
 }

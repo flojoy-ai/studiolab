@@ -97,10 +97,10 @@ app.whenReady().then(() => {
 });
 
 app.on('quit', () => {
-  const captainProcess = global['captainProcess'] as ChildProcess;
-  if (captainProcess.exitCode === null) {
-    killCaptain();
-    if (captainProcess.exitCode === 0) {
+  const captainProcess = global.captainProcess as ChildProcess;
+  if (captainProcess && captainProcess.exitCode === null) {
+    const success = killCaptain();
+    if (success) {
       log.info('Successfully terminated captain :)');
     } else {
       log.error('Something went wrong when terminating captain!');
