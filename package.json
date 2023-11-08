@@ -47,7 +47,6 @@
     "localforage": "^1.10.0",
     "lucide-react": "^0.292.0",
     "match-sorter": "^6.3.1",
-    "node-pty": "^1.0.0",
     "react-router-dom": "^6.18.0",
     "sonner": "^1.2.0",
     "sort-by": "^1.2.0",
