@@ -101,7 +101,13 @@ export function spawnCaptain(): void {
 
 export function killCaptain(): boolean {
   if (process.platform === 'win32') {
-    execSync(`taskkill -F -T -PID ${(global.captainProcess as ChildProcess).pid}`);
+    try {
+      execSync(`taskkill -F -T -PID ${(global.captainProcess as ChildProcess).pid}`);
+      return true;
+    } catch (err) {
+      log.error(err);
+      return false;
+    }
   }
   return (global.captainProcess as ChildProcess).kill();
 }
