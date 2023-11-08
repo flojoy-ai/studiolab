@@ -21,7 +21,7 @@ fixPath();
 // Optional, initialize the logger for any renderer process
 log.initialize({ preload: true });
 
-log.info('Log from the main process');
+log.info('Welcome to Flojoy Studio!');
 
 function createWindow(): void {
   // Create the browser window.
