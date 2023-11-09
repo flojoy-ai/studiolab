@@ -67,6 +67,11 @@ export function spawnCaptain(): void {
 
   log.info('execCommand: ' + command.getCommand());
 
+  if (global.captainProcess) {
+    log.error('spawnCaptain failed, the process already exists!');
+    return;
+  }
+
   global.captainProcess = spawn(
     command.getCommand().split(' ')[0],
     command.getCommand().split(' ').slice(1),

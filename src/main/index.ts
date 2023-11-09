@@ -64,12 +64,17 @@ function createWindow(): void {
     mainWindow.removeAllListeners('close');
   });
 
-  ipcMain.on('status-bar-logging', (event) => {
+  const logListener = (event): void => {
     if (!mainWindow.isDestroyed()) {
       mainWindow.webContents.send('status-bar-logging', event);
     } else {
       log.error("Can't send message to statusBar: mainWindow is destroyed");
     }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
   });
 }
 
@@ -117,6 +122,7 @@ app.on('quit', (e) => {
   if (captainProcess && captainProcess.exitCode === null) {
     const success = killCaptain();
     if (success) {
+      global.captainProcess = null;
       log.info('Successfully terminated captain :)');
     } else {
       log.error('Something went wrong when terminating captain!');
