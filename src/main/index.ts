@@ -42,8 +42,6 @@ function createWindow(): void {
     }
   });
 
-  global.mainWindow = mainWindow;
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
     mainWindow.maximize();
@@ -64,6 +62,14 @@ function createWindow(): void {
 
   app.on('before-quit', () => {
     mainWindow.removeAllListeners('close');
+  });
+
+  ipcMain.on('status-bar-logging', (event) => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('status-bar-logging', event);
+    } else {
+      log.error("Can't send message to statusBar: mainWindow is destroyed");
+    }
   });
 }
 
@@ -105,7 +111,8 @@ app.whenReady().then(() => {
   });
 });
 
-app.on('quit', () => {
+app.on('quit', (e) => {
+  e.preventDefault();
   const captainProcess = global.captainProcess as ChildProcess;
   if (captainProcess && captainProcess.exitCode === null) {
     const success = killCaptain();
@@ -115,6 +122,7 @@ app.on('quit', () => {
       log.error('Something went wrong when terminating captain!');
     }
   }
+  app.quit();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

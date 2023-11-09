@@ -71,7 +71,8 @@ export function spawnCaptain(): void {
     command.getCommand().split(' ')[0],
     command.getCommand().split(' ').slice(1),
     {
-      cwd: app.isPackaged ? process.resourcesPath : undefined
+      cwd: app.isPackaged ? process.resourcesPath : undefined,
+      detached: true
     }
   );
 

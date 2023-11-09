@@ -28,8 +28,7 @@ const StatusBar = (): JSX.Element => {
   });
 
   // Listen for messages from the main process
-  window.electron.ipcRenderer.on('message', (_, data) => {
-    console.log(data);
+  window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
     setMessage(data);
   });
 
