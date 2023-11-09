@@ -1,5 +1,9 @@
 const Header = (): JSX.Element => {
-  return <div className="titlebar h-12 bg-background"></div>;
+  return (
+    <div className="titlebar flex h-12 items-center justify-center bg-background">
+      Flojoy Studio
+    </div>
+  );
 };
 
 export default Header;
