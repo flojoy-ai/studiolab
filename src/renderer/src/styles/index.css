@@ -75,15 +75,8 @@
   }
 }
 
-body {
-  -webkit-app-region: drag;
-}
-
-button {
-  -webkit-app-region: no-drag;
-}
-
 .titlebar {
-  -webkit-user-select: none;
-  -webkit-app-region: drag;
+  -webkit-app-region: drag; /* Allow user to drag the window using this titlebar */
+  -webkit-user-select: none; /* Prevent user from selecting things */
+  user-select: none;
 }
