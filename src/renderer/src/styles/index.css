@@ -75,8 +75,22 @@
   }
 }
 
+/* Some styles to get Electron happy */
+/* https://stackoverflow.com/a/71188844 */
+
 .titlebar {
   -webkit-app-region: drag; /* Allow user to drag the window using this titlebar */
   -webkit-user-select: none; /* Prevent user from selecting things */
   user-select: none;
+}
+
+.main-content {
+  height: calc(
+    100vh - 44px
+  ); /* Force the content to take up the viewport height minus the titlebar height */
+  overflow: auto; /* Allow the main content to be scrollable */
+}
+
+body {
+  overflow: hidden; /* Make the HTML body be non-scrollable */
 }
