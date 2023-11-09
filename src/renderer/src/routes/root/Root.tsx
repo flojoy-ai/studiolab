@@ -1,7 +1,6 @@
 import Header from '@/components/root/Header';
 import StatusBar from '@/components/root/StatusBar';
 import { ThemeProvider } from '@/providers/ThemeProvider';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Outlet } from 'react-router-dom';
 
 export const Root = (): JSX.Element => {
@@ -11,7 +10,6 @@ export const Root = (): JSX.Element => {
         <Header />
         <Outlet />
         <StatusBar />
-        <ReactQueryDevtools buttonPosition="top-right" />
       </div>
     </ThemeProvider>
   );
