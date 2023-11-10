@@ -10,6 +10,7 @@ import {
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function ModeToggle(): JSX.Element {
+  // TODO: Also send the event to Electron so system window theme can be toggled
   const { setTheme } = useTheme();
 
   return (
