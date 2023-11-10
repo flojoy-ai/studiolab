@@ -1,4 +1,6 @@
 import BlockCard from '@/components/flow/BlockCard';
+import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
+import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -44,6 +46,8 @@ const Flow = (): JSX.Element => {
         edgeTypes={edgeTypes}
         className="rounded-lg bg-background"
       >
+        <FlowControlsTopLeft />
+        <FlowControlsTopRight />
         <Background />
         <Controls />
         <MiniMap />
