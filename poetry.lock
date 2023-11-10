@@ -357,6 +357,20 @@ files = [
 ]
 
 [[package]]
+name = "reactivex"
+version = "4.0.4"
+description = "ReactiveX (Rx) for Python"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "reactivex-4.0.4-py3-none-any.whl", hash = "sha256:0004796c420bd9e68aad8e65627d85a8e13f293de76656165dffbcb3a0e3fb6a"},
+    {file = "reactivex-4.0.4.tar.gz", hash = "sha256:e912e6591022ab9176df8348a653fe8c8fa7a301f26f9931c9d8c78a650e04e8"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.1.1,<5.0.0"
+
+[[package]]
 name = "ruff"
 version = "0.1.5"
 description = "An extremely fast Python linter and code formatter, written in Rust."
@@ -661,4 +675,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "c9a4f9eae89a39a416412b9d23ff948844883a730c73b341306245520ce4abe1"
+content-hash = "a85f3130b0d4d35bab88bae6e012dd9dae7c2cff55c36b8d994cba40c11aa604"
