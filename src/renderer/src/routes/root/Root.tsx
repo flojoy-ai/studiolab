@@ -6,7 +6,7 @@ import { Outlet } from 'react-router-dom';
 export const Root = (): JSX.Element => {
   return (
     <ThemeProvider>
-      <div className="flex h-screen flex-col bg-muted">
+      <div className="h-screen bg-muted">
         <Header />
         <Outlet />
         <StatusBar />

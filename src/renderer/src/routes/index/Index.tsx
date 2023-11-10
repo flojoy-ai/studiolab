@@ -187,7 +187,7 @@ export const Index = (): JSX.Element => {
   }, [captainReady]);
 
   return (
-    <div className="flex grow flex-col items-center p-4">
+    <div className="main-content flex flex-col items-center p-4">
       <div className="py-4"></div>
       <div className="text-4xl font-bold">Welcome to Flojoy Studio!</div>
       <div className="py-1"></div>

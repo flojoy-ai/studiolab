@@ -79,6 +79,7 @@
   --titlebar-height: 44px;
   --statusbar-height: 44px;
 }
+
 /* Some styles to get Electron happy */
 /* https://stackoverflow.com/a/71188844 */
 
