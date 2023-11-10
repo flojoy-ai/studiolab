@@ -89,7 +89,7 @@ def wire_flowchart(
 
             output_observable.subscribe(
                 partial(
-                    lambda blk, x: logger.info(
+                    lambda blk, x: logger.debug(
                         f"Got {x} for {blk.id} after zip and transform"
                     ),
                     block,

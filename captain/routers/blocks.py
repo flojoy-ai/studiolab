@@ -90,7 +90,7 @@ async def websocket_flowchart(websocket: WebSocket):
     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
     def publish_fn(x, id):
-        logger.info(f"Publishing {x} for {id}")
+        logger.debug(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
     await websocket.accept()
@@ -118,7 +118,7 @@ async def websocket_flowchart(websocket: WebSocket):
                 if flow is None:
                     logger.error("Can't process UI event for non existent flow")
                 else:
-                    logger.info(f"Got UI event {message.event}")
+                    logger.debug(f"Got UI event {message.event}")
                     flow.process_ui_event(message.event)
 
 
