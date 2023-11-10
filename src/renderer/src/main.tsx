@@ -1,27 +1,29 @@
 import ReactDOM from 'react-dom/client';
 import './styles/index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider, Router } from '@tanstack/react-router';
-import { rootRoute } from './routes/root/rootRoute';
-import { indexRoute } from './routes/index/indexRoute';
+import Root from './routes/root/Root';
+import Index from './routes/index/Index';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
+import Flow from './routes/flow/Flow';
 
 const queryClient = new QueryClient();
 
-const routeTree = rootRoute.addChildren([indexRoute]);
-
-// Set up a Router instance
-const router = new Router({
-  routeTree,
-  context: { queryClient },
-  defaultPreload: 'intent'
-});
-
-// Register things for typesafety
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
+const router = createHashRouter([
+  {
+    path: '/',
+    element: <Root />,
+    children: [
+      {
+        path: '/',
+        element: <Index />
+      },
+      {
+        path: '/flow',
+        element: <Flow />
+      }
+    ]
   }
-}
+]);
 
 const rootElement = document.getElementById('root')!;
 

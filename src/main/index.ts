@@ -2,9 +2,26 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron';
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
-// import { PythonShell } from 'python-shell'
-import { getCondaEnvList } from './conda';
-// import { spawnCaptain } from './captain'
+import {
+  checkPythonInstallation,
+  installDependencies,
+  installPoetry,
+  installPipx,
+  killCaptain,
+  spawnCaptain,
+  pipxEnsurepath
+} from './python';
+import log from 'electron-log/main';
+import fixPath from 'fix-path';
+import { openLogFolder } from './logging';
+import { ChildProcess } from 'child_process';
+
+fixPath();
+
+// Optional, initialize the logger for any renderer process
+log.initialize({ preload: true });
+
+log.info('Welcome to Flojoy Studio!');
 
 function createWindow(): void {
   // Create the browser window.
@@ -13,6 +30,11 @@ function createWindow(): void {
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -22,6 +44,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.maximize();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -36,6 +59,23 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
+
+  app.on('before-quit', () => {
+    mainWindow.removeAllListeners('close');
+  });
+
+  const logListener = (event): void => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('status-bar-logging', event);
+    } else {
+      log.error("Can't send message to statusBar: mainWindow is destroyed");
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+  });
 }
 
 // This method will be called when Electron has finished
@@ -60,22 +100,35 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle('get-conda-env-list', getCondaEnvList);
+  ipcMain.handle('check-python-installation', checkPythonInstallation);
+  ipcMain.handle('install-pipx', installPipx);
+  ipcMain.handle('pipx-ensurepath', pipxEnsurepath);
+  ipcMain.handle('install-poetry', installPoetry);
+  ipcMain.handle('install-dependencies', installDependencies);
+  ipcMain.handle('spawn-captain', spawnCaptain);
+  ipcMain.handle('kill-captain', killCaptain);
 
-  // console.log('Spawning captain...')
-  // spawnCaptain('', '')
-  // const shell = new PythonShell('main.py', {
-  //   pythonPath: '/opt/homebrew/Caskroom/miniconda/base/envs/flojoy-studio/bin/python'
-  // })
-  //
-  // app.on('quit', () => {
-  //   shell.kill()
-  //   if (shell.terminated) {
-  //     console.log('Successfully terminated captain :)')
-  //   } else {
-  //     console.error('Something went wrong when terminating captain!')
-  //   }
-  // })
+  ipcMain.handle('open-log-folder', openLogFolder);
+
+  ipcMain.handle('restart-flojoy-studio', () => {
+    app.relaunch();
+    app.exit();
+  });
+});
+
+app.on('quit', (e) => {
+  e.preventDefault();
+  const captainProcess = global.captainProcess as ChildProcess;
+  if (captainProcess && captainProcess.exitCode === null) {
+    const success = killCaptain();
+    if (success) {
+      global.captainProcess = null;
+      log.info('Successfully terminated captain :)');
+    } else {
+      log.error('Something went wrong when terminating captain!');
+    }
+  }
+  app.quit();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common

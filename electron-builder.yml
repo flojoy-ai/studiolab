@@ -5,9 +5,15 @@ directories:
   buildResources: build
 
 files:
-  - 'out/**/*'
+  - out/**
+  # make sure to copy everything related to captain
 asarUnpack:
   - resources/**
+extraResources:
+  - captain/**
+  - main.py
+  - pyproject.toml
+  - poetry.lock
 
 win:
   executableName: flojoy-studio

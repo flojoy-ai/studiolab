@@ -1,27 +1,18 @@
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Link, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+import Header from '@/components/root/Header';
+import StatusBar from '@/components/root/StatusBar';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { Outlet } from 'react-router-dom';
 
-export const Root = (): JSX.Element => {
+const Root = (): JSX.Element => {
   return (
-    <>
-      <div className="flex gap-2 p-2 text-lg">
-        <Link
-          to="/"
-          activeProps={{
-            className: 'font-bold'
-          }}
-          activeOptions={{ exact: true }}
-        >
-          Home
-        </Link>{' '}
+    <ThemeProvider>
+      <div className="h-screen bg-muted">
+        <Header />
+        <Outlet />
+        <StatusBar />
       </div>
-      <hr />
-      <Outlet />
-      <TanStackRouterDevtools position="bottom-right" />
-      <ReactQueryDevtools buttonPosition="bottom-left" />
-    </>
+    </ThemeProvider>
   );
 };
 
-export const tanner = 'hello';
+export default Root;
