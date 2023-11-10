@@ -32,6 +32,7 @@ const edgeTypes = {
 
 const FlowCanvas = () => {
   const { sendMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [nodes, _, onNodesChange] = useNodesState<BlockData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const setRunning = useFlowchartStore((state) => state.setRunning);

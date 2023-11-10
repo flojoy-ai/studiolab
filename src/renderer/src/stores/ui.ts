@@ -9,7 +9,7 @@ export interface UIState {
 export const useUIStateStore = create<UIState>()(
   persist(
     (set) => ({
-      isBlocksLibraryActive: false,
+      isBlocksLibraryActive: true,
       setIsBlocksLibraryActive: (state: boolean): void => set({ isBlocksLibraryActive: state })
     }),
     {

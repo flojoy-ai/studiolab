@@ -20,6 +20,8 @@
     "build:linux": "electron-vite build && electron-builder --linux --config"
   },
   "dependencies": {
+    "@blueprintjs/core": "^5.6.0",
+    "@blueprintjs/icons": "^5.3.0",
     "@electron-toolkit/preload": "^2.0.0",
     "@electron-toolkit/utils": "^2.0.1",
     "@radix-ui/react-alert-dialog": "^1.0.5",
@@ -49,6 +51,7 @@
     "localforage": "^1.10.0",
     "lucide-react": "^0.292.0",
     "match-sorter": "^6.3.1",
+    "react-mosaic-component": "^6.1.0",
     "react-router-dom": "^6.18.0",
     "react-use-websocket": "^4.5.0",
     "reactflow": "^11.10.1",
