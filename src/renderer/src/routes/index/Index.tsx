@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { useCaptainStateStore } from '@/stores/lifecycle';
 import { useNavigate } from 'react-router-dom';
 
-export const Index = (): JSX.Element => {
+const Index = (): JSX.Element => {
   const captainReady = useCaptainStateStore((state) => state.ready);
 
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
@@ -226,3 +226,5 @@ export const Index = (): JSX.Element => {
     </div>
   );
 };
+
+export default Index;

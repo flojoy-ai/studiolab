@@ -3,7 +3,7 @@ import StatusBar from '@/components/root/StatusBar';
 import { ThemeProvider } from '@/providers/ThemeProvider';
 import { Outlet } from 'react-router-dom';
 
-export const Root = (): JSX.Element => {
+const Root = (): JSX.Element => {
   return (
     <ThemeProvider>
       <div className="h-screen bg-muted">
@@ -15,4 +15,4 @@ export const Root = (): JSX.Element => {
   );
 };
 
-export const tanner = 'hello';
+export default Root;
