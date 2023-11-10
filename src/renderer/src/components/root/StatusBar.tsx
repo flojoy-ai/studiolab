@@ -33,7 +33,7 @@ const StatusBar = (): JSX.Element => {
   });
 
   return (
-    <div className="flex h-12 items-center gap-2 bg-background p-4">
+    <div className="statusbar flex items-center gap-2 bg-background p-4">
       {isSuccess && data.status === 'OK' ? (
         <Badge>Operational</Badge>
       ) : (

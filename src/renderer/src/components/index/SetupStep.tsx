@@ -3,7 +3,7 @@ import { CheckCircle, CircleDashed, CircleDotDashed, XCircle } from 'lucide-reac
 
 const SetupStep = ({ status, message }: Omit<SetupStatus, 'stage'>): JSX.Element => {
   return (
-    <div className="flex items-center gap-2 p-2">
+    <div className="main-content flex items-center gap-2 p-2">
       <div>
         {status === 'running' && <CircleDotDashed className="animate-spin" />}
         {status === 'completed' && <CheckCircle />}
