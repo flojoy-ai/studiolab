@@ -1,32 +1,27 @@
-import { useQuery } from '@tanstack/react-query';
 import { Badge } from '../ui/Badge';
-import { BackendStatus } from '@/types/status';
-import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCaptainStateStore } from '@/stores/lifecycle';
 import { ModeToggle } from './ModeToggle';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const StatusBar = (): JSX.Element => {
-  const [message, setMessage] = useState<string>('');
   const setCaptainReady = useCaptainStateStore((state) => state.setReady);
-  const { data, isSuccess } = useQuery({
-    queryKey: ['status'],
-    queryFn: async (): Promise<BackendStatus> => {
-      const { data } = await axios.get('http://localhost:2333/status/');
-      const parsedData = BackendStatus.safeParse(data);
+  const captainReady = useCaptainStateStore((state) => state.ready);
 
-      if (!parsedData.success) {
-        setCaptainReady(false);
-        throw new Error('captain returned an unknown status');
-      }
+  const [message, setMessage] = useState<string>('');
 
-      setCaptainReady(true);
-      return parsedData.data;
-    },
-    refetchInterval: 1000,
-    staleTime: 1000,
-    retry: false
+  const { readyState } = useWebSocket('ws://localhost:2333/status', {
+    retryOnError: true,
+    shouldReconnect: () => true
   });
+
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN) {
+      setCaptainReady(true);
+    } else {
+      setCaptainReady(false);
+    }
+  }, [readyState]);
 
   // Listen for messages from the main process
   window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
@@ -35,7 +30,7 @@ const StatusBar = (): JSX.Element => {
 
   return (
     <div className="statusbar flex items-center gap-2 bg-background p-4">
-      {isSuccess && data.status === 'OK' ? (
+      {captainReady ? (
         <Badge>Operational</Badge>
       ) : (
         <Badge variant={'destructive'}>Disconnected</Badge>

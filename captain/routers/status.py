@@ -1,10 +1,8 @@
-from fastapi import APIRouter
-
-from captain.types.status import ServerStatus, ServerStatusEnum
+from fastapi import APIRouter, WebSocket
 
 router = APIRouter(tags=["status"], prefix="/status")
 
 
-@router.get("/")
-async def get_server_status() -> ServerStatus:
-    return ServerStatus(status=ServerStatusEnum.OK, message="Captain is ready!")
+@router.websocket("")
+async def get_server_status(websocket: WebSocket):
+    await websocket.accept()
