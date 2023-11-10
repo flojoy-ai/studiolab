@@ -45,7 +45,6 @@
     "electron-log": "^5.0.0",
     "electron-updater": "^6.1.4",
     "gamepad.js": "^2.1.0",
-    "python-shell": "^5.0.0",
     "react-use-websocket": "^4.5.0",
     "uuid": "^9.0.1",
     "fix-path": "^3.0.0",
