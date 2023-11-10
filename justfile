@@ -1,3 +1,6 @@
+dev:
+  pnpm dev
+
 server:
   poetry run python main.py
 

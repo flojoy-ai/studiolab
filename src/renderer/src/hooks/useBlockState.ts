@@ -2,7 +2,7 @@ import { FlowStateUpdateEvent } from '@/types/flow';
 import { SOCKET_URL } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { useFlowchartStore } from './useFlowchartStore';
+import { useFlowchartStore } from '@/stores/flowchart';
 import { sendEvent } from '@/utils/sendEvent';
 
 export const useBlockState = <T>(
