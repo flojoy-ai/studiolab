@@ -1,3 +1,4 @@
+import { Button } from '../ui/Button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/Tooltip';
 
 type Props = {
@@ -11,9 +12,9 @@ const BlockCard = ({ name, desc, onClick }: Props): JSX.Element => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="rounded-lg bg-primary-foreground p-2" onClick={onClick}>
+          <Button className="" variant="secondary" onClick={onClick}>
             <div>{name}</div>
-          </div>
+          </Button>
         </TooltipTrigger>
         <TooltipContent side="right">
           <div>{desc}</div>
