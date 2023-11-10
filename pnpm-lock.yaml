@@ -56,6 +56,9 @@ dependencies:
   '@tanstack/react-query-devtools':
     specifier: ^5.8.1
     version: 5.8.1(@tanstack/react-query@5.8.1)(react-dom@18.2.0)(react@18.2.0)
+  '@tisoap/react-flow-smart-edge':
+    specifier: ^3.0.0
+    version: 3.0.0(react-dom@18.2.0)(react@18.2.0)(reactflow@11.9.4)(typescript@5.2.2)
   axios:
     specifier: ^1.6.1
     version: 1.6.1
@@ -2075,6 +2078,22 @@ packages:
       '@tanstack/query-core': 5.8.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /@tisoap/react-flow-smart-edge@3.0.0(react-dom@18.2.0)(react@18.2.0)(reactflow@11.9.4)(typescript@5.2.2):
+    resolution: {integrity: sha512-XtEQT0IrOqPwJvCzgEoj3Y16/EK4SOcjZO7FmOPU+qJWmgYjeTyv7J35CGm6dFeJYdZ2gHDrvQ1zwaXuo23/8g==}
+    engines: {node: '>=16', npm: ^8.0.0}
+    peerDependencies:
+      react: '>=17'
+      react-dom: '>=17'
+      reactflow: '>=11'
+      typescript: '>=4.6'
+    dependencies:
+      pathfinding: 0.4.18
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      reactflow: 11.9.4(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+      typescript: 5.2.2
     dev: false
 
   /@tootallnate/once@2.0.0:
@@ -4251,6 +4270,10 @@ packages:
     dependencies:
       function-bind: 1.1.2
 
+  /heap@0.2.5:
+    resolution: {integrity: sha512-G7HLD+WKcrOyJP5VQwYZNC3Z6FcQ7YYjEFiFoIj8PfEr73mu421o8B1N5DKUcc8K37EsJ2XXWA8DtrDz/2dReg==}
+    dev: false
+
   /hosted-git-info@4.1.0:
     resolution: {integrity: sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA==}
     engines: {node: '>=10'}
@@ -5119,6 +5142,12 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
     dev: true
+
+  /pathfinding@0.4.18:
+    resolution: {integrity: sha512-R0TGEQ9GRcFCDvAWlJAWC+KGJ9SLbW4c0nuZRcioVlXVTlw+F5RvXQ8SQgSqI9KXWC1ew95vgmIiyaWTlCe9Ag==}
+    dependencies:
+      heap: 0.2.5
+    dev: false
 
   /pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
@@ -6156,7 +6185,6 @@ packages:
     resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /unbox-primitive@1.0.2:
     resolution: {integrity: sha512-61pPlCD9h51VoreyJ0BReideM3MDKMKnh6+V9L08331ipq6Q8OFXZYiqP6n/tbHx4s5I9uRhcye6BrbkizkBDw==}

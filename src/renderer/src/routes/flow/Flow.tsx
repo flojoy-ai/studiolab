@@ -1,4 +1,5 @@
 import BlockCard from '@/components/flow/BlockCard';
+import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -19,6 +20,12 @@ const Flow = (): JSX.Element => {
     }
   ];
 
+  // You can give any name to your edge types
+  // https://reactflow.dev/docs/api/edges/custom-edges/
+  const edgeTypes = {
+    smart: SmartBezierEdge
+  };
+
   return (
     <div className="main-content flex gap-4 rounded-lg bg-muted p-4">
       <div className="w-96 rounded-lg bg-background">
@@ -34,6 +41,7 @@ const Flow = (): JSX.Element => {
         nodes={nodes}
         edges={edges}
         draggable={true}
+        edgeTypes={edgeTypes}
         className="rounded-lg bg-background"
       >
         <Background />
