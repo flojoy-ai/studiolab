@@ -1,4 +1,6 @@
 import { useFlowchartStore } from '@/stores/flowchart';
+import { UIState, useUIStateStore } from '@/stores/ui';
+import { useShallow } from 'zustand/react/shallow';
 import { Button } from '../ui/Button';
 import useWebSocket from 'react-use-websocket';
 import { SOCKET_URL } from '@/utils/constants';
@@ -14,6 +16,12 @@ const FlowControlsTopLeft = ({ onStart }: Props): JSX.Element => {
     running: state.running,
     setRunning: state.setRunning
   }));
+  const { isBlocksLibraryActive, setIsBlocksLibraryActive } = useUIStateStore(
+    useShallow((state: UIState) => ({
+      isBlocksLibraryActive: state.isBlocksLibraryActive,
+      setIsBlocksLibraryActive: state.setIsBlocksLibraryActive
+    }))
+  );
 
   const onCancel = () => {
     sendEvent(sendMessage, { event_type: 'cancel' });
@@ -22,7 +30,13 @@ const FlowControlsTopLeft = ({ onStart }: Props): JSX.Element => {
 
   return (
     <div className="absolute z-50 flex gap-2 p-4">
-      <Button>Add Blocks</Button>
+      <Button
+        onClick={(): void => {
+          setIsBlocksLibraryActive(!isBlocksLibraryActive);
+        }}
+      >
+        Add Blocks
+      </Button>
       {!running ? (
         <Button onClick={onStart}>Start</Button>
       ) : (

@@ -6,6 +6,8 @@ import { BlockData, BlockType } from '@/types/block';
 import { SOCKET_URL } from '@/utils/constants';
 import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
+import { UIState, useUIStateStore } from '@/stores/ui';
+import { cn } from '@/utils/style';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import ReactFlow, {
@@ -31,12 +33,18 @@ const nodeTypes = {
 const edgeTypes = {
   smart: SmartBezierEdge
 };
+import { useShallow } from 'zustand/react/shallow';
 
 const Flow = (): JSX.Element => {
   const { sendMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
   const [nodes, setNodes, onNodesChange] = useNodesState<BlockData>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const setRunning = useFlowchartStore((state) => state.setRunning);
+  const { isBlocksLibraryActive } = useUIStateStore(
+    useShallow((state: UIState) => ({
+      isBlocksLibraryActive: state.isBlocksLibraryActive
+    }))
+  );
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -81,13 +89,25 @@ const Flow = (): JSX.Element => {
   const handleAddBigNumber = addNode('bignum');
 
   return (
-    <div className="main-content flex gap-4 rounded-lg bg-muted p-4">
-      <div className="w-96 rounded-lg bg-background">
-        <div className="p-4 text-2xl font-bold">Blocks Library</div>
-        <div className="flex flex-col gap-2 p-4">
-          <BlockCard name="Add" desc="Add a bunch of stuff together" onClick={handleAddAdd} />
-          <BlockCard name="Slider" desc="it slides" onClick={handleAddSlider} />
-          <BlockCard name="Big Number" desc="Big number" onClick={handleAddBigNumber} />
+    <div className={'main-content flex  rounded-lg bg-muted p-4'}>
+      <div
+        className={cn('rounded-lg bg-background transition-all duration-100 ease-in-out', {
+          'mr-4 w-96 delay-0': isBlocksLibraryActive,
+          'w-0 delay-100': !isBlocksLibraryActive
+        })}
+      >
+        <div
+          className={cn('rounded-lg bg-background transition-all duration-100 ease-in-out', {
+            'opacity-100 delay-100': isBlocksLibraryActive,
+            'opacity-0 delay-0': !isBlocksLibraryActive
+          })}
+        >
+          <div className="p-4 text-2xl font-bold">Blocks Library</div>
+          <div className="flex flex-col gap-2 p-4">
+            <BlockCard name="Add" desc="Add a bunch of stuff together" onClick={handleAddAdd} />
+            <BlockCard name="Slider" desc="it slides" onClick={handleAddSlider} />
+            <BlockCard name="Big Number" desc="Big number" onClick={handleAddBigNumber} />
+          </div>
         </div>
       </div>
       <ReactFlow
