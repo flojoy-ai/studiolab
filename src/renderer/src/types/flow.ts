@@ -9,6 +9,10 @@ export interface FlowStartEvent {
   };
 }
 
+export interface FlowCancelEvent {
+  event_type: 'cancel';
+}
+
 export interface FlowUIEvent {
   event_type: 'ui';
   ui_input_id: string;
@@ -24,5 +28,5 @@ export interface FlowStateUpdateEvent {
 }
 
 export interface FlowSocketMessage {
-  event: FlowStartEvent | FlowUIEvent;
+  event: FlowStartEvent | FlowUIEvent | FlowCancelEvent;
 }

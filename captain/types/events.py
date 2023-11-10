@@ -9,6 +9,10 @@ class FlowStartEvent(BaseModel):
     rf: ReactFlow
 
 
+class FlowCancelEvent(BaseModel):
+    event_type: Literal["cancel"]
+
+
 class FlowUIEvent(BaseModel):
     event_type: Literal["ui"]
     ui_input_id: str
@@ -22,4 +26,6 @@ class FlowStateUpdateEvent(BaseModel):
 
 
 class FlowSocketMessage(BaseModel):
-    event: Union[FlowStartEvent, FlowUIEvent] = Field(..., discriminator="event_type")
+    event: Union[FlowStartEvent, FlowCancelEvent, FlowUIEvent] = Field(
+        ..., discriminator="event_type"
+    )

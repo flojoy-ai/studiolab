@@ -11,6 +11,7 @@ from reactivex.subject import BehaviorSubject
 from captain.controllers.reactive import Flow
 from captain.logging import logger
 from captain.types.events import (
+    FlowCancelEvent,
     FlowSocketMessage,
     FlowStartEvent,
     FlowStateUpdateEvent,
@@ -110,10 +111,14 @@ async def websocket_flowchart(websocket: WebSocket):
                     fc = FlowChart.from_react_flow(rf)
                     logger.info("Creating flow from react flow instance")
                     flow = Flow(fc, publish_fn, start_obs)
+            case FlowCancelEvent():
+                flow = None
+                logger.info("Cancelling flow")
             case FlowUIEvent():
                 if flow is None:
                     logger.error("Can't process UI event for non existent flow")
                 else:
+                    logger.info(f"Got UI event {message.event}")
                     flow.process_ui_event(message.event)
 
 

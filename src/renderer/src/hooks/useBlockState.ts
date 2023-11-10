@@ -27,7 +27,7 @@ export const useBlockState = <T>(
   }, [lastMessage]);
 
   useEffect(() => {
-    if (running && state !== undefined) {
+    if (running && state !== undefined && defaultValue !== undefined) {
       update(state);
     }
   }, [running]);

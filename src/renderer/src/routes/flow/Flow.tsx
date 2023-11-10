@@ -4,6 +4,8 @@ import SliderBlock from '@/components/blocks/SliderBlock';
 import BlockCard from '@/components/flow/BlockCard';
 import { BlockData, BlockType } from '@/types/block';
 import { SOCKET_URL } from '@/utils/constants';
+import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
+import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import ReactFlow, {
@@ -99,6 +101,8 @@ const Flow = (): JSX.Element => {
         proOptions={{ hideAttribution: true }}
         className="rounded-lg bg-background"
       >
+        <FlowControlsTopLeft onStart={handleStart} />
+        <FlowControlsTopRight />
         <Background />
         <Controls />
         <MiniMap />
