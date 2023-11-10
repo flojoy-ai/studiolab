@@ -89,7 +89,7 @@ const Flow = (): JSX.Element => {
   const handleAddBigNumber = addNode('bignum');
 
   return (
-    <div className={'main-content flex  rounded-lg bg-muted p-4'}>
+    <div className="main-content flex rounded-lg bg-muted p-4">
       <div
         className={cn('rounded-lg bg-background transition-transform duration-100 ease-in-out', {
           'mr-4 w-96 delay-0': isBlocksLibraryActive,
