@@ -5,18 +5,21 @@ import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
+import Editor from '@/components/editor/Editor';
 
 const Flow = (): JSX.Element => {
   const TITLE_MAP: Record<ViewId, string> = {
     block_library: 'Block Library',
-    flow_canvas: 'Flow Canvas'
+    flow_canvas: 'Flow Canvas',
+    code_editor: 'Code Editor'
   };
 
-  type ViewId = 'block_library' | 'flow_canvas';
+  type ViewId = 'block_library' | 'flow_canvas' | 'code_editor';
 
   const ELEMENT_MAP: Record<ViewId, JSX.Element> = {
     block_library: <BlockLibrary />,
-    flow_canvas: <FlowCanvas />
+    flow_canvas: <FlowCanvas />,
+    code_editor: <Editor />
   };
 
   return (
@@ -34,7 +37,11 @@ const Flow = (): JSX.Element => {
         initialValue={{
           direction: 'row',
           first: 'block_library',
-          second: 'flow_canvas'
+          second: {
+            direction: 'column',
+            first: 'flow_canvas',
+            second: 'code_editor'
+          }
         }}
       />
     </div>
