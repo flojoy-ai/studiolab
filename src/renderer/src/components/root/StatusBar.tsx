@@ -4,6 +4,7 @@ import { BackendStatus } from '@/types/status';
 import axios from 'axios';
 import { useState } from 'react';
 import { useCaptainStateStore } from '@/stores/lifecycle';
+import { ModeToggle } from './ModeToggle';
 
 const StatusBar = (): JSX.Element => {
   const [message, setMessage] = useState<string>('');
@@ -39,7 +40,8 @@ const StatusBar = (): JSX.Element => {
       ) : (
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
-      <div className="text-sm">{message}</div>
+      <div className="grow text-sm">{message}</div>
+      <ModeToggle />
     </div>
   );
 };
