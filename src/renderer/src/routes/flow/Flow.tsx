@@ -91,13 +91,13 @@ const Flow = (): JSX.Element => {
   return (
     <div className={'main-content flex  rounded-lg bg-muted p-4'}>
       <div
-        className={cn('rounded-lg bg-background transition-all duration-100 ease-in-out', {
+        className={cn('rounded-lg bg-background transition-transform duration-100 ease-in-out', {
           'mr-4 w-96 delay-0': isBlocksLibraryActive,
           'w-0 delay-100': !isBlocksLibraryActive
         })}
       >
         <div
-          className={cn('rounded-lg bg-background transition-all duration-100 ease-in-out', {
+          className={cn('rounded-lg bg-background transition-transform duration-100 ease-in-out', {
             'opacity-100 delay-100': isBlocksLibraryActive,
             'opacity-0 delay-0': !isBlocksLibraryActive
           })}
