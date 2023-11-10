@@ -18,7 +18,7 @@ const Flow = (): JSX.Element => {
     }
   ];
   return (
-    <div className="main-content m-4 flex grow flex-col items-center rounded-lg bg-background">
+    <div className="main-content m-4 grow rounded-lg bg-background">
       <ReactFlow proOptions={{ hideAttribution: true }} nodes={nodes} edges={edges}>
         <Background />
         <Controls />
