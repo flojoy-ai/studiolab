@@ -3,8 +3,9 @@ import FlowCanvas from '@/components/flow/FlowCanvas';
 
 import { Mosaic, MosaicWindow } from 'react-mosaic-component';
 import 'react-mosaic-component/react-mosaic-component.css';
-import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/icons/lib/css/blueprint-icons.css';
+// TODO: this breaks some style, fix later
+// import '@blueprintjs/core/lib/css/blueprint.css';
+// import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import Editor from '@/components/editor/Editor';
 
 const Flow = (): JSX.Element => {
