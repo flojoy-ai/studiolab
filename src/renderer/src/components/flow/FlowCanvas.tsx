@@ -1,24 +1,16 @@
 import AddBlock from '@/components/blocks/AddBlock';
 import BigNumberBlock from '@/components/blocks/BigNumberBlock';
 import SliderBlock from '@/components/blocks/SliderBlock';
-import { BlockData } from '@/types/block';
 import { SOCKET_URL } from '@/utils/constants';
 import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import ReactFlow, {
-  addEdge,
-  Controls,
-  Background,
-  MiniMap,
-  useNodesState,
-  useEdgesState
-} from 'reactflow';
+import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { sendEvent } from '@/utils/sendEvent';
-import { useCallback } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 const nodeTypes = {
   slider: SliderBlock,
@@ -32,10 +24,16 @@ const edgeTypes = {
 
 const FlowCanvas = () => {
   const { sendMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [nodes, _, onNodesChange] = useNodesState<BlockData>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const setRunning = useFlowchartStore((state) => state.setRunning);
+  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, setRunning } = useFlowchartStore(
+    useShallow((state) => ({
+      setRunning: state.setRunning,
+      edges: state.edges,
+      onEdgesChange: state.onEdgesChange,
+      nodes: state.nodes,
+      onNodesChange: state.onNodesChange,
+      onConnect: state.onConnect
+    }))
+  );
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Connecting',
@@ -54,8 +52,6 @@ const FlowCanvas = () => {
       setRunning(true);
     }
   };
-
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   return (
     <ReactFlow

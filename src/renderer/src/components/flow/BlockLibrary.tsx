@@ -1,29 +1,14 @@
 import BlockCard from '@/components/flow/BlockCard';
-import { BlockData, BlockType } from '@/types/block';
-import { useNodesState } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { v4 as uuidv4 } from 'uuid';
 
+import { useShallow } from 'zustand/react/shallow';
+import { useFlowchartStore } from '@/stores/flowchart';
 const BlockLibrary = () => {
-  const [nodes, setNodes] = useNodesState<BlockData>([]);
-
-  const addNode = (block_type: BlockType) => {
-    return () => {
-      setNodes(
-        nodes.concat([
-          {
-            id: `${block_type}-${uuidv4()}`,
-            position: { x: Math.random() * 30 - 15, y: Math.random() * 30 - 15 },
-            type: block_type,
-            data: {
-              label: block_type,
-              block_type
-            }
-          }
-        ])
-      );
-    };
-  };
+  const { addNode } = useFlowchartStore(
+    useShallow((state) => ({
+      addNode: state.addNode
+    }))
+  );
 
   const handleAddSlider = addNode('slider');
   const handleAddAdd = addNode('add');
