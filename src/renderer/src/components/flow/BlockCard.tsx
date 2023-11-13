@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 type Props = {
   name: string;
   desc: string;
-  onClick?: () => void;
+  onClick: () => void;
 };
 
 const BlockCard = ({ name, desc, onClick }: Props): JSX.Element => {

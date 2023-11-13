@@ -1,41 +1,27 @@
 import BlockCard from '@/components/flow/BlockCard';
-import { BlockData, BlockType } from '@/types/block';
 import { UIState, useUIStateStore } from '@/stores/ui';
 import { cn } from '@/utils/style';
-import { useNodesState } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { v4 as uuidv4 } from 'uuid';
 
 import { useShallow } from 'zustand/react/shallow';
+import { useFlowchartStore } from '@/stores/flowchart';
 const BlockLibrary = () => {
-  const [nodes, setNodes] = useNodesState<BlockData>([]);
+  const { addNode } = useFlowchartStore(
+    useShallow((state) => ({
+      addNode: state.addNode
+    }))
+  );
+
   const { isBlocksLibraryActive } = useUIStateStore(
     useShallow((state: UIState) => ({
       isBlocksLibraryActive: state.isBlocksLibraryActive
     }))
   );
 
-  const addNode = (block_type: BlockType) => {
-    return () => {
-      setNodes(
-        nodes.concat([
-          {
-            id: `${block_type}-${uuidv4()}`,
-            position: { x: Math.random() * 30 - 15, y: Math.random() * 30 - 15 },
-            type: block_type,
-            data: {
-              label: block_type,
-              block_type
-            }
-          }
-        ])
-      );
-    };
-  };
-
   const handleAddSlider = addNode('slider');
   const handleAddAdd = addNode('add');
   const handleAddBigNumber = addNode('bignum');
+
   return (
     <div
       className={cn('rounded-lg bg-background transition-transform duration-100 ease-in-out', {
