@@ -2,8 +2,8 @@ import { FlowStateUpdateEvent } from '@/types/flow';
 import { SOCKET_URL } from '@/utils/constants';
 import { useEffect, useState } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { useFlowchartStore } from '@/stores/flowchart';
 import { sendEvent } from '@/utils/sendEvent';
+import { useLifecycleStore } from '@/stores/lifecycle';
 
 export const useBlockState = <T>(
   id: string,
@@ -11,7 +11,7 @@ export const useBlockState = <T>(
 ): [T | undefined, (data: T) => void] => {
   const [state, setState] = useState<T | undefined>(defaultValue);
   const { sendMessage, lastMessage } = useWebSocket(SOCKET_URL, { share: true });
-  const running = useFlowchartStore((state) => state.running);
+  const running = useLifecycleStore((state) => state.running);
 
   useEffect(() => {
     if (lastMessage !== null) {

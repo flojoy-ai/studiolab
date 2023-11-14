@@ -23,9 +23,11 @@ interface FlowchartState {
   edges: Edge[];
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
+
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
+
   addNode: (block_type: BlockType) => () => void;
   reset: () => void;
 }
@@ -37,6 +39,25 @@ export const useFlowchartStore = create<FlowchartState>()(
       edges: [] as Edge[],
       setNodes: (nodes: Node[]) => set({ nodes }),
       setEdges: (edges: Edge[]) => set({ edges }),
+
+      onNodesChange: (changes: NodeChange[]) => {
+        set({
+          nodes: applyNodeChanges(changes, get().nodes)
+        });
+      },
+      onEdgesChange: (changes: EdgeChange[]) => {
+        set({
+          edges: applyEdgeChanges(changes, get().edges)
+        });
+      },
+      onConnect: (connection: Connection) => {
+        const undoredoStore = useUndoRedoStore.getState();
+        undoredoStore.takeSnapshot();
+        set({
+          edges: addEdge(connection, get().edges)
+        });
+      },
+
       addNode: (block_type: BlockType) => {
         return () => {
           const undoredoStore = useUndoRedoStore.getState();
@@ -55,23 +76,6 @@ export const useFlowchartStore = create<FlowchartState>()(
             ])
           });
         };
-      },
-      onNodesChange: (changes: NodeChange[]) => {
-        set({
-          nodes: applyNodeChanges(changes, get().nodes)
-        });
-      },
-      onEdgesChange: (changes: EdgeChange[]) => {
-        set({
-          edges: applyEdgeChanges(changes, get().edges)
-        });
-      },
-      onConnect: (connection: Connection) => {
-        const undoredoStore = useUndoRedoStore.getState();
-        undoredoStore.takeSnapshot();
-        set({
-          edges: addEdge(connection, get().edges)
-        });
       },
       reset: () => {
         set({

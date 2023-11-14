@@ -7,6 +7,7 @@ export interface LifecycleState {
   running: boolean;
   setRunning: (running: boolean) => void;
 }
+
 export const useLifecycleStore = create<LifecycleState>((set) => ({
   captainReady: false,
   setCaptainReady: (state: boolean): void => set({ captainReady: state }),

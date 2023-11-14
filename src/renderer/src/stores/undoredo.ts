@@ -9,19 +9,23 @@ type HistoryItem = {
 
 interface UndoRedoState {
   maxHistorySize: number;
+
   past: HistoryItem[];
-  setPast: (past: HistoryItem[]) => void;
   future: HistoryItem[];
+  setPast: (past: HistoryItem[]) => void;
   setFuture: (future: HistoryItem[]) => void;
+
   takeSnapshot: () => void;
 }
 
 export const useUndoRedoStore = create<UndoRedoState>()((set, get) => ({
   maxHistorySize: 100,
+
   past: [] as HistoryItem[],
-  setPast: (past: HistoryItem[]) => set({ past }),
   future: [] as HistoryItem[],
+  setPast: (past: HistoryItem[]) => set({ past }),
   setFuture: (future: HistoryItem[]) => set({ future }),
+
   takeSnapshot: () => {
     const flowchartStore = useFlowchartStore.getState();
     set({
