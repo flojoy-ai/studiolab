@@ -16,28 +16,31 @@ import { BlockType } from '@/types/block';
 
 import { v4 as uuidv4 } from 'uuid';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { useUndoRedoStore } from './undoredo';
 
 interface FlowchartState {
   nodes: Node[];
   edges: Edge[];
-  addNode: (block_type: BlockType) => () => void;
+  setNodes: (nodes: Node[]) => void;
+  setEdges: (edges: Edge[]) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
-  running: boolean;
-  setRunning: (running: boolean) => void;
+  addNode: (block_type: BlockType) => () => void;
   reset: () => void;
 }
 
 export const useFlowchartStore = create<FlowchartState>()(
   persist(
     (set, get) => ({
-      running: false,
-      setRunning: (running: boolean) => set(() => ({ running })),
-      nodes: [],
-      edges: [],
+      nodes: [] as Node[],
+      edges: [] as Edge[],
+      setNodes: (nodes: Node[]) => set({ nodes }),
+      setEdges: (edges: Edge[]) => set({ edges }),
       addNode: (block_type: BlockType) => {
-        return () =>
+        return () => {
+          const undoredoStore = useUndoRedoStore.getState();
+          undoredoStore.takeSnapshot();
           set({
             nodes: get().nodes.concat([
               {
@@ -51,6 +54,7 @@ export const useFlowchartStore = create<FlowchartState>()(
               }
             ])
           });
+        };
       },
       onNodesChange: (changes: NodeChange[]) => {
         set({
@@ -63,6 +67,8 @@ export const useFlowchartStore = create<FlowchartState>()(
         });
       },
       onConnect: (connection: Connection) => {
+        const undoredoStore = useUndoRedoStore.getState();
+        undoredoStore.takeSnapshot();
         set({
           edges: addEdge(connection, get().edges)
         });

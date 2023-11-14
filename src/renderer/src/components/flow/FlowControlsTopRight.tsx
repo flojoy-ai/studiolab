@@ -8,13 +8,19 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { sendEvent } from '@/utils/sendEvent';
 import { useShallow } from 'zustand/react/shallow';
 import ClearCanvasButton from './ClearCanvasButton';
+import { useLifecycleStore } from '@/stores/lifecycle';
 
 const FlowControlsTopRight = (): JSX.Element => {
   const { sendMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
-  const { edges, nodes, running, setRunning } = useFlowchartStore(
+  const { edges, nodes } = useFlowchartStore(
     useShallow((state) => ({
       edges: state.edges,
-      nodes: state.nodes,
+      nodes: state.nodes
+    }))
+  );
+
+  const { running, setRunning } = useLifecycleStore(
+    useShallow((state) => ({
       running: state.running,
       setRunning: state.setRunning
     }))

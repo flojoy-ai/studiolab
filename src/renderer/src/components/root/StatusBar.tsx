@@ -1,12 +1,14 @@
 import { Badge } from '../ui/Badge';
 import { useEffect, useState } from 'react';
-import { useCaptainStateStore } from '@/stores/lifecycle';
+import { useLifecycleStore } from '@/stores/lifecycle';
 import { ModeToggle } from './ModeToggle';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 const StatusBar = (): JSX.Element => {
-  const setCaptainReady = useCaptainStateStore((state) => state.setReady);
-  const captainReady = useCaptainStateStore((state) => state.ready);
+  const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
+    setCaptainReady: state.setCaptainReady,
+    captainReady: state.captainReady
+  }));
 
   const [message, setMessage] = useState<string>('');
 

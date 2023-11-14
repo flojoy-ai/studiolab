@@ -1,10 +1,16 @@
 import { create } from 'zustand';
 
-export interface CaptainState {
-  ready: boolean;
-  setReady: (state: boolean) => void;
+export interface LifecycleState {
+  captainReady: boolean;
+  setCaptainReady: (state: boolean) => void;
+
+  running: boolean;
+  setRunning: (running: boolean) => void;
 }
-export const useCaptainStateStore = create<CaptainState>((set) => ({
-  ready: false,
-  setReady: (state: boolean): void => set({ ready: state })
+export const useLifecycleStore = create<LifecycleState>((set) => ({
+  captainReady: false,
+  setCaptainReady: (state: boolean): void => set({ captainReady: state }),
+
+  running: false,
+  setRunning: (running: boolean) => set(() => ({ running }))
 }));

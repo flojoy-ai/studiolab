@@ -12,11 +12,11 @@ import {
   AlertDialogTitle
 } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
-import { useCaptainStateStore } from '@/stores/lifecycle';
+import { useLifecycleStore } from '@/stores/lifecycle';
 import { useNavigate } from 'react-router-dom';
 
 const Index = (): JSX.Element => {
-  const captainReady = useCaptainStateStore((state) => state.ready);
+  const captainReady = useLifecycleStore((state) => state.captainReady);
 
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
     {
