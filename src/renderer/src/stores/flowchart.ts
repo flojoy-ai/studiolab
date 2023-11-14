@@ -26,6 +26,7 @@ interface FlowchartState {
   onConnect: OnConnect;
   running: boolean;
   setRunning: (running: boolean) => void;
+  reset: () => void;
 }
 
 export const useFlowchartStore = create<FlowchartState>()(
@@ -64,6 +65,12 @@ export const useFlowchartStore = create<FlowchartState>()(
       onConnect: (connection: Connection) => {
         set({
           edges: addEdge(connection, get().edges)
+        });
+      },
+      reset: () => {
+        set({
+          nodes: [],
+          edges: []
         });
       }
     }),

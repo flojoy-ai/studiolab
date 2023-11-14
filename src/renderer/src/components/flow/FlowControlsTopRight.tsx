@@ -7,6 +7,7 @@ import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { sendEvent } from '@/utils/sendEvent';
 import { useShallow } from 'zustand/react/shallow';
+import ClearCanvasButton from './ClearCanvasButton';
 
 const FlowControlsTopRight = (): JSX.Element => {
   const { sendMessage, readyState } = useWebSocket(SOCKET_URL, { share: true });
@@ -49,7 +50,7 @@ const FlowControlsTopRight = (): JSX.Element => {
       ) : (
         <Button onClick={onCancel}>Cancel</Button>
       )}
-      <Button variant="destructive">Clear Canvas</Button>
+      <ClearCanvasButton />
     </div>
   );
 };
