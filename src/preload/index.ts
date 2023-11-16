@@ -4,6 +4,7 @@ import { electronAPI } from '@electron-toolkit/preload';
 // Custom APIs for renderer
 export const api = {
   checkPythonInstallation: (): Promise<string> => ipcRenderer.invoke('check-python-installation'),
+  checkPipxInstallation: (): Promise<string> => ipcRenderer.invoke('check-pipx-installation'),
   installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
   pipxEnsurepath: (): Promise<void> => ipcRenderer.invoke('pipx-ensurepath'),
   installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),

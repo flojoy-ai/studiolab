@@ -8,9 +8,19 @@ import { sendToStatusBar } from './logging';
 export function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
-      darwin: 'python3.11 --version',
       win32: 'python -c "import sys; assert sys.version_info >= (3, 11)" && python --version',
+      darwin: 'python3.11 --version',
       linux: 'python3.11 --version'
+    })
+  );
+}
+
+export function checkPipxInstallation(): Promise<string> {
+  return execCommand(
+    new Command({
+      win32: 'pipx --version',
+      darwin: 'pipx --version',
+      linux: 'pipx --version'
     })
   );
 }
@@ -18,8 +28,8 @@ export function checkPythonInstallation(): Promise<string> {
 export function installPipx(): Promise<string> {
   return execCommand(
     new Command({
-      darwin: 'python3.11 -m pip install --user pipx',
       win32: 'python -m pip install --user pipx',
+      darwin: 'python3.11 -m pip install --user pipx',
       linux: 'python3.11 -m pip install --user pipx --break-system-packages'
     })
   );
@@ -29,8 +39,8 @@ export async function pipxEnsurepath(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'python -m pipx ensurepath',
-      linux: 'python3.11 -m pipx ensurepath',
-      darwin: 'python3.11 -m pipx ensurepath'
+      darwin: 'python3.11 -m pipx ensurepath',
+      linux: 'python3.11 -m pipx ensurepath'
     })
   );
 }
@@ -38,9 +48,9 @@ export async function pipxEnsurepath(): Promise<string> {
 export function installPoetry(): Promise<string> {
   return execCommand(
     new Command({
-      darwin: 'python3.11 -m pipx install poetry',
       win32: 'python -m pipx install poetry',
-      linux: 'python3 -m pipx install poetry'
+      darwin: 'python3.11 -m pipx install poetry',
+      linux: 'python3.11 -m pipx install poetry'
     })
   );
 }
@@ -48,8 +58,8 @@ export function installPoetry(): Promise<string> {
 export function installDependencies(): Promise<string> {
   return execCommand(
     new Command({
-      darwin: 'poetry install',
       win32: 'poetry install',
+      darwin: 'poetry install',
       linux: 'poetry install'
     })
   );
@@ -57,8 +67,8 @@ export function installDependencies(): Promise<string> {
 
 export function spawnCaptain(): void {
   const command = new Command({
-    darwin: 'poetry run python3 main.py',
     win32: 'poetry run python main.py',
+    darwin: 'poetry run python3 main.py',
     linux: 'poetry run python3 main.py'
   });
 

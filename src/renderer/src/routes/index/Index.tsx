@@ -26,6 +26,11 @@ const Index = (): JSX.Element => {
     },
     {
       status: 'pending',
+      stage: 'check-pipx-installation',
+      message: 'Check if Pipx is installed on this machine.'
+    },
+    {
+      status: 'pending',
       stage: 'install-dependencies',
       message: 'Configure all the magic behind Flojoy Studio.'
     },
@@ -40,6 +45,7 @@ const Index = (): JSX.Element => {
   const [errorTitle, setErrorTitle] = useState<string>('');
   const [errorDesc, setErrorDesc] = useState<string>('');
   const [errorActionName, setErrorActionName] = useState<string>('');
+  const [needRestart, setNeedRestart] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const checkPythonInstallation = async (): Promise<void> => {
@@ -62,10 +68,43 @@ const Index = (): JSX.Element => {
     }
   };
 
+  const checkPipxInstallation = async (): Promise<void> => {
+    try {
+      const data = await window.api.checkPipxInstallation();
+      updateSetupStatus({
+        stage: 'check-pipx-installation',
+        status: 'completed',
+        message: `Pipx ${data} is installed!`
+      });
+    } catch (err) {
+      updateSetupStatus({
+        stage: 'check-pipx-installation',
+        status: 'warning',
+        message:
+          'Pipx is not currently installed, we will install it for you and restart Flojoy Studio!'
+      });
+      setNeedRestart(true);
+    }
+  };
+
   const installDependencies = async (): Promise<void> => {
     try {
       await window.api.installPipx();
       await window.api.pipxEnsurepath();
+
+      const countDown = 3;
+      if (needRestart) {
+        for (let i = countDown; i > 0; i--) {
+          updateSetupStatus({
+            stage: 'install-dependencies',
+            status: 'warning',
+            message: `Flojoy Studio needs to restart for changes to take effect, restarting in ${i} second(s)`
+          });
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        await window.api.restartFlojoyStudio();
+      }
+
       await window.api.installPoetry();
       await window.api.installDependencies();
 
@@ -159,6 +198,15 @@ const Index = (): JSX.Element => {
 
     const nextStep = setupStatuses.find((status) => status.status === 'pending');
     switch (nextStep?.stage) {
+      case 'check-pipx-installation': {
+        updateSetupStatus({
+          stage: 'check-pipx-installation',
+          status: 'running',
+          message: 'Checking if Pipx is installed on this machine!'
+        });
+        checkPipxInstallation();
+        break;
+      }
       case 'install-dependencies': {
         updateSetupStatus({
           stage: 'install-dependencies',

@@ -1,5 +1,5 @@
 import { SetupStatus } from '@/types/status';
-import { CheckCircle, CircleDashed, CircleDotDashed, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, CircleDashed, CircleDotDashed, XCircle } from 'lucide-react';
 
 const SetupStep = ({ status, message }: Omit<SetupStatus, 'stage'>): JSX.Element => {
   return (
@@ -8,6 +8,7 @@ const SetupStep = ({ status, message }: Omit<SetupStatus, 'stage'>): JSX.Element
         {status === 'running' && <CircleDotDashed className="animate-spin" />}
         {status === 'completed' && <CheckCircle />}
         {status === 'pending' && <CircleDashed />}
+        {status === 'warning' && <AlertCircle />}
         {status === 'error' && <XCircle />}
       </div>
       <div>{message}</div>

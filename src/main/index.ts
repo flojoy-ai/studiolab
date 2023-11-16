@@ -9,7 +9,8 @@ import {
   installPipx,
   killCaptain,
   spawnCaptain,
-  pipxEnsurepath
+  pipxEnsurepath,
+  checkPipxInstallation
 } from './python';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
@@ -101,6 +102,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('check-python-installation', checkPythonInstallation);
+  ipcMain.handle('check-pipx-installation', checkPipxInstallation);
   ipcMain.handle('install-pipx', installPipx);
   ipcMain.handle('pipx-ensurepath', pipxEnsurepath);
   ipcMain.handle('install-poetry', installPoetry);
