@@ -50,12 +50,12 @@ const Index = (): JSX.Element => {
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
-      const data = await window.api.checkPythonInstallation();
-      updateSetupStatus({
-        stage: 'check-python-installation',
-        status: 'completed',
-        message: `Python ${data.split(' ')[1]} is installed!`
-      });
+      await window.api.checkPythonInstallation();
+      // updateSetupStatus({
+      //   stage: 'check-python-installation',
+      //   status: 'completed',
+      //   message: `Python ${data.split(' ')[1]} is installed!`
+      // });
     } catch (err) {
       updateSetupStatus({
         stage: 'check-python-installation',
@@ -89,8 +89,8 @@ const Index = (): JSX.Element => {
 
   const installDependencies = async (): Promise<void> => {
     try {
-      await window.api.installPipx();
-      await window.api.pipxEnsurepath();
+      // await window.api.installPipx();
+      // await window.api.pipxEnsurepath();
 
       const countDown = 3;
       if (needRestart) {

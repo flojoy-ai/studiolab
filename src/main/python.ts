@@ -5,17 +5,17 @@ import { Command } from './command';
 import { ChildProcess, execSync, spawn } from 'child_process';
 import { sendToStatusBar } from './logging';
 
-export function checkPythonInstallation(): Promise<string> {
+export async function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'python -c "import sys; assert sys.version_info >= (3, 11)" && python --version',
-      darwin: 'python3.11 --version',
-      linux: 'python3.11 --version'
+      darwin: 'python3.111 --version',
+      linux: 'python3.111 --version'
     })
   );
 }
 
-export function checkPipxInstallation(): Promise<string> {
+export async function checkPipxInstallation(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'pipx --version',
@@ -25,7 +25,7 @@ export function checkPipxInstallation(): Promise<string> {
   );
 }
 
-export function installPipx(): Promise<string> {
+export async function installPipx(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'python -m pip install --user pipx',
@@ -45,7 +45,7 @@ export async function pipxEnsurepath(): Promise<string> {
   );
 }
 
-export function installPoetry(): Promise<string> {
+export async function installPoetry(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'python -m pipx install poetry',
@@ -55,7 +55,7 @@ export function installPoetry(): Promise<string> {
   );
 }
 
-export function installDependencies(): Promise<string> {
+export async function installDependencies(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'poetry install',
