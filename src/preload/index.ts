@@ -1,16 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 
-// Renderer process
+// Joey: Taken from
+// https://github.com/electron/electron/issues/24427
 const decodeError = ({ name, message, extra }) => {
   const e = new Error(message);
   e.name = name;
   Object.assign(e, extra);
   return e;
 };
-
-const invokeWithCustomErrors = async (...args) => {
-  const { error, result } = await ipcRenderer.invoke(...args);
+const invokeWithCustomErrors = async (channel, ...args) => {
+  const { error, result } = await ipcRenderer.invoke(channel, args);
   if (error) {
     throw decodeError(error);
   }
@@ -20,17 +20,17 @@ const invokeWithCustomErrors = async (...args) => {
 // Custom APIs for renderer
 export const api = {
   checkPythonInstallation: () => invokeWithCustomErrors('check-python-installation'),
-  checkPipxInstallation: (): Promise<string> => ipcRenderer.invoke('check-pipx-installation'),
-  installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
-  pipxEnsurepath: (): Promise<void> => ipcRenderer.invoke('pipx-ensurepath'),
-  installPoetry: (): Promise<string> => ipcRenderer.invoke('install-poetry'),
-  installDependencies: (): Promise<string> => ipcRenderer.invoke('install-dependencies'),
-  getPoetryVenvExecutable: (): Promise<string> => ipcRenderer.invoke('get-poetry-venv-executable'),
-  spawnCaptain: (): Promise<void> => ipcRenderer.invoke('spawn-captain'),
-  killCaptain: (): Promise<string> => ipcRenderer.invoke('kill-captain'),
+  checkPipxInstallation: () => invokeWithCustomErrors('check-pipx-installation'),
+  installPipx: () => invokeWithCustomErrors('install-pipx'),
+  pipxEnsurepath: () => invokeWithCustomErrors('pipx-ensurepath'),
+  installPoetry: () => invokeWithCustomErrors('install-poetry'),
+  installDependencies: () => invokeWithCustomErrors('install-dependencies'),
+  getPoetryVenvExecutable: () => invokeWithCustomErrors('get-poetry-venv-executable'),
+  spawnCaptain: () => invokeWithCustomErrors('spawn-captain'),
+  killCaptain: () => invokeWithCustomErrors('kill-captain'),
 
-  openLogFolder: (): Promise<void> => ipcRenderer.invoke('open-log-folder'),
-  restartFlojoyStudio: (): Promise<void> => ipcRenderer.invoke('restart-flojoy-studio')
+  openLogFolder: () => invokeWithCustomErrors('open-log-folder'),
+  restartFlojoyStudio: () => invokeWithCustomErrors('restart-flojoy-studio')
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

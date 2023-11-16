@@ -9,8 +9,8 @@ export async function checkPythonInstallation(): Promise<string> {
   return execCommand(
     new Command({
       win32: 'python -c "import sys; assert sys.version_info >= (3, 11)" && python --version',
-      darwin: 'python3.111 --version',
-      linux: 'python3.111 --version'
+      darwin: 'python3.11 --version',
+      linux: 'python3.11 --version'
     })
   );
 }
@@ -94,11 +94,13 @@ export function spawnCaptain(): void {
   });
 
   global.captainProcess.stderr?.on('data', (data) => {
+    log.error('[stderr]');
     log.error(data.toString());
     sendToStatusBar(data.toString());
   });
 
   global.captainProcess.on('error', (error) => {
+    log.error('[error]');
     log.error(error.message);
     sendToStatusBar(error.message);
   });

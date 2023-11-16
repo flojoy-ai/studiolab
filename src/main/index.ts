@@ -79,6 +79,8 @@ function createWindow(): void {
   });
 }
 
+// Joey: Taken from
+// https://github.com/electron/electron/issues/24427
 const encodeError = (e) => {
   return { name: e.name, message: e.message, extra: { ...e } };
 };
@@ -100,17 +102,17 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron');
 
   handleWithCustomErrors('check-python-installation', checkPythonInstallation);
-  ipcMain.handle('check-pipx-installation', checkPipxInstallation);
-  ipcMain.handle('install-pipx', installPipx);
-  ipcMain.handle('pipx-ensurepath', pipxEnsurepath);
-  ipcMain.handle('install-poetry', installPoetry);
-  ipcMain.handle('install-dependencies', installDependencies);
-  ipcMain.handle('spawn-captain', spawnCaptain);
-  ipcMain.handle('kill-captain', killCaptain);
+  handleWithCustomErrors('check-pipx-installation', checkPipxInstallation);
+  handleWithCustomErrors('install-pipx', installPipx);
+  handleWithCustomErrors('pipx-ensurepath', pipxEnsurepath);
+  handleWithCustomErrors('install-poetry', installPoetry);
+  handleWithCustomErrors('install-dependencies', installDependencies);
+  handleWithCustomErrors('spawn-captain', spawnCaptain);
+  handleWithCustomErrors('kill-captain', killCaptain);
 
-  ipcMain.handle('open-log-folder', openLogFolder);
+  handleWithCustomErrors('open-log-folder', openLogFolder);
 
-  ipcMain.handle('restart-flojoy-studio', () => {
+  handleWithCustomErrors('restart-flojoy-studio', () => {
     app.relaunch();
     app.exit();
   });

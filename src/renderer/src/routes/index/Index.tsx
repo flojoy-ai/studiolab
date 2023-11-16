@@ -50,12 +50,12 @@ const Index = (): JSX.Element => {
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
-      await window.api.checkPythonInstallation();
-      // updateSetupStatus({
-      //   stage: 'check-python-installation',
-      //   status: 'completed',
-      //   message: `Python ${data.split(' ')[1]} is installed!`
-      // });
+      const data = await window.api.checkPythonInstallation();
+      updateSetupStatus({
+        stage: 'check-python-installation',
+        status: 'completed',
+        message: `Python ${data.split(' ')[1]} is installed!`
+      });
     } catch (err) {
       console.error(err);
       updateSetupStatus({
@@ -90,30 +90,30 @@ const Index = (): JSX.Element => {
 
   const installDependencies = async (): Promise<void> => {
     try {
-      // await window.api.installPipx();
-      // await window.api.pipxEnsurepath();
+      await window.api.installPipx();
+      await window.api.pipxEnsurepath();
 
       const countDown = 3;
       if (needRestart) {
         for (let i = countDown; i > 0; i--) {
           updateSetupStatus({
             stage: 'install-dependencies',
-            status: 'warning',
+            status: 'running',
             message: `Flojoy Studio needs to restart for changes to take effect, restarting in ${i} second(s)`
           });
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         await window.api.restartFlojoyStudio();
+      } else {
+        await window.api.installPoetry();
+        await window.api.installDependencies();
+
+        updateSetupStatus({
+          stage: 'install-dependencies',
+          status: 'completed',
+          message: 'Finished setting up all the magic behind Flojoy Studio.'
+        });
       }
-
-      await window.api.installPoetry();
-      await window.api.installDependencies();
-
-      updateSetupStatus({
-        stage: 'install-dependencies',
-        status: 'completed',
-        message: 'Finished setting up all the magic behind Flojoy Studio.'
-      });
     } catch (err) {
       updateSetupStatus({
         stage: 'install-dependencies',
@@ -152,6 +152,10 @@ const Index = (): JSX.Element => {
     switch (setupError?.stage) {
       case 'check-python-installation': {
         window.open('https://www.python.org/downloads/release/python-3116/');
+        break;
+      }
+      case 'check-pipx-installation': {
+        await window.api.openLogFolder();
         break;
       }
       case 'install-dependencies': {
@@ -246,7 +250,7 @@ const Index = (): JSX.Element => {
 
       <div className="py-4"></div>
 
-      <div className="w-1/2 rounded-xl bg-background p-4">
+      <div className="flex flex-col gap-2 rounded-xl bg-background p-4 md:w-1/2">
         {setupStatuses.map((status, idx) => (
           <SetupStep status={status.status} key={idx} message={status.message} />
         ))}
