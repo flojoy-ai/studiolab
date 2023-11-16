@@ -7,6 +7,7 @@ import { sendToStatusBar } from './logging';
 
 export async function execCommand(command: Command): Promise<string> {
   log.info('execCommand: ' + command.getCommand());
+
   return new Promise((resolve, reject) => {
     const child = exec(command.getCommand(), {
       cwd: app.isPackaged ? process.resourcesPath : undefined,

@@ -1,9 +1,25 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
 
+// Renderer process
+const decodeError = ({ name, message, extra }) => {
+  const e = new Error(message);
+  e.name = name;
+  Object.assign(e, extra);
+  return e;
+};
+
+const invokeWithCustomErrors = async (...args) => {
+  const { error, result } = await ipcRenderer.invoke(...args);
+  if (error) {
+    throw decodeError(error);
+  }
+  return result;
+};
+
 // Custom APIs for renderer
 export const api = {
-  checkPythonInstallation: (): Promise<string> => ipcRenderer.invoke('check-python-installation'),
+  checkPythonInstallation: () => invokeWithCustomErrors('check-python-installation'),
   checkPipxInstallation: (): Promise<string> => ipcRenderer.invoke('check-pipx-installation'),
   installPipx: (): Promise<string> => ipcRenderer.invoke('install-pipx'),
   pipxEnsurepath: (): Promise<void> => ipcRenderer.invoke('pipx-ensurepath'),

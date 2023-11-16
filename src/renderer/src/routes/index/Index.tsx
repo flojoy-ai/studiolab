@@ -57,6 +57,7 @@ const Index = (): JSX.Element => {
       //   message: `Python ${data.split(' ')[1]} is installed!`
       // });
     } catch (err) {
+      console.error(err);
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'error',
