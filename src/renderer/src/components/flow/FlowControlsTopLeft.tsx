@@ -15,6 +15,12 @@ const FlowControlsTopLeft = (): JSX.Element => {
 
   return (
     <div className="absolute z-50 flex gap-2 p-4">
+      <Button size="icon" onClick={undo}>
+        <Undo size="20" />
+      </Button>
+      <Button onClick={redo} size="icon">
+        <Redo size="20" />
+      </Button>
       {!isBlocksLibraryActive && (
         <Button
           onClick={(): void => {
@@ -24,12 +30,6 @@ const FlowControlsTopLeft = (): JSX.Element => {
           Add Blocks
         </Button>
       )}
-      <Button size="icon" onClick={undo}>
-        <Undo size="20" />
-      </Button>
-      <Button onClick={redo} size="icon">
-        <Redo size="20" />
-      </Button>
     </div>
   );
 };
