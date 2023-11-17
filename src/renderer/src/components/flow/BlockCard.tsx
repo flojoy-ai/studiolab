@@ -17,7 +17,7 @@ const BlockCard = ({ name, desc, block_id }: Props): JSX.Element => {
   };
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
