@@ -52,9 +52,11 @@ const FlowControlsTopRight = (): JSX.Element => {
   return (
     <div className="absolute right-0 z-50 flex gap-2 p-4">
       {!running ? (
-        <Button onClick={onStart}>Start</Button>
+        <Button onClick={onStart}>Run</Button>
       ) : (
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel} variant="destructive">
+          Interrupt
+        </Button>
       )}
       <ClearCanvasButton />
     </div>
