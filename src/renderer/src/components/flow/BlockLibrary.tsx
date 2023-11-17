@@ -26,7 +26,7 @@ const BlockLibrary = () => {
 
   return (
     <div
-      className={cn('flex transition-all delay-100 duration-100', {
+      className={cn('flex', {
         'w-96': isBlocksLibraryActive,
         'w-0': !isBlocksLibraryActive
       })}
