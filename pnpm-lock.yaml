@@ -138,10 +138,10 @@ devDependencies:
     version: 1.0.0(eslint@8.53.0)(typescript@5.2.2)
   '@electron-toolkit/tsconfig':
     specifier: ^1.0.1
-    version: 1.0.1(@types/node@20.9.0)
+    version: 1.0.1(@types/node@20.9.1)
   '@types/node':
-    specifier: ^20.9.0
-    version: 20.9.0
+    specifier: ^20.9.1
+    version: 20.9.1
   '@types/react':
     specifier: ^18.2.37
     version: 18.2.37
@@ -170,8 +170,8 @@ devDependencies:
     specifier: ^3.2.0
     version: 3.2.0
   electron-vite:
-    specifier: ^1.0.28
-    version: 1.0.28(vite@4.5.0)
+    specifier: ^1.0.29
+    version: 1.0.29(vite@4.5.0)
   eslint:
     specifier: ^8.53.0
     version: 8.53.0
@@ -201,7 +201,7 @@ devDependencies:
     version: 5.2.2
   vite:
     specifier: ^4.5.0
-    version: 4.5.0(@types/node@20.9.0)
+    version: 4.5.0(@types/node@20.9.1)
 
 packages:
 
@@ -588,12 +588,12 @@ packages:
       electron: 27.1.0
     dev: false
 
-  /@electron-toolkit/tsconfig@1.0.1(@types/node@20.9.0):
+  /@electron-toolkit/tsconfig@1.0.1(@types/node@20.9.1):
     resolution: {integrity: sha512-M0Mol3odspvtCuheyujLNAW7bXq7KFNYVMRtpjFa4ZfES4MuklXBC7Nli/omvc+PRKlrklgAGx3l4VakjNo8jg==}
     peerDependencies:
       '@types/node': '*'
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
     dev: true
 
   /@electron-toolkit/utils@2.0.1(electron@27.1.0):
@@ -2262,7 +2262,7 @@ packages:
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
       '@types/responselike': 1.0.3
 
   /@types/d3-array@3.2.1:
@@ -2453,7 +2453,7 @@ packages:
   /@types/fs-extra@9.0.13:
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
     dev: true
 
   /@types/geojson@7946.0.13:
@@ -2470,7 +2470,7 @@ packages:
   /@types/keyv@3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
 
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -2481,8 +2481,8 @@ packages:
     dependencies:
       undici-types: 5.26.5
 
-  /@types/node@20.9.0:
-    resolution: {integrity: sha512-nekiGu2NDb1BcVofVcEKMIwzlx4NjHlcjhoxxKBNLtz15Y1z7MYf549DFvkHSId02Ax6kGwWntIBPC3l/JZcmw==}
+  /@types/node@20.9.1:
+    resolution: {integrity: sha512-HhmzZh5LSJNS5O8jQKpJ/3ZcrrlG6L70hpGqMIAoM9YVD0YBRNWYsfwcXq8VnSjlNpCpgLzMXdiPo+dxcvSmiA==}
     dependencies:
       undici-types: 5.26.5
 
@@ -2490,7 +2490,7 @@ packages:
     resolution: {integrity: sha512-E6OCaRmAe4WDmWNsL/9RMqdkkzDCY1etutkflWk4c+AcjDU07Pcz1fQwTX0TQz+Pxqn9i4L1TU3UFpjnrcDgxA==}
     requiresBuild: true
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
       xmlbuilder: 15.1.1
     dev: true
     optional: true
@@ -2513,7 +2513,7 @@ packages:
   /@types/responselike@1.0.3:
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
 
   /@types/scheduler@0.16.6:
     resolution: {integrity: sha512-Vlktnchmkylvc9SnwwwozTv04L/e1NykF5vgoQ0XTmI8DD+wxfjQuHuvHS3p0r2jz2x2ghPs2h1FVeDirIteWA==}
@@ -2536,7 +2536,7 @@ packages:
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
     requiresBuild: true
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
     optional: true
 
   /@typescript-eslint/eslint-plugin@6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.53.0)(typescript@5.2.2):
@@ -2732,7 +2732,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.23.3(@babel/core@7.23.3)
       '@types/babel__core': 7.20.4
       react-refresh: 0.14.0
-      vite: 4.5.0(@types/node@20.9.0)
+      vite: 4.5.0(@types/node@20.9.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2981,7 +2981,7 @@ packages:
       postcss: ^8.1.0
     dependencies:
       browserslist: 4.22.1
-      caniuse-lite: 1.0.30001562
+      caniuse-lite: 1.0.30001563
       fraction.js: 4.3.7
       normalize-range: 0.1.2
       picocolors: 1.0.0
@@ -3066,8 +3066,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001562
-      electron-to-chromium: 1.4.585
+      caniuse-lite: 1.0.30001563
+      electron-to-chromium: 1.4.587
       node-releases: 2.0.13
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
@@ -3170,8 +3170,8 @@ packages:
     resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
     engines: {node: '>= 6'}
 
-  /caniuse-lite@1.0.30001562:
-    resolution: {integrity: sha512-kfte3Hym//51EdX4239i+Rmp20EsLIYGdPkERegTgU19hQWCRhsRFGKHTliUlsry53tv17K7n077Kqa0WJU4ng==}
+  /caniuse-lite@1.0.30001563:
+    resolution: {integrity: sha512-na2WUmOxnwIZtwnFI2CZ/3er0wdNzU7hN+cPYz/z2ajHThnkWjNBOpEPP4n+4r2WPM847JaMotaJE3bnfzjyKw==}
     dev: true
 
   /chalk@2.4.2:
@@ -3365,6 +3365,12 @@ packages:
 
   /core-util-is@1.0.2:
     resolution: {integrity: sha512-3lqz5YjWTYnW6dlDa5TLaTCcShfar1e40rmcJVwCBJC6mWlFuj0eCHIElmG1g5kyuJ/GD+8Wn4FFCcz4gJPfaQ==}
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /core-util-is@1.0.3:
+    resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     requiresBuild: true
     dev: true
 
@@ -3690,8 +3696,8 @@ packages:
       - supports-color
     dev: true
 
-  /electron-to-chromium@1.4.585:
-    resolution: {integrity: sha512-B4yBlX0azdA3rVMxpYwLQfDpdwOgcnLCkpvSOd68iFmeedo+WYjaBJS3/W58LVD8CB2nf+o7C4K9xz1l09RkWg==}
+  /electron-to-chromium@1.4.587:
+    resolution: {integrity: sha512-RyJX0q/zOkAoefZhB9XHghGeATVP0Q3mwA253XD/zj2OeXc+JZB9pCaEv6R578JUYaWM9PRhye0kXvd/V1cQ3Q==}
     dev: true
 
   /electron-updater@6.1.4:
@@ -3709,8 +3715,8 @@ packages:
       - supports-color
     dev: false
 
-  /electron-vite@1.0.28(vite@4.5.0):
-    resolution: {integrity: sha512-cp7nBi6do/jn5SHdL2V71WjxqZ+NXitVqn5bW+TsTEYgAfSUuYYp6INJN854kcgoOj4UrjMqA9cGRTSl79xx0Q==}
+  /electron-vite@1.0.29(vite@4.5.0):
+    resolution: {integrity: sha512-BDTmVTLIri8W4Lz1tn5RAV1slSTinBBb6G77+qKcjkF0vEwdiUp2ntSU6FDqwP9pmy1t96U1CZqIYIStF8H6Jw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -3726,7 +3732,7 @@ packages:
       esbuild: 0.18.20
       magic-string: 0.30.5
       picocolors: 1.0.0
-      vite: 4.5.0(@types/node@20.9.0)
+      vite: 4.5.0(@types/node@20.9.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5785,7 +5791,7 @@ packages:
   /readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
     dependencies:
-      core-util-is: 1.0.2
+      core-util-is: 1.0.3
       inherits: 2.0.4
       isarray: 1.0.0
       process-nextick-args: 2.0.1
@@ -6590,7 +6596,7 @@ packages:
     dev: true
     optional: true
 
-  /vite@4.5.0(@types/node@20.9.0):
+  /vite@4.5.0(@types/node@20.9.1):
     resolution: {integrity: sha512-ulr8rNLA6rkyFAlVWw2q5YJ91v098AFQ2R0PRFwPzREXOUJQPtFUG0t+/ZikhaOCDqFoDhN6/v8Sq0o4araFAw==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -6618,7 +6624,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.9.0
+      '@types/node': 20.9.1
       esbuild: 0.18.20
       postcss: 8.4.31
       rollup: 3.29.4
