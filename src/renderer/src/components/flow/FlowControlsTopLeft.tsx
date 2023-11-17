@@ -2,6 +2,7 @@ import { UIState, useUIStateStore } from '@/stores/ui';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '../ui/Button';
 import useUndoRedo from '@/hooks/useUndoRedo';
+import { Redo, Undo } from 'lucide-react';
 
 const FlowControlsTopLeft = (): JSX.Element => {
   const { undo, redo } = useUndoRedo();
@@ -23,8 +24,12 @@ const FlowControlsTopLeft = (): JSX.Element => {
           Add Blocks
         </Button>
       )}
-      <Button onClick={undo}>Undo</Button>
-      <Button onClick={redo}>Redo</Button>
+      <Button size="icon" onClick={undo}>
+        <Undo size="20" />
+      </Button>
+      <Button onClick={redo} size="icon">
+        <Redo size="20" />
+      </Button>
     </div>
   );
 };
