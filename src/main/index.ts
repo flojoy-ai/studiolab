@@ -7,15 +7,14 @@ import {
   installDependencies,
   installPoetry,
   installPipx,
-  killCaptain,
   spawnCaptain,
   pipxEnsurepath,
-  checkPipxInstallation
+  checkPipxInstallation,
+  killProcess
 } from './python';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { openLogFolder } from './logging';
-import { ChildProcess } from 'child_process';
 
 fixPath();
 
@@ -24,7 +23,9 @@ log.initialize({ preload: true });
 
 log.info('Welcome to Flojoy Studio!');
 
-function createWindow(): void {
+async function createWindow(): Promise<void> {
+  await killProcess(2333);
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -97,7 +98,7 @@ const handleWithCustomErrors = (channel, handler) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 
@@ -108,7 +109,6 @@ app.whenReady().then(() => {
   handleWithCustomErrors('install-poetry', installPoetry);
   handleWithCustomErrors('install-dependencies', installDependencies);
   handleWithCustomErrors('spawn-captain', spawnCaptain);
-  handleWithCustomErrors('kill-captain', killCaptain);
 
   handleWithCustomErrors('open-log-folder', openLogFolder);
 
@@ -124,7 +124,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  createWindow();
+  await createWindow();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -135,23 +135,20 @@ app.whenReady().then(() => {
 
 app.on('quit', (e) => {
   e.preventDefault();
-  const captainProcess = global.captainProcess as ChildProcess;
-  if (captainProcess && captainProcess.exitCode === null) {
-    const success = killCaptain();
-    if (success) {
-      global.captainProcess = null;
-      log.info('Successfully terminated captain :)');
-    } else {
-      log.error('Something went wrong when terminating captain!');
-    }
-  }
   app.quit();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  try {
+    await killProcess(2333);
+    log.info('Successfully terminated captain :)');
+  } catch (error) {
+    log.error('Something went wrong when terminating captain!');
+    log.error(error);
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }

@@ -1,8 +1,9 @@
 import log from 'electron-log/main';
+import http from 'http';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
-import { ChildProcess, execSync, spawn } from 'child_process';
+import { spawn } from 'child_process';
 import { sendToStatusBar } from './logging';
 
 export async function checkPythonInstallation(): Promise<string> {
@@ -78,8 +79,7 @@ export function spawnCaptain(): void {
     log.error('spawnCaptain failed, the process already exists!');
     return;
   }
-
-  global.captainProcess = spawn(
+  const captainProcess = spawn(
     command.getCommand().split(' ')[0],
     command.getCommand().split(' ').slice(1),
     {
@@ -88,31 +88,43 @@ export function spawnCaptain(): void {
     }
   );
 
-  global.captainProcess.stdout?.on('data', (data) => {
+  captainProcess.stdout?.on('data', (data) => {
     log.info(data.toString());
     sendToStatusBar(data.toString());
   });
 
-  global.captainProcess.stderr?.on('data', (data) => {
+  captainProcess.stderr?.on('data', (data) => {
     log.error(data.toString());
     sendToStatusBar(data.toString());
   });
 
-  global.captainProcess.on('error', (error) => {
+  captainProcess.on('error', (error) => {
     log.error(error.message);
     sendToStatusBar(error.message);
   });
 }
 
-export function killCaptain(): boolean {
-  if (process.platform === 'win32') {
-    try {
-      execSync(`taskkill -F -T -PID ${(global.captainProcess as ChildProcess).pid}`);
-      return true;
-    } catch (err) {
-      log.error(err);
-      return false;
-    }
-  }
-  return (global.captainProcess as ChildProcess).kill();
+export async function isPortFree(port: number) {
+  return new Promise((resolve) => {
+    const server = http
+      .createServer()
+      .listen(port, '127.0.0.1', () => {
+        server.close();
+        resolve(true);
+      })
+      .on('error', () => {
+        resolve(false);
+      });
+  });
+}
+
+export async function killProcess(port: number) {
+  if (await isPortFree(port)) return;
+  await execCommand(
+    new Command({
+      darwin: `kill -9 $(lsof -t -i :${port})`,
+      linux: `kill -9 $(lsof -t -i :${port})`,
+      win32: `FOR /F "tokens=5" %i IN ('netstat -aon ^| find "${port}"') DO Taskkill /F /PID %i`
+    })
+  );
 }
