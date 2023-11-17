@@ -94,13 +94,11 @@ export function spawnCaptain(): void {
   });
 
   global.captainProcess.stderr?.on('data', (data) => {
-    log.error('[stderr]');
     log.error(data.toString());
     sendToStatusBar(data.toString());
   });
 
   global.captainProcess.on('error', (error) => {
-    log.error('[error]');
     log.error(error.message);
     sendToStatusBar(error.message);
   });
