@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { ModeToggle } from './ModeToggle';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { Button } from '../ui/Button';
 
 const StatusBar = (): JSX.Element => {
   const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
@@ -38,6 +39,9 @@ const StatusBar = (): JSX.Element => {
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
+      <Button size="sm" variant="secondary">
+        More Logs
+      </Button>
       <ModeToggle />
     </div>
   );
