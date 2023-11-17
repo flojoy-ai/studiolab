@@ -1,7 +1,11 @@
+import { isPackaged } from '@/utils/build';
+
 const Header = (): JSX.Element => {
+  console.log(window.electron.process.env['NODE_ENV']);
   return (
-    <div className="titlebar flex h-12 items-center justify-center bg-background">
-      Flojoy Studio
+    <div className="titlebar flex h-12 items-center justify-center gap-2 bg-background">
+      <div>Flojoy Studio</div>
+      {!isPackaged() && <span>DEV BUILD</span>}
     </div>
   );
 };

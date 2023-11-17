@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { useNavigate } from 'react-router-dom';
+import { isPackaged } from '@/utils/build';
 
 const Index = (): JSX.Element => {
   const captainReady = useLifecycleStore((state) => state.captainReady);
@@ -103,7 +104,11 @@ const Index = (): JSX.Element => {
           });
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-        await window.api.restartFlojoyStudio();
+        if (isPackaged()) {
+          await window.api.restartFlojoyStudio();
+        } else {
+          alert('Restart is not supported for dev build, please relaunch Flojoy Studio manually!');
+        }
       } else {
         await window.api.installPoetry();
         await window.api.installDependencies();
@@ -259,7 +264,17 @@ const Index = (): JSX.Element => {
       <div className="py-4"></div>
 
       {setupStatuses.find((status) => status.status === 'error') && (
-        <Button onClick={async (): Promise<void> => await window.api.restartFlojoyStudio()}>
+        <Button
+          onClick={async (): Promise<void> => {
+            if (isPackaged()) {
+              await window.api.restartFlojoyStudio();
+            } else {
+              alert(
+                'Restart is not supported for dev build, please relaunch Flojoy Studio manually!'
+              );
+            }
+          }}
+        >
           Retry
         </Button>
       )}
