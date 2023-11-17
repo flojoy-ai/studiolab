@@ -3,16 +3,29 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 
 type Props = {
   name: string;
+  block_id: string;
   desc: string;
-  onClick: () => void;
 };
 
-const BlockCard = ({ name, desc, onClick }: Props): JSX.Element => {
+const BlockCard = ({ name, desc, block_id }: Props): JSX.Element => {
+  const onDragStart = (event, nodeType) => {
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
+    // TODO: We can set the custom drag image here to be how the
+    // actual block is going to look like!
+    event.dataTransfer.setDragImage(event.target, 0, 0);
+  };
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button className="" variant="secondary" onClick={onClick}>
+          <Button
+            className=""
+            variant="secondary"
+            draggable
+            onDragStart={(event) => onDragStart(event, block_id)}
+          >
             <div>{name}</div>
           </Button>
         </TooltipTrigger>

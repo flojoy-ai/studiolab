@@ -10,7 +10,8 @@ import {
   OnEdgesChange,
   OnConnect,
   applyNodeChanges,
-  applyEdgeChanges
+  applyEdgeChanges,
+  XYPosition
 } from 'reactflow';
 import { BlockType } from '@/types/block';
 
@@ -28,7 +29,7 @@ interface FlowchartState {
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
 
-  addNode: (block_type: BlockType) => () => void;
+  addNode: (block_type: BlockType, position: XYPosition) => void;
   reset: () => void;
 }
 
@@ -57,25 +58,22 @@ export const useFlowchartStore = create<FlowchartState>()(
           edges: addEdge(connection, get().edges)
         });
       },
-
-      addNode: (block_type: BlockType) => {
-        return () => {
-          const undoredoStore = useUndoRedoStore.getState();
-          undoredoStore.takeSnapshot();
-          set({
-            nodes: get().nodes.concat([
-              {
-                id: `${block_type}-${uuidv4()}`,
-                position: { x: Math.random() * 30 - 15, y: Math.random() * 30 - 15 },
-                type: block_type,
-                data: {
-                  label: block_type,
-                  block_type
-                }
+      addNode: (block_type: BlockType, position: XYPosition) => {
+        const undoredoStore = useUndoRedoStore.getState();
+        undoredoStore.takeSnapshot();
+        set({
+          nodes: get().nodes.concat([
+            {
+              id: `${block_type}-${uuidv4()}`,
+              type: block_type,
+              position: position,
+              data: {
+                label: block_type,
+                block_type
               }
-            ])
-          });
-        };
+            }
+          ])
+        });
       },
       reset: () => {
         set({

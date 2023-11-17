@@ -11,12 +11,13 @@ import ReactFlow, {
   NodeDragHandler,
   SelectionDragHandler,
   OnNodesDelete,
-  OnEdgesDelete
+  OnEdgesDelete,
+  ReactFlowInstance
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
@@ -31,14 +32,19 @@ const edgeTypes = {
 };
 
 const FlowCanvas = () => {
+  const [reactFlowInstance, setReactFlowInstance] = useState<undefined | ReactFlowInstance>(
+    undefined
+  );
+
   const { takeSnapshot } = useUndoRedo();
-  const { edges, onEdgesChange, nodes, onNodesChange, onConnect } = useFlowchartStore(
+  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode } = useFlowchartStore(
     useShallow((state) => ({
       edges: state.edges,
       onEdgesChange: state.onEdgesChange,
       nodes: state.nodes,
       onNodesChange: state.onNodesChange,
-      onConnect: state.onConnect
+      onConnect: state.onConnect,
+      addNode: state.addNode
     }))
   );
 
@@ -63,6 +69,41 @@ const FlowCanvas = () => {
     takeSnapshot();
   }, [takeSnapshot]);
 
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      if (reactFlowInstance === undefined) {
+        // this should never happen
+        alert('onDrop: React Flow instance is not available!');
+        return;
+      }
+
+      const block_id = event.dataTransfer.getData('application/reactflow');
+
+      // check if the dropped element is valid
+      if (typeof block_id === 'undefined' || !block_id) {
+        return;
+      }
+
+      // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
+      // and you don't need to subtract the reactFlowBounds.left/top anymore
+      // details: https://reactflow.dev/whats-new/2023-11-10
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY
+      });
+
+      addNode(block_id, position);
+    },
+    [reactFlowInstance]
+  );
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -76,6 +117,9 @@ const FlowCanvas = () => {
       onSelectionDragStart={onSelectionDragStart}
       onNodesDelete={onNodesDelete}
       onEdgesDelete={onEdgesDelete}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onInit={setReactFlowInstance}
       proOptions={{ hideAttribution: true }}
       className="rounded-lg bg-background"
     >
