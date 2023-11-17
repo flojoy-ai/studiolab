@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { useNavigate } from 'react-router-dom';
+import { isPackaged } from '@/utils/build';
 
 const Index = (): JSX.Element => {
   const captainReady = useLifecycleStore((state) => state.captainReady);
@@ -23,6 +24,11 @@ const Index = (): JSX.Element => {
       status: 'running',
       stage: 'check-python-installation',
       message: 'Making sure Python 3.11 is installed on this machine.'
+    },
+    {
+      status: 'pending',
+      stage: 'check-pipx-installation',
+      message: 'Check if Pipx is installed on this machine.'
     },
     {
       status: 'pending',
@@ -40,6 +46,7 @@ const Index = (): JSX.Element => {
   const [errorTitle, setErrorTitle] = useState<string>('');
   const [errorDesc, setErrorDesc] = useState<string>('');
   const [errorActionName, setErrorActionName] = useState<string>('');
+  const [needRestart, setNeedRestart] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const checkPythonInstallation = async (): Promise<void> => {
@@ -51,6 +58,7 @@ const Index = (): JSX.Element => {
         message: `Python ${data.split(' ')[1]} is installed!`
       });
     } catch (err) {
+      console.error(err);
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'error',
@@ -62,18 +70,55 @@ const Index = (): JSX.Element => {
     }
   };
 
+  const checkPipxInstallation = async (): Promise<void> => {
+    try {
+      const data = await window.api.checkPipxInstallation();
+      updateSetupStatus({
+        stage: 'check-pipx-installation',
+        status: 'completed',
+        message: `Pipx ${data} is installed!`
+      });
+    } catch (err) {
+      updateSetupStatus({
+        stage: 'check-pipx-installation',
+        status: 'warning',
+        message:
+          'Pipx is not currently installed, we will install it for you and restart Flojoy Studio!'
+      });
+      setNeedRestart(true);
+    }
+  };
+
   const installDependencies = async (): Promise<void> => {
     try {
       await window.api.installPipx();
       await window.api.pipxEnsurepath();
-      await window.api.installPoetry();
-      await window.api.installDependencies();
 
-      updateSetupStatus({
-        stage: 'install-dependencies',
-        status: 'completed',
-        message: 'Finished setting up all the magic behind Flojoy Studio.'
-      });
+      const countDown = 3;
+      if (needRestart) {
+        for (let i = countDown; i > 0; i--) {
+          updateSetupStatus({
+            stage: 'install-dependencies',
+            status: 'running',
+            message: `Flojoy Studio needs to restart for changes to take effect, restarting in ${i} second(s)`
+          });
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        if (isPackaged()) {
+          await window.api.restartFlojoyStudio();
+        } else {
+          alert('Restart is not supported for dev build, please relaunch Flojoy Studio manually!');
+        }
+      } else {
+        await window.api.installPoetry();
+        await window.api.installDependencies();
+
+        updateSetupStatus({
+          stage: 'install-dependencies',
+          status: 'completed',
+          message: 'Finished setting up all the magic behind Flojoy Studio.'
+        });
+      }
     } catch (err) {
       updateSetupStatus({
         stage: 'install-dependencies',
@@ -112,6 +157,10 @@ const Index = (): JSX.Element => {
     switch (setupError?.stage) {
       case 'check-python-installation': {
         window.open('https://www.python.org/downloads/release/python-3116/');
+        break;
+      }
+      case 'check-pipx-installation': {
+        await window.api.openLogFolder();
         break;
       }
       case 'install-dependencies': {
@@ -159,6 +208,15 @@ const Index = (): JSX.Element => {
 
     const nextStep = setupStatuses.find((status) => status.status === 'pending');
     switch (nextStep?.stage) {
+      case 'check-pipx-installation': {
+        updateSetupStatus({
+          stage: 'check-pipx-installation',
+          status: 'running',
+          message: 'Checking if Pipx is installed on this machine!'
+        });
+        checkPipxInstallation();
+        break;
+      }
       case 'install-dependencies': {
         updateSetupStatus({
           stage: 'install-dependencies',
@@ -197,7 +255,7 @@ const Index = (): JSX.Element => {
 
       <div className="py-4"></div>
 
-      <div className="w-1/2 rounded-xl bg-background p-4">
+      <div className="flex flex-col gap-2 rounded-xl bg-background p-4 md:w-1/2">
         {setupStatuses.map((status, idx) => (
           <SetupStep status={status.status} key={idx} message={status.message} />
         ))}
@@ -206,7 +264,17 @@ const Index = (): JSX.Element => {
       <div className="py-4"></div>
 
       {setupStatuses.find((status) => status.status === 'error') && (
-        <Button onClick={async (): Promise<void> => await window.api.restartFlojoyStudio()}>
+        <Button
+          onClick={async (): Promise<void> => {
+            if (isPackaged()) {
+              await window.api.restartFlojoyStudio();
+            } else {
+              alert(
+                'Restart is not supported for dev build, please relaunch Flojoy Studio manually!'
+              );
+            }
+          }}
+        >
           Retry
         </Button>
       )}
