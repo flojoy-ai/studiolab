@@ -37,7 +37,7 @@ const StatusBar = (): JSX.Element => {
       ) : (
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
-      <div className="grow text-sm">{message}</div>
+      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
       <ModeToggle />
     </div>
   );
