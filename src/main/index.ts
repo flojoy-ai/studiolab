@@ -1,4 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
@@ -100,6 +102,10 @@ const handleWithCustomErrors = (channel, handler) => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   // Set app user model id for windows
+
+  if (!app.isPackaged) {
+    installExtension(REACT_DEVELOPER_TOOLS);
+  }
   electronApp.setAppUserModelId('com.electron');
 
   handleWithCustomErrors('check-python-installation', checkPythonInstallation);
