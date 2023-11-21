@@ -4,7 +4,7 @@ import 'reactflow/dist/style.css';
 import { useShallow } from 'zustand/react/shallow';
 import { useUIStateStore } from '@/stores/ui';
 import { cn } from '@/utils/style';
-import { XCircle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 const BlockLibrary = () => {
@@ -27,9 +27,10 @@ const BlockLibrary = () => {
         <div className="flex items-center">
           <div className="grow text-2xl font-bold">Blocks Library</div>
           <Button size="icon" variant="ghost" onClick={() => setIsBlocksLibraryActive(false)}>
-            <XCircle />
+            <X />
           </Button>
         </div>
+        <div className="py-1"></div>
         <div className="text-sm">
           Add the block you need by <span className="font-bold">dragging</span> it to the flowchart
           on the right.
