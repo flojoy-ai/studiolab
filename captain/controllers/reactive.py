@@ -48,7 +48,7 @@ def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
 
 def wire_flowchart(
     flowchart: FlowChart,
-    on_publish,
+    on_publish: Callable,
     starter: Observable,
     ui_inputs: Mapping[str, Observable],
     block_funcs: Mapping[str, Callable],
@@ -178,11 +178,14 @@ class Flow:
     ) -> None:
         self.flowchart = flowchart
         self.ui_inputs = {}
+
         funcs = import_blocks(BLOCKS_DIR)
+
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):
                 logger.debug(f"Creating UI input for {block.id}")
                 self.ui_inputs[block.id] = Subject()
+
         wire_flowchart(
             flowchart=self.flowchart,
             on_publish=publish_fn,
