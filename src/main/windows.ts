@@ -4,9 +4,17 @@ import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 
+let blocksLibraryWindow: BrowserWindow | null = null;
+
 export async function spawnBlocksLibraryWindow(): Promise<void> {
+  if (blocksLibraryWindow) {
+    if (blocksLibraryWindow.isMinimized()) blocksLibraryWindow.restore();
+    blocksLibraryWindow.focus();
+    return;
+  }
+
   // Create the browser window.
-  const blocksLibraryWindow = new BrowserWindow({
+  blocksLibraryWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -25,15 +33,17 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
   });
 
   blocksLibraryWindow.on('ready-to-show', () => {
-    blocksLibraryWindow.show();
+    if (blocksLibraryWindow) {
+      blocksLibraryWindow.show();
 
-    // Tricky way to bring cam bubble to top over fullscreen windows on mac
-    blocksLibraryWindow.setAlwaysOnTop(true, 'floating', 1);
-    blocksLibraryWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    blocksLibraryWindow.setFullScreenable(false);
+      // Tricky way to bring cam bubble to top over fullscreen windows on mac
+      blocksLibraryWindow.setAlwaysOnTop(true, 'floating', 1);
+      blocksLibraryWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+      blocksLibraryWindow.setFullScreenable(false);
 
-    // Below statement completes the flow
-    blocksLibraryWindow.moveTop();
+      // Below statement completes the flow
+      blocksLibraryWindow.moveTop();
+    }
   });
 
   blocksLibraryWindow.webContents.setWindowOpenHandler((details) => {
@@ -50,6 +60,12 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
   }
 
   app.on('before-quit', () => {
-    blocksLibraryWindow.removeAllListeners('close');
+    if (blocksLibraryWindow) {
+      blocksLibraryWindow.removeAllListeners('close');
+    }
+  });
+
+  blocksLibraryWindow.on('closed', () => {
+    blocksLibraryWindow = null;
   });
 }
