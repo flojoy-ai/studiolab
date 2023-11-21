@@ -17,6 +17,7 @@ import {
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { openLogFolder } from './logging';
+import { createBlocksLibraryWindow } from './windows';
 
 fixPath();
 
@@ -82,61 +83,6 @@ async function createWindow(): Promise<void> {
   });
 }
 
-// Joey: WIP
-async function createLibraryWindow(): Promise<void> {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
-    show: false,
-    autoHideMenuBar: true,
-    // titleBarStyle: 'hidden',
-    trafficLightPosition: {
-      x: 15,
-      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
-    },
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
-      preload: join(__dirname, '../preload/library.js'),
-      sandbox: false
-    }
-  });
-
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show();
-  });
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: 'deny' };
-  });
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/library');
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/library'));
-  }
-
-  app.on('before-quit', () => {
-    mainWindow.removeAllListeners('close');
-  });
-
-  // const logListener = (event): void => {
-  //   if (!mainWindow.isDestroyed()) {
-  //     mainWindow.webContents.send('status-bar-logging', event);
-  //   } else {
-  //     log.error("Can't send message to statusBar: mainWindow is destroyed");
-  //   }
-  // };
-
-  // ipcMain.on('status-bar-logging', logListener);
-  // app.on('window-all-closed', () => {
-  //   ipcMain.removeListener('status-bar-logging', logListener);
-  // });
-}
-
 // Joey: Taken from
 // https://github.com/electron/electron/issues/24427
 const encodeError = (e) => {
@@ -178,7 +124,7 @@ app.whenReady().then(async () => {
     app.exit();
   });
 
-  handleWithCustomErrors('spawn-blocks-library-window', createLibraryWindow);
+  handleWithCustomErrors('spawn-blocks-library-window', createBlocksLibraryWindow);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
