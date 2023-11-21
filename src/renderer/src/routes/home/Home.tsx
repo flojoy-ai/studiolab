@@ -2,7 +2,7 @@ import Header from '@/components/root/Header';
 import StatusBar from '@/components/root/StatusBar';
 import { Outlet } from 'react-router-dom';
 
-import { version } from '@/../../package.json';
+import { version } from '../../../../../package.json';
 
 const Home = () => {
   return (
