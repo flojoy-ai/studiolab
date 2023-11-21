@@ -1,5 +1,10 @@
+import BlocksLibrary from '@/components/flow/BlocksLibrary';
 const Library = () => {
-  return <div>Library</div>;
+  return (
+    <div>
+      <BlocksLibrary />
+    </div>
+  );
 };
 
 export default Library;
