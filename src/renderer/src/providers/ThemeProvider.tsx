@@ -1,33 +1,47 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
+
+import { shared } from 'use-broadcast-ts';
 
 type Theme = 'dark' | 'light' | 'system';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
 };
 
-type ThemeProviderState = {
+interface ThemeState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-};
+}
 
-const initialState: ThemeProviderState = {
+const initialState: ThemeState = {
   theme: 'system',
   setTheme: () => null
 };
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const ThemeProviderContext = createContext<ThemeState>(initialState);
 
-export function ThemeProvider({
-  children,
-  defaultTheme = 'system',
-  storageKey = 'vite-ui-theme',
-  ...props
-}: ThemeProviderProps): JSX.Element {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+const useThemeStore = create<ThemeState>()(
+  // Joey: this is needed to broadcase the theme state across all windows
+  shared(
+    persist(
+      (set) => ({
+        theme: 'system' as Theme,
+        setTheme: (theme: Theme) => set({ theme })
+      }),
+      {
+        name: 'theme-state',
+        storage: createJSONStorage(() => sessionStorage)
+      }
+    )
+  )
+);
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps): JSX.Element {
+  const { theme, setTheme } = useThemeStore(
+    useShallow((state) => ({ theme: state.theme, setTheme: state.setTheme }))
   );
 
   useEffect(() => {
@@ -49,10 +63,7 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme): void => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    }
+    setTheme
   };
 
   return (
@@ -62,7 +73,7 @@ export function ThemeProvider({
   );
 }
 
-export const useTheme = (): ThemeProviderState => {
+export const useTheme = (): ThemeState => {
   const context = useContext(ThemeProviderContext);
 
   if (context === undefined) throw new Error('useTheme must be used within a ThemeProvider');

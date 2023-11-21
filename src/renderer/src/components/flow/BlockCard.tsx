@@ -29,7 +29,7 @@ const BlockCard = ({ name, desc, block_id }: Props): JSX.Element => {
             <div>{name}</div>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="right">
+        <TooltipContent>
           <div>{desc}</div>
         </TooltipContent>
       </Tooltip>

@@ -17,6 +17,7 @@ import {
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { openLogFolder } from './logging';
+import { spawnBlocksLibraryWindow } from './windows';
 
 fixPath();
 
@@ -59,9 +60,9 @@ async function createWindow(): Promise<void> {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/setup');
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/setup'));
   }
 
   app.on('before-quit', () => {
@@ -122,6 +123,8 @@ app.whenReady().then(async () => {
     app.relaunch();
     app.exit();
   });
+
+  handleWithCustomErrors('spawn-blocks-library-window', spawnBlocksLibraryWindow);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

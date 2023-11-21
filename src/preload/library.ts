@@ -30,9 +30,7 @@ export const api = {
   killCaptain: () => invokeWithCustomErrors('kill-captain'),
 
   openLogFolder: () => invokeWithCustomErrors('open-log-folder'),
-  restartFlojoyStudio: () => invokeWithCustomErrors('restart-flojoy-studio'),
-
-  spawnBlocksLibraryWindow: () => invokeWithCustomErrors('spawn-blocks-library-window')
+  restartFlojoyStudio: () => invokeWithCustomErrors('restart-flojoy-studio')
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
