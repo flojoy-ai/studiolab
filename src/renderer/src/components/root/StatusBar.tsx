@@ -39,8 +39,8 @@ const StatusBar = (): JSX.Element => {
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
-      <Button size="sm" variant="secondary">
-        More Logs
+      <Button size="sm" variant="secondary" onClick={async () => await window.api.openLogFolder()}>
+        Open Full Logs
       </Button>
       <ModeToggle />
     </div>
