@@ -12,6 +12,11 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
     show: false,
     alwaysOnTop: true,
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
