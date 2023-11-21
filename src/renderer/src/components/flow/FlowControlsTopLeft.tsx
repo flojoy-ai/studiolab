@@ -30,7 +30,7 @@ const FlowControlsTopLeft = (): JSX.Element => {
           Add Blocks
         </Button>
       )}
-      <Button>New Window</Button>
+      <Button onClick={async () => await window.api.spawnBlocksLibraryWindow()}>New Window</Button>
     </div>
   );
 };

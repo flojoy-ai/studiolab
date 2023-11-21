@@ -7,15 +7,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
-    build: {
-      rollupOptions: {
-        input: {
-          index: resolve('./src/preload/index.ts'),
-          library: resolve('./src/preload/library.ts')
-        }
-      }
-    }
+    plugins: [externalizeDepsPlugin()]
   },
   renderer: {
     server: {
@@ -26,15 +18,6 @@ export default defineConfig({
         '@': resolve('./src/renderer/src')
       }
     },
-    plugins: [react()],
-
-    build: {
-      rollupOptions: {
-        input: {
-          index: resolve('./src/renderer/index.html'),
-          library: resolve('./src/renderer/library.html')
-        }
-      }
-    }
+    plugins: [react()]
   }
 });

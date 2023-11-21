@@ -5,6 +5,7 @@ import Root from './routes/root/Root';
 import Index from './routes/index/Index';
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import Flow from './routes/flow/Flow';
+import Library from './routes/library/Library';
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,10 @@ const router = createHashRouter([
         element: <Flow />
       }
     ]
+  },
+  {
+    path: '/library',
+    element: <Library />
   }
 ]);
 

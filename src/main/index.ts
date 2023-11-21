@@ -114,9 +114,9 @@ async function createLibraryWindow(): Promise<void> {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/library.html`);
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/library');
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/library.html'));
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/library'));
   }
 
   app.on('before-quit', () => {
@@ -178,6 +178,8 @@ app.whenReady().then(async () => {
     app.exit();
   });
 
+  handleWithCustomErrors('spawn-blocks-library-window', createLibraryWindow);
+
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
@@ -186,7 +188,6 @@ app.whenReady().then(async () => {
   });
 
   await createWindow();
-  await createLibraryWindow(); // Joey: WIP
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
