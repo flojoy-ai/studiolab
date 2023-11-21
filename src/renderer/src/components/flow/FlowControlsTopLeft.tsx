@@ -30,6 +30,7 @@ const FlowControlsTopLeft = (): JSX.Element => {
           Add Blocks
         </Button>
       )}
+      <Button>New Window</Button>
     </div>
   );
 };
