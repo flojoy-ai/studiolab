@@ -4,7 +4,7 @@ import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 
-export async function createBlocksLibraryWindow(): Promise<void> {
+export async function spawnBlocksLibraryWindow(): Promise<void> {
   // Create the browser window.
   const blocksLibraryWindow = new BrowserWindow({
     width: 900,

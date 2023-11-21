@@ -17,7 +17,7 @@ import {
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { openLogFolder } from './logging';
-import { createBlocksLibraryWindow } from './windows';
+import { spawnBlocksLibraryWindow } from './windows';
 
 fixPath();
 
@@ -124,7 +124,7 @@ app.whenReady().then(async () => {
     app.exit();
   });
 
-  handleWithCustomErrors('spawn-blocks-library-window', createBlocksLibraryWindow);
+  handleWithCustomErrors('spawn-blocks-library-window', spawnBlocksLibraryWindow);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
