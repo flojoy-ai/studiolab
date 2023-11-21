@@ -119,7 +119,7 @@ def wire_flowchart(
                 block=block, i=input_subject, o=output_observable
             )
 
-    visitedBlocks = set()
+    visited_blocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
         logger.info(f"Recursively connecting {io.block.id} to its inputs")
@@ -157,15 +157,15 @@ def wire_flowchart(
         in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
         for conn in io.block.ins:
             logger.debug(conn)
-            if conn.source in visitedBlocks:
+            if conn.source in visited_blocks:
                 continue
-            visitedBlocks.add(conn.source)
+            visited_blocks.add(conn.source)
             rec_connect_blocks(block_ios[conn.source])
 
     # Connect the graph backwards starting from the terminal nodes
     terminals = filter(lambda b: not b.outs, blocks.values())
     for block in terminals:
-        visitedBlocks.add(block.id)
+        visited_blocks.add(block.id)
         rec_connect_blocks(block_ios[block.id])
 
 
