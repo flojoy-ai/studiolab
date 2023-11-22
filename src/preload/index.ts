@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { electronAPI } from '@electron-toolkit/preload';
+import { exposeElectronTRPC } from 'electron-trpc/main';
 
 // Joey: Taken from
 // https://github.com/electron/electron/issues/24427
@@ -51,3 +52,7 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.api = api;
 }
+
+process.once('loaded', async () => {
+  exposeElectronTRPC();
+});

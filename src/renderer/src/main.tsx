@@ -7,8 +7,14 @@ import { createHashRouter, RouterProvider } from 'react-router-dom';
 import Flow from './routes/flow/Flow';
 import Library from './routes/library/Library';
 import Home from './routes/home/Home';
+import { ipcLink } from 'electron-trpc/renderer';
+import { createTRPCProxyClient } from '@trpc/client';
+import type { AppRouter } from 'src/main/api/api.d';
 
 const queryClient = new QueryClient();
+export const trpcClient = createTRPCProxyClient<AppRouter>({
+  links: [ipcLink()]
+});
 
 const router = createHashRouter([
   {

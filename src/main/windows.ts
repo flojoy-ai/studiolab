@@ -1,8 +1,10 @@
 import { app, shell, BrowserWindow } from 'electron';
+import { appRouter } from './api';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
+import { createIPCHandler } from 'electron-trpc/main';
 
 let blocksLibraryWindow: BrowserWindow | null = null;
 
@@ -31,6 +33,8 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
       sandbox: false
     }
   });
+
+  createIPCHandler({ router: appRouter, windows: [blocksLibraryWindow] });
 
   blocksLibraryWindow.on('ready-to-show', () => {
     if (blocksLibraryWindow) {

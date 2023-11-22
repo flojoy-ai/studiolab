@@ -4,20 +4,11 @@ import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-insta
 import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
-import {
-  checkPythonInstallation,
-  installDependencies,
-  installPoetry,
-  installPipx,
-  spawnCaptain,
-  pipxEnsurepath,
-  checkPipxInstallation,
-  killProcess
-} from './python';
+import { createIPCHandler } from 'electron-trpc/main';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
-import { openLogFolder } from './logging';
-import { spawnBlocksLibraryWindow } from './windows';
+import { appRouter } from './api';
+import { killProcess } from './python';
 
 fixPath();
 
@@ -46,6 +37,8 @@ async function createWindow(): Promise<void> {
       sandbox: false
     }
   });
+
+  createIPCHandler({ router: appRouter, windows: [mainWindow] });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
@@ -85,18 +78,18 @@ async function createWindow(): Promise<void> {
 
 // Joey: Taken from
 // https://github.com/electron/electron/issues/24427
-const encodeError = (e) => {
-  return { name: e.name, message: e.message, extra: { ...e } };
-};
-const handleWithCustomErrors = (channel, handler) => {
-  ipcMain.handle(channel, async (...args) => {
-    try {
-      return { result: await Promise.resolve(handler(...args)) };
-    } catch (e) {
-      return { error: encodeError(e) };
-    }
-  });
-};
+// const encodeError = (e) => {
+//   return { name: e.name, message: e.message, extra: { ...e } };
+// };
+// const handleWithCustomErrors = (channel, handler) => {
+//   ipcMain.handle(channel, async (...args) => {
+//     try {
+//       return { result: await Promise.resolve(handler(...args)) };
+//     } catch (e) {
+//       return { error: encodeError(e) };
+//     }
+//   });
+// };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -108,23 +101,6 @@ app.whenReady().then(async () => {
     installExtension(REACT_DEVELOPER_TOOLS);
   }
   electronApp.setAppUserModelId('com.electron');
-
-  handleWithCustomErrors('check-python-installation', checkPythonInstallation);
-  handleWithCustomErrors('check-pipx-installation', checkPipxInstallation);
-  handleWithCustomErrors('install-pipx', installPipx);
-  handleWithCustomErrors('pipx-ensurepath', pipxEnsurepath);
-  handleWithCustomErrors('install-poetry', installPoetry);
-  handleWithCustomErrors('install-dependencies', installDependencies);
-  handleWithCustomErrors('spawn-captain', spawnCaptain);
-
-  handleWithCustomErrors('open-log-folder', openLogFolder);
-
-  handleWithCustomErrors('restart-flojoy-studio', () => {
-    app.relaunch();
-    app.exit();
-  });
-
-  handleWithCustomErrors('spawn-blocks-library-window', spawnBlocksLibraryWindow);
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

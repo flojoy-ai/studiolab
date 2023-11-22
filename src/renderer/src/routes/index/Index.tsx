@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { useNavigate } from 'react-router-dom';
 import { isPackaged } from '@/utils/build';
+import { trpcClient } from '@/main';
 
 const Index = (): JSX.Element => {
   const captainReady = useLifecycleStore((state) => state.captainReady);
@@ -51,7 +52,7 @@ const Index = (): JSX.Element => {
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
-      const data = await window.api.checkPythonInstallation();
+      const data = await trpcClient.checkPythonInstallation.query();
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'completed',
@@ -72,7 +73,7 @@ const Index = (): JSX.Element => {
 
   const checkPipxInstallation = async (): Promise<void> => {
     try {
-      const data = await window.api.checkPipxInstallation();
+      const data = await trpcClient.checkPipxInstallation.query();
       updateSetupStatus({
         stage: 'check-pipx-installation',
         status: 'completed',
@@ -91,8 +92,8 @@ const Index = (): JSX.Element => {
 
   const installDependencies = async (): Promise<void> => {
     try {
-      await window.api.installPipx();
-      await window.api.pipxEnsurepath();
+      await trpcClient.installPipx.query();
+      await trpcClient.pipxEnsurepath.query();
 
       const countDown = 3;
       if (needRestart) {
