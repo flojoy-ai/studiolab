@@ -76,21 +76,6 @@ async function createWindow(): Promise<void> {
   });
 }
 
-// Joey: Taken from
-// https://github.com/electron/electron/issues/24427
-// const encodeError = (e) => {
-//   return { name: e.name, message: e.message, extra: { ...e } };
-// };
-// const handleWithCustomErrors = (channel, handler) => {
-//   ipcMain.handle(channel, async (...args) => {
-//     try {
-//       return { result: await Promise.resolve(handler(...args)) };
-//     } catch (e) {
-//       return { error: encodeError(e) };
-//     }
-//   });
-// };
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
