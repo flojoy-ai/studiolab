@@ -219,7 +219,10 @@ def wire_flowchart(
 
 
 class Flow:
-    """Represents a currently running flow."""
+    """Represents a currently running flow.
+
+    The flowchart is immediately started upon creation.
+    """
 
     flowchart: FlowChart
     ui_inputs: dict[str, Subject]
