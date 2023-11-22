@@ -106,13 +106,13 @@ const Index = (): JSX.Element => {
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         if (isPackaged()) {
-          await window.api.restartFlojoyStudio();
+          await trpcClient.restartFlojoyStudio.query();
         } else {
           alert('Restart is not supported for dev build, please relaunch Flojoy Studio manually!');
         }
       } else {
-        await window.api.installPoetry();
-        await window.api.installDependencies();
+        await trpcClient.installPoetry.query();
+        await trpcClient.installDependencies.query();
 
         updateSetupStatus({
           stage: 'install-dependencies',
@@ -137,7 +137,7 @@ const Index = (): JSX.Element => {
 
   const spawnCaptain = async (): Promise<void> => {
     try {
-      await window.api.spawnCaptain();
+      await trpcClient.spawnCaptain.query();
     } catch (err) {
       updateSetupStatus({
         stage: 'spawn-captain',
@@ -156,22 +156,14 @@ const Index = (): JSX.Element => {
   const errorAction = async (): Promise<void> => {
     const setupError = setupStatuses.find((status) => status.status === 'error');
     switch (setupError?.stage) {
-      case 'check-python-installation': {
+      case 'check-python-installation':
         window.open('https://www.python.org/downloads/release/python-3116/');
         break;
-      }
-      case 'check-pipx-installation': {
-        await window.api.openLogFolder();
+      case 'check-pipx-installation':
+      case 'install-dependencies':
+      case 'spawn-captain':
+        await trpcClient.openLogFolder.query();
         break;
-      }
-      case 'install-dependencies': {
-        await window.api.openLogFolder();
-        break;
-      }
-      case 'spawn-captain': {
-        await window.api.openLogFolder();
-        break;
-      }
     }
   };
 
@@ -268,7 +260,7 @@ const Index = (): JSX.Element => {
         <Button
           onClick={async (): Promise<void> => {
             if (isPackaged()) {
-              await window.api.restartFlojoyStudio();
+              await trpcClient.restartFlojoyStudio.query();
             } else {
               alert(
                 'Restart is not supported for dev build, please relaunch Flojoy Studio manually!'

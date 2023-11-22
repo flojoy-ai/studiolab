@@ -1,5 +1,6 @@
 import { Button } from '../ui/Button';
 import useUndoRedo from '@/hooks/useUndoRedo';
+import { trpcClient } from '@/main';
 import { Redo, Undo } from 'lucide-react';
 
 const FlowControlsTopLeft = (): JSX.Element => {
@@ -13,7 +14,9 @@ const FlowControlsTopLeft = (): JSX.Element => {
       <Button onClick={redo} size="icon">
         <Redo size="20" />
       </Button>
-      <Button onClick={async () => await window.api.spawnBlocksLibraryWindow()}>Add Blocks</Button>
+      <Button onClick={async () => await trpcClient.spawnBlockLibraryWindow.query()}>
+        Add Blocks
+      </Button>
     </div>
   );
 };

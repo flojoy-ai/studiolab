@@ -1,4 +1,4 @@
-import { t } from '.';
+import { t } from './trpc';
 import {
   checkPythonInstallation,
   checkPipxInstallation,

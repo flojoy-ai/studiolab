@@ -3,10 +3,7 @@ import { app } from 'electron';
 import { pythonRouter } from './python';
 
 import { spawnBlocksLibraryWindow } from '../windows';
-
-import { initTRPC } from '@trpc/server';
-
-export const t = initTRPC.create({ isServer: true });
+import { t } from './trpc';
 
 const baseRouter = t.router({
   openLogFolder: t.procedure.query(() => {

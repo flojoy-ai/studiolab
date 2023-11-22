@@ -4,6 +4,7 @@ import { useLifecycleStore } from '@/stores/lifecycle';
 import { ModeToggle } from './ModeToggle';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Button } from '../ui/Button';
+import { trpcClient } from '@/main';
 
 const StatusBar = (): JSX.Element => {
   const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
@@ -39,7 +40,7 @@ const StatusBar = (): JSX.Element => {
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
-      <Button size="sm" variant="secondary" onClick={async () => await window.api.openLogFolder()}>
+      <Button size="sm" variant="secondary" onClick={async () => trpcClient.openLogFolder.query()}>
         Open Full Logs
       </Button>
       <ModeToggle />
