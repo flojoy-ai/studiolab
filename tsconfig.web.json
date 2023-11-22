@@ -5,16 +5,14 @@
     "src/renderer/src/**/*",
     "src/renderer/src/**/*.tsx",
     "src/preload/*.d.ts",
-    "package.json",
+    "package.json"
   ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/renderer/src/*"
-      ]
-    },
+      "@/*": ["./src/renderer/src/*"]
+    }
   }
 }
