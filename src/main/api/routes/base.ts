@@ -1,11 +1,9 @@
-import { openLogFolder } from '../logging';
+import { openLogFolder } from '../../logging';
 import { app } from 'electron';
-import { pythonRouter } from './python';
+import { spawnBlocksLibraryWindow } from '../../windows';
+import { t } from '../trpc';
 
-import { spawnBlocksLibraryWindow } from '../windows';
-import { t } from './trpc';
-
-const baseRouter = t.router({
+export const baseRouter = t.router({
   openLogFolder: t.procedure.mutation(() => {
     openLogFolder();
   }),
@@ -17,5 +15,3 @@ const baseRouter = t.router({
     await spawnBlocksLibraryWindow();
   })
 });
-
-export const appRouter = t.mergeRouters(baseRouter, pythonRouter);
