@@ -39,7 +39,8 @@ const StatusBar = (): JSX.Element => {
       ) : (
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
-      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
+      <div className="grow" />
       <Button size="sm" variant="secondary" onClick={async () => trpcClient.openLogFolder.mutate()}>
         Open Full Logs
       </Button>
