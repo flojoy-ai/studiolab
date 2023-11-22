@@ -4,6 +4,10 @@ from typing import Callable, Mapping
 
 
 def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
+    """Imports all Flojoy blocks from the blocks directory.
+
+    Note: This assumes all .py files in the directory contains Flojoy blocks.
+    """
     functions = {}
     for file in os.listdir(blocks_dir):
         full_path = os.path.join(blocks_dir, file)

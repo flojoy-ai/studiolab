@@ -7,15 +7,21 @@ BlockType = Literal[
 
 
 class RFNodeData(BaseModel):
+    """The 'data' field of a node from React Flow."""
+
     block_type: BlockType
 
 
 class RFNode(BaseModel):
+    """A node from React Flow."""
+
     id: str
     data: RFNodeData
 
 
 class RFEdge(BaseModel):
+    """An edge from React Flow."""
+
     target: str
     source: str
     targetHandle: str
@@ -23,23 +29,31 @@ class RFEdge(BaseModel):
 
 
 class ReactFlow(BaseModel):
+    """A React Flow flow."""
+
     nodes: list[RFNode]
     edges: list[RFEdge]
 
 
+class Block(BaseModel):
+    """A Flojoy block."""
+
+    id: str
+    block_type: BlockType
+
+
 class FCBlockConnection(BaseModel):
+    """Internal representation of a connection between blocks."""
+
     target: str
     source: str
     sourceParam: str
     targetParam: str
 
 
-class Block(BaseModel):
-    id: str
-    block_type: BlockType
-
-
 class FCBlock(Block):
+    """Internal representation of a Flojoy block."""
+
     ins: list[FCBlockConnection]
     outs: list[FCBlockConnection]
 
@@ -49,6 +63,8 @@ class FCBlock(Block):
 
 
 class FlowChart(BaseModel):
+    """Internal representation of a Flojoy flow chart."""
+
     blocks: list[FCBlock]
 
     @staticmethod

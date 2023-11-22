@@ -84,6 +84,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @router.websocket("/flowchart")
 async def websocket_flowchart(websocket: WebSocket):
+    """Entry point for running a flow chart."""
     send_msg = send_message_factory(websocket)
 
     start_obs = Subject()
