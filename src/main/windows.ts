@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow } from 'electron';
-import { appRouter } from './api';
+import { appRouter } from './api/root';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';

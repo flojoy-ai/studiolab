@@ -7,7 +7,7 @@ import icon from '../../resources/icon.png?asset';
 import { createIPCHandler } from 'electron-trpc/main';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
-import { appRouter } from './api';
+import { appRouter } from './api/root';
 import { killProcess } from './python';
 
 fixPath();

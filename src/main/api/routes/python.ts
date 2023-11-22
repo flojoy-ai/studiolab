@@ -1,4 +1,4 @@
-import { t } from './trpc';
+import { t } from '../trpc';
 import {
   checkPythonInstallation,
   checkPipxInstallation,
@@ -7,7 +7,7 @@ import {
   installPoetry,
   installDependencies,
   spawnCaptain
-} from '../python';
+} from '../../python';
 
 export const pythonRouter = t.router({
   checkPythonInstallation: t.procedure.query(async () => {
