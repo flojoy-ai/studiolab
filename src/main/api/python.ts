@@ -18,23 +18,23 @@ export const pythonRouter = t.router({
     return await checkPipxInstallation();
   }),
 
-  installPipx: t.procedure.query(async () => {
+  installPipx: t.procedure.mutation(async () => {
     return await installPipx();
   }),
 
-  pipxEnsurepath: t.procedure.query(async () => {
+  pipxEnsurepath: t.procedure.mutation(async () => {
     return await pipxEnsurepath();
   }),
 
-  installPoetry: t.procedure.query(async () => {
+  installPoetry: t.procedure.mutation(async () => {
     return await installPoetry();
   }),
 
-  installDependencies: t.procedure.query(async () => {
+  installDependencies: t.procedure.mutation(async () => {
     return await installDependencies();
   }),
 
-  spawnCaptain: t.procedure.query(async () => {
+  spawnCaptain: t.procedure.mutation(async () => {
     spawnCaptain();
   })
 });

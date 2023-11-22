@@ -14,7 +14,7 @@ const FlowControlsTopLeft = (): JSX.Element => {
       <Button onClick={redo} size="icon">
         <Redo size="20" />
       </Button>
-      <Button onClick={async () => await trpcClient.spawnBlockLibraryWindow.query()}>
+      <Button onClick={async () => await trpcClient.spawnBlockLibraryWindow.mutate()}>
         Add Blocks
       </Button>
     </div>

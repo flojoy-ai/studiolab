@@ -40,7 +40,7 @@ const StatusBar = (): JSX.Element => {
         <Badge variant={'destructive'}>Disconnected</Badge>
       )}
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-sm">{message}</div>
-      <Button size="sm" variant="secondary" onClick={async () => trpcClient.openLogFolder.query()}>
+      <Button size="sm" variant="secondary" onClick={async () => trpcClient.openLogFolder.mutate()}>
         Open Full Logs
       </Button>
       <ModeToggle />

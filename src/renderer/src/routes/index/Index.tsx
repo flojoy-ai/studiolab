@@ -92,8 +92,8 @@ const Index = (): JSX.Element => {
 
   const installDependencies = async (): Promise<void> => {
     try {
-      await trpcClient.installPipx.query();
-      await trpcClient.pipxEnsurepath.query();
+      await trpcClient.installPipx.mutate();
+      await trpcClient.pipxEnsurepath.mutate();
 
       const countDown = 3;
       if (needRestart) {
@@ -106,13 +106,13 @@ const Index = (): JSX.Element => {
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
         if (isPackaged()) {
-          await trpcClient.restartFlojoyStudio.query();
+          await trpcClient.restartFlojoyStudio.mutate();
         } else {
           alert('Restart is not supported for dev build, please relaunch Flojoy Studio manually!');
         }
       } else {
-        await trpcClient.installPoetry.query();
-        await trpcClient.installDependencies.query();
+        await trpcClient.installPoetry.mutate();
+        await trpcClient.installDependencies.mutate();
 
         updateSetupStatus({
           stage: 'install-dependencies',
@@ -137,7 +137,7 @@ const Index = (): JSX.Element => {
 
   const spawnCaptain = async (): Promise<void> => {
     try {
-      await trpcClient.spawnCaptain.query();
+      await trpcClient.spawnCaptain.mutate();
     } catch (err) {
       updateSetupStatus({
         stage: 'spawn-captain',
@@ -162,7 +162,7 @@ const Index = (): JSX.Element => {
       case 'check-pipx-installation':
       case 'install-dependencies':
       case 'spawn-captain':
-        await trpcClient.openLogFolder.query();
+        await trpcClient.openLogFolder.mutate();
         break;
     }
   };
@@ -260,7 +260,7 @@ const Index = (): JSX.Element => {
         <Button
           onClick={async (): Promise<void> => {
             if (isPackaged()) {
-              await trpcClient.restartFlojoyStudio.query();
+              await trpcClient.restartFlojoyStudio.mutate();
             } else {
               alert(
                 'Restart is not supported for dev build, please relaunch Flojoy Studio manually!'

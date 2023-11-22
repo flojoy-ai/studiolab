@@ -6,14 +6,14 @@ import { spawnBlocksLibraryWindow } from '../windows';
 import { t } from './trpc';
 
 const baseRouter = t.router({
-  openLogFolder: t.procedure.query(() => {
+  openLogFolder: t.procedure.mutation(() => {
     openLogFolder();
   }),
-  restartFlojoyStudio: t.procedure.query(() => {
+  restartFlojoyStudio: t.procedure.mutation(() => {
     app.relaunch();
     app.exit();
   }),
-  spawnBlockLibraryWindow: t.procedure.query(async () => {
+  spawnBlockLibraryWindow: t.procedure.mutation(async () => {
     await spawnBlocksLibraryWindow();
   })
 });
