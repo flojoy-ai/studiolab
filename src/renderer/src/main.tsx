@@ -9,7 +9,7 @@ import Library from './routes/library/Library';
 import Home from './routes/home/Home';
 import { ipcLink } from 'electron-trpc/renderer';
 import { createTRPCProxyClient } from '@trpc/client';
-import type { AppRouter } from 'src/main/api/api.d';
+import type { AppRouter } from 'src/main/api/index.d';
 
 const queryClient = new QueryClient();
 export const trpcClient = createTRPCProxyClient<AppRouter>({
