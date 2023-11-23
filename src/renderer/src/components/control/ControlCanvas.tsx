@@ -1,6 +1,3 @@
-// import AddBlock from '@/components/blocks/flow/AddBlock';
-// import BigNumberBlock from '@/components/blocks/control/BigNumberDisplay';
-// import SliderBlock from '@/components/blocks/control/SliderBlock';
 // import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 // import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 // import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
@@ -15,16 +12,17 @@ import ReactFlow, {
   // ReactFlowInstance
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-// import { useFlowchartStore } from '@/stores/flowchart';
-// import { useShallow } from 'zustand/react/shallow';
+import { useFlowchartStore } from '@/stores/flowchart';
+import { useShallow } from 'zustand/react/shallow';
+import SliderControl from '../blocks/control/SliderControl';
+import BigNumberDisplay from '../blocks/control/BigNumberDisplay';
 // import { useCallback, useState } from 'react';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
-// const nodeTypes = {
-//   slider: SliderBlock,
-//   bignum: BigNumberBlock,
-//   add: AddBlock
-// };
+const nodeTypes = {
+  slider: SliderControl,
+  bignum: BigNumberDisplay
+};
 //
 // const edgeTypes = {
 //   smart: SmartBezierEdge
@@ -36,16 +34,11 @@ const ControlCanvas = () => {
   // );
 
   // const { takeSnapshot } = useUndoRedo();
-  // const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode } = useFlowchartStore(
-  //   useShallow((state) => ({
-  //     edges: state.edges,
-  //     onEdgesChange: state.onEdgesChange,
-  //     nodes: state.nodes,
-  //     onNodesChange: state.onNodesChange,
-  //     onConnect: state.onConnect,
-  //     addNode: state.addNode
-  //   }))
-  // );
+  const { controls } = useFlowchartStore(
+    useShallow((state) => ({
+      controls: state.controls
+    }))
+  );
   //
   // const onNodeDragStart: NodeDragHandler = useCallback(() => {
   //   // 👇 make dragging a node undoable
@@ -105,8 +98,8 @@ const ControlCanvas = () => {
 
   return (
     <ReactFlow
-      // nodes={nodes}
-      // nodeTypes={nodeTypes}
+      nodes={controls}
+      nodeTypes={nodeTypes}
       // edges={edges}
       // edgeTypes={edgeTypes}
       // onNodesChange={onNodesChange}

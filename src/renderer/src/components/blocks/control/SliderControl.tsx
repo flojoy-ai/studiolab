@@ -1,5 +1,4 @@
 import { ChangeEvent } from 'react';
-import { Handle, Position } from 'reactflow';
 import { BlockProps } from '@/types/block';
 import { useBlockState } from '@/hooks/useBlockState';
 
@@ -23,7 +22,6 @@ const SliderBlock = ({ id }: BlockProps) => {
           value={value}
         />
       </div>
-      <Handle type="source" position={Position.Right} id="value" />
     </>
   );
 };
