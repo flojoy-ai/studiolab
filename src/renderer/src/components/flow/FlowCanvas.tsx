@@ -19,7 +19,6 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
-// import useUndoRedo from '@/hooks/useUndoRedo';
 
 const nodeTypes = {
   slider: SliderBlock,
