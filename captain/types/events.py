@@ -1,7 +1,10 @@
+from typing import Any, Literal, TypeAlias, Union
+
 from pydantic import BaseModel, Field
-from typing import Literal, Any, Union
 
 from captain.types.flowchart import ReactFlow
+
+UIInputID: TypeAlias = str
 
 
 class FlowStartEvent(BaseModel):
@@ -15,7 +18,7 @@ class FlowCancelEvent(BaseModel):
 
 class FlowUIEvent(BaseModel):
     event_type: Literal["ui"]
-    ui_input_id: str
+    ui_input_id: UIInputID
     value: Any
 
 

@@ -1,9 +1,12 @@
-from typing import Literal
+from typing import Literal, TypeAlias
+
 from pydantic import BaseModel
 
 BlockType = Literal[
     "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
 ]
+
+BlockID: TypeAlias = str
 
 
 class RFNodeData(BaseModel):
@@ -11,13 +14,13 @@ class RFNodeData(BaseModel):
 
 
 class RFNode(BaseModel):
-    id: str
+    id: BlockID
     data: RFNodeData
 
 
 class RFEdge(BaseModel):
-    target: str
-    source: str
+    target: BlockID
+    source: BlockID
     targetHandle: str
     sourceHandle: str
 

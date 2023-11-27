@@ -8,7 +8,7 @@ import reactivex.operators as ops
 from reactivex import Observable, Subject
 
 from captain.logging import logger
-from captain.types.events import FlowUIEvent
+from captain.types.events import FlowUIEvent, UIInputID
 from captain.types.flowchart import FCBlock, FlowChart
 from captain.utils.blocks import import_blocks, is_ui_input
 
@@ -73,7 +73,7 @@ def wire_flowchart(
 
             input_subject = Subject()
             input_subject.subscribe(
-                partial(
+                on_next=partial(
                     lambda blk, x: logger.debug(
                         f"Input got {x} for {blk.id} regardless of zip"
                     ),
@@ -96,7 +96,7 @@ def wire_flowchart(
                 )
             )
             output_observable.subscribe(
-                partial(lambda blk, x: on_publish(x, blk.id), block),
+                on_next=partial(lambda blk, x: on_publish(x, blk.id), block),
                 on_error=lambda e: logger.debug(e),
                 on_completed=lambda: logger.debug("completed"),
             )
@@ -122,7 +122,9 @@ def wire_flowchart(
     visited_blocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
-        logger.info(f"Recursively connecting {io.block.id} to its inputs")
+        logger.info(
+            f"Recursively connecting {io.block.block_type}({io.block.id}) to its inputs"
+        )
 
         if not io.block.ins and io.block.id not in ui_inputs:
             logger.info(
@@ -171,7 +173,7 @@ def wire_flowchart(
 
 class Flow:
     flowchart: FlowChart
-    ui_inputs: dict[str, Subject]
+    ui_inputs: dict[UIInputID, Subject]
 
     def __init__(
         self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
