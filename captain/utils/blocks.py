@@ -6,6 +6,12 @@ from captain.logging import logger
 
 
 def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
+    folder_path = os.path.join(blocks_dir, "flojoy")
+    if not os.path.exists(folder_path):
+        raise ValueError(
+            f"{blocks_dir} does not seem to be a valid blocks directory since the 'flojoy' folder (which contains the Flojoy Standard Blocks Library) is missing here."
+        )
+
     # example key: "flojoy.math.arithmetic.add"
     functions = {}
 
