@@ -21,7 +21,7 @@ def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
             # block_type is something like "flojoy.math.arithmetic.add"
             block_type = os.path.relpath(
                 os.path.splitext(block_path)[0], blocks_dir
-            ).replace("/", ".")
+            ).replace(os.path.sep, ".")
 
             spec = importlib.util.spec_from_file_location(block_name, block_path)
 
