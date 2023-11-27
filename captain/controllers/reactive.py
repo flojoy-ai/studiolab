@@ -9,12 +9,10 @@ from reactivex import Observable, Subject
 
 from captain.logging import logger
 from captain.types.events import FlowControlEvent
-from captain.types.flowchart import BlockID, FCBlock, FlowChart
+from captain.types.flowchart import BlockID, BlockType, FCBlock, FlowChart
 from captain.utils.blocks import import_blocks, is_ui_input
 
 BLOCKS_DIR = os.path.join("blocks")
-
-ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 
 
 @dataclass
@@ -69,8 +67,8 @@ def wire_flowchart(
     flowchart: FlowChart,
     on_publish: Callable,
     starter: Observable,
-    ui_inputs: Mapping[str, Observable],
-    block_funcs: Mapping[str, Callable],
+    ui_inputs: Mapping[BlockID, Observable],
+    block_funcs: Mapping[BlockType, Callable],
 ):
     """Connects all of block functions in a flow chart using RxPY.
 
@@ -91,9 +89,9 @@ def wire_flowchart(
         Preimported functions for each block type.
     """
 
-    blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
+    blocks: dict[BlockID, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
-    block_ios: dict[str, FCBlockIO] = {}
+    block_ios: dict[BlockID, FCBlockIO] = {}
 
     for island in islands:
         for block in island:
@@ -162,7 +160,7 @@ def wire_flowchart(
                 block=block, i=input_subject, o=output_observable
             )
 
-    visited_blocks = set()
+    visited_blocks: set[BlockID] = set()
 
     def rec_connect_blocks(io: FCBlockIO):
         """Combines each input edge of a block into a single observable, until a block with no inputs is reached.
@@ -187,11 +185,8 @@ def wire_flowchart(
 
         logger.debug(f"Connecting {io.block.id}")
 
-        # Zips/combines every input for a block into a single observable.
-        combine_strategy = (
-            rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
-        )
-        in_combined = combine_strategy(
+        # combines every input for a block into a single observable.
+        in_combined = rx.combine_latest(
             *(
                 block_ios[conn.source].o.pipe(
                     ops.map(partial(lambda param, v: (param, v), conn.targetParam))
@@ -202,7 +197,7 @@ def wire_flowchart(
 
         for conn in io.block.ins:
             logger.debug(
-                f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}"
+                f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru 'combine_latest' via {conn.targetParam}"
             )
 
         in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
@@ -236,8 +231,6 @@ class Flow:
         self.control_blocks = {}
 
         funcs = import_blocks(BLOCKS_DIR)
-
-        print(funcs, flush=True)
 
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):

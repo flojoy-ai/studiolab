@@ -3,9 +3,10 @@ import os
 from typing import Callable, Mapping
 
 from captain.logging import logger
+from captain.types.flowchart import BlockType
 
 
-def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
+def import_blocks(blocks_dir: str) -> Mapping[BlockType, Callable]:
     """Imports all Flojoy blocks from the blocks directory.
 
     Note: This assumes all .py files in the directory contains Flojoy blocks.
