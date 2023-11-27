@@ -18,6 +18,10 @@ Everything related to ReactFlow
 """
 
 # This ID is defined in the Handle component in ReactFlow
+# if the block function takes x and y as inputs, then the Handle
+# should also match the same name!
+# TODO: Fix this later to make sure the handle ID is generated from the block's
+# input param name and output param name.
 RFHandleID: TypeAlias = str
 
 
@@ -46,12 +50,14 @@ class ReactFlow(BaseModel):
 Flojoy specific flowchart types
 """
 
+FCIOParamName: TypeAlias = RFHandleID
+
 
 class FCConnection(BaseModel):
     target: BlockID
     source: BlockID
-    sourceParam: str
-    targetParam: str
+    sourceParam: FCIOParamName
+    targetParam: FCIOParamName
 
 
 class _Block(BaseModel):
@@ -80,7 +86,7 @@ class FlowChart(BaseModel):
     @staticmethod
     def from_blocks_edges(blocks: list[_Block], edges: list[FCConnection]):
         block_lookup = {block.id: block for block in blocks}
-        fc_blocks: dict[str, FCBlock] = {}
+        fc_blocks: dict[BlockID, FCBlock] = {}
 
         # TODO: This func can raise KeyError, needs more error handling logic
         # and throw a better error message.
