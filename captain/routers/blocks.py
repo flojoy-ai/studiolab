@@ -3,6 +3,7 @@
 # from typing import Any
 
 # import reactivex.operators as ops
+
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
 from reactivex import Subject
@@ -19,7 +20,7 @@ from captain.types.events import (
 from captain.types.flowchart import FlowChart
 from captain.utils.ws import send_message_factory
 
-# from reactivex import  create
+# from reactivex import create
 # from reactivex.subject import BehaviorSubject
 
 
@@ -28,6 +29,7 @@ router = APIRouter(tags=["blocks"], prefix="/blocks")
 
 @router.websocket("/flowchart")
 async def websocket_flowchart(websocket: WebSocket):
+    # TODO: Joey: try out gRPC streaming instead of WebSocket
     send_msg = send_message_factory(websocket)
 
     start_obs = Subject()
@@ -73,8 +75,8 @@ async def websocket_flowchart(websocket: WebSocket):
 #                 observer.on_next, lambda err: observer.on_error(err)
 #             )
 #         )
-#
-#
+
+
 # @router.websocket("/ws")
 # async def websocket_endpoint(websocket: WebSocket):
 #     all_events = BehaviorSubject[str | int](0)
