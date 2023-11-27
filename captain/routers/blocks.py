@@ -12,10 +12,10 @@ from captain.controllers.reactive import Flow
 from captain.logging import logger
 from captain.types.events import (
     FlowCancelEvent,
+    FlowControlEvent,
     FlowSocketMessage,
     FlowStartEvent,
     FlowStateUpdateEvent,
-    FlowUIEvent,
 )
 from captain.types.flowchart import FlowChart
 
@@ -114,7 +114,7 @@ async def websocket_flowchart(websocket: WebSocket):
             case FlowCancelEvent():
                 flow = None
                 logger.info("Cancelling flow")
-            case FlowUIEvent():
+            case FlowControlEvent():
                 if flow is None:
                     logger.error("Can't process UI event for non existent flow")
                 else:

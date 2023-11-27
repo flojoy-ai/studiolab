@@ -1,24 +1,25 @@
 from reactivex import Subject
-from captain.types.flowchart import Block, FCBlockConnection, FlowChart
+
 from captain.controllers.reactive import Flow
+from captain.types.flowchart import FCConnection, FlowChart, _Block
 
 
 def test_add():
     blocks = [
-        Block(id="constant1", block_type="constant"),
-        Block(id="constant2", block_type="constant"),
-        Block(id="add", block_type="add"),
-        Block(id="bignum", block_type="bignum"),
+        _Block(id="constant1", block_type="constant"),
+        _Block(id="constant2", block_type="constant"),
+        _Block(id="add", block_type="add"),
+        _Block(id="bignum", block_type="bignum"),
     ]
 
     edges = [
-        FCBlockConnection(
+        FCConnection(
             target="add", source="constant1", targetParam="x", sourceParam="value"
         ),
-        FCBlockConnection(
+        FCConnection(
             target="add", source="constant2", targetParam="y", sourceParam="value"
         ),
-        FCBlockConnection(
+        FCConnection(
             target="bignum", source="add", targetParam="x", sourceParam="value"
         ),
     ]

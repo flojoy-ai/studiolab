@@ -8,8 +8,8 @@ import reactivex.operators as ops
 from reactivex import Observable, Subject
 
 from captain.logging import logger
-from captain.types.events import FlowUIEvent, UIInputID
-from captain.types.flowchart import FCBlock, FlowChart
+from captain.types.events import FlowControlEvent
+from captain.types.flowchart import BlockID, FCBlock, FlowChart
 from captain.utils.blocks import import_blocks, is_ui_input
 
 BLOCKS_DIR = os.path.join("captain", "blocks")
@@ -173,26 +173,26 @@ def wire_flowchart(
 
 class Flow:
     flowchart: FlowChart
-    ui_inputs: dict[UIInputID, Subject]
+    control_blocks: dict[BlockID, Subject]
 
     def __init__(
         self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
     ) -> None:
         self.flowchart = flowchart
-        self.ui_inputs = {}
+        self.control_blocks = {}
 
         funcs = import_blocks(BLOCKS_DIR)
 
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):
                 logger.debug(f"Creating UI input for {block.id}")
-                self.ui_inputs[block.id] = Subject()
+                self.control_blocks[block.id] = Subject()
 
         wire_flowchart(
             flowchart=self.flowchart,
             on_publish=publish_fn,
             starter=start_obs,
-            ui_inputs=self.ui_inputs,
+            ui_inputs=self.control_blocks,
             block_funcs=funcs,
         )
 
@@ -201,5 +201,5 @@ class Flow:
         fc = FlowChart.model_validate_json(data)
         return Flow(fc, publish_fn, start_obs)
 
-    def process_ui_event(self, event: FlowUIEvent):
-        self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])
+    def process_ui_event(self, event: FlowControlEvent):
+        self.control_blocks[event.block_id].on_next([("x", event.value)])
