@@ -22,9 +22,9 @@ import useUndoRedo from '@/hooks/useUndoRedo';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
 const nodeTypes = {
-  slider: SliderBlock,
-  bignum: BigNumberBlock,
-  add: AddBlock
+  'flojoy.control.slider': SliderBlock,
+  'flojoy.visualization.bignum': BigNumberBlock,
+  'flojoy.math.arithmetic.add': AddBlock
 };
 
 const edgeTypes = {
@@ -84,10 +84,10 @@ const FlowCanvas = () => {
         return;
       }
 
-      const block_id = event.dataTransfer.getData('application/reactflow');
+      const block_type = event.dataTransfer.getData('application/reactflow');
 
       // check if the dropped element is valid
-      if (typeof block_id === 'undefined' || !block_id) {
+      if (typeof block_type === 'undefined' || !block_type) {
         return;
       }
 
@@ -99,7 +99,7 @@ const FlowCanvas = () => {
         y: event.clientY
       });
 
-      addNode(block_id, position);
+      addNode(block_type, position);
     },
     [reactFlowInstance]
   );

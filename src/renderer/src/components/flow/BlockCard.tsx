@@ -3,11 +3,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 
 type Props = {
   name: string;
-  block_id: string;
+  block_type: string;
   desc: string;
 };
 
-const BlockCard = ({ name, desc, block_id }: Props): JSX.Element => {
+const BlockCard = ({ name, desc, block_type }: Props): JSX.Element => {
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData('application/reactflow', nodeType);
     event.dataTransfer.effectAllowed = 'move';
@@ -24,7 +24,7 @@ const BlockCard = ({ name, desc, block_id }: Props): JSX.Element => {
             className=""
             variant="secondary"
             draggable
-            onDragStart={(event) => onDragStart(event, block_id)}
+            onDragStart={(event) => onDragStart(event, block_type)}
           >
             <div>{name}</div>
           </Button>

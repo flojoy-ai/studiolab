@@ -4,7 +4,11 @@ from pydantic import BaseModel
 
 # TODO: This is hardcoded for now
 BlockType = Literal[
-    "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
+    "flojoy.control.slider",
+    "flojoy.visualization.bignum",
+    "flojoy.math.arithmetic.add",
+    "flojoy.math.arithmetic.subtract",
+    "flojoy.math.constant",
 ]
 
 BlockID: TypeAlias = str

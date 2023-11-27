@@ -12,7 +12,7 @@ from captain.types.events import FlowControlEvent
 from captain.types.flowchart import BlockID, FCBlock, FlowChart
 from captain.utils.blocks import import_blocks, is_ui_input
 
-BLOCKS_DIR = os.path.join("captain", "blocks")
+BLOCKS_DIR = os.path.join("blocks")
 
 ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 
@@ -182,6 +182,8 @@ class Flow:
         self.control_blocks = {}
 
         funcs = import_blocks(BLOCKS_DIR)
+
+        print(funcs, flush=True)
 
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):
