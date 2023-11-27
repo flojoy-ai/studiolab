@@ -64,7 +64,7 @@ export const useFlowchartStore = create<FlowchartState>()(
         set({
           nodes: get().nodes.concat([
             {
-              id: `${block_type}-${uuidv4()}`,
+              id: uuidv4(),
               type: block_type,
               position: position,
               data: {
