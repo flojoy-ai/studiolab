@@ -43,6 +43,3 @@ def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
 
 def is_ui_input(func: Callable) -> bool:
     return getattr(func, "ui_input", False)
-
-
-import_blocks("blocks")
