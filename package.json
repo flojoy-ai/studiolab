@@ -52,7 +52,7 @@
     "fix-path": "^3.0.0",
     "gamepad.js": "^2.1.0",
     "localforage": "^1.10.0",
-    "lucide-react": "^0.292.0",
+    "lucide-react": "^0.293.0",
     "match-sorter": "^6.3.1",
     "react-router-dom": "^6.20.0",
     "react-use-websocket": "^4.5.0",
