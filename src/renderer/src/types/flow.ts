@@ -20,12 +20,12 @@ export interface FlowControlEvent {
   value: any;
 }
 
-export interface FlowStateUpdateEvent {
-  event_type: 'state_update';
-  id: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
-}
+// export interface FlowStateUpdateEvent {
+//   event_type: 'state_update';
+//   id: string;
+//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   data: any;
+// }
 
 export interface FlowSocketMessage {
   event: FlowStartEvent | FlowControlEvent | FlowCancelEvent;
