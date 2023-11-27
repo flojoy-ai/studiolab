@@ -20,10 +20,10 @@ class FlowControlEvent(BaseModel):
     value: Any
 
 
-# class FlowStateUpdateEvent(BaseModel):
-#     event_type: Literal["state_update"] = "state_update"
-#     id: str
-#     data: Any
+class FlowStateUpdateEvent(BaseModel):
+    event_type: Literal["state_update"] = "state_update"
+    id: str
+    data: Any
 
 
 class FlowSocketMessage(BaseModel):
