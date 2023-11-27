@@ -6,10 +6,10 @@ from captain.types.flowchart import FCConnection, FlowChart, _Block
 
 def test_add():
     blocks = [
-        _Block(id="constant1", block_type="constant"),
-        _Block(id="constant2", block_type="constant"),
-        _Block(id="add", block_type="add"),
-        _Block(id="bignum", block_type="bignum"),
+        _Block(id="constant1", block_type="flojoy.math.constant"),
+        _Block(id="constant2", block_type="flojoy.math.constant"),
+        _Block(id="add", block_type="flojoy.math.arithmetic.add"),
+        _Block(id="bignum", block_type="flojoy.visualization.bignum"),
     ]
 
     edges = [
@@ -31,6 +31,8 @@ def test_add():
     def pub(x, id):
         outputs[id] = x
 
+    # TODO: Maybe we should do something like flow.wire() to trigger the
+    # wire process instead of doing it upon construction?
     flow = Flow(fc, pub, start_obs)
     start_obs.on_next({})
 
