@@ -30,6 +30,7 @@ router = APIRouter(tags=["blocks"], prefix="/blocks")
 @router.websocket("/flowchart")
 async def websocket_flowchart(websocket: WebSocket):
     # TODO: Joey: try out gRPC streaming instead of WebSocket
+    """Entry point for running a flow chart."""
     send_msg = send_message_factory(websocket)
 
     start_obs = Subject()

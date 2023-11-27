@@ -19,12 +19,31 @@ ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 
 @dataclass
 class FCBlockIO:
+    """Represents a Flojoy block with a single input subject and output observable.
+
+    Input parameters are represented with a list of name/value pairs.
+    Output values are represented with a single value or TypedDict.
+    """
+
     block: FCBlock
     i: Subject
     o: Observable
 
 
 def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
+    """Finds all of the connected components (islands) in the flow chart.
+
+    Parameters
+    ----------
+    blocks
+        The list of blocks in the flow chart.
+
+    Returns
+    -------
+    list[list[FCBlock]]
+        A list of the islands.
+        Each list represents the blocks that make up a island.
+    """
     visited = set()
 
     def dfs(block: FCBlock, island: list[FCBlock]):
@@ -53,6 +72,25 @@ def wire_flowchart(
     ui_inputs: Mapping[str, Observable],
     block_funcs: Mapping[str, Callable],
 ):
+    """Connects all of block functions in a flow chart using RxPY.
+
+    To run the flow chart, push an item to the start observable.
+
+    Parameters
+    ----------
+    flowchart
+        The flow chart to connect together.
+    on_publish
+        A function that will be called every time a block function is run.
+    starter
+        An observable that blocks with no inputs will be subscribed to.
+        The flowchart will be run from the start every time this observable emits an item.
+    ui_inputs
+        Observables for each of the UI inputs in the flow chart.
+    block_funcs
+        Preimported functions for each block type.
+    """
+
     blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
     block_ios: dict[str, FCBlockIO] = {}
@@ -70,6 +108,11 @@ def wire_flowchart(
             ) -> dict[str, Any]:
                 logger.debug(f"Making params for block {blk.id} with {inputs}")
                 return dict(inputs)
+
+            # A lot of the lambdas being passed created are partially applied,
+            # this is because Python has weird late binding with lambdas in a loop.
+            # Instead of using captured values, we need to pass it as a parameter
+            # so that it binds to the value and not the name.
 
             input_subject = Subject()
             input_subject.subscribe(
@@ -122,6 +165,11 @@ def wire_flowchart(
     visited_blocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
+        """Combines each input edge of a block into a single observable, until a block with no inputs is reached.
+
+        Blocks with no inputs are subscribed to the start observable.
+
+        """
         logger.info(
             f"Recursively connecting {io.block.block_type}({io.block.id}) to its inputs"
         )
@@ -139,6 +187,7 @@ def wire_flowchart(
 
         logger.debug(f"Connecting {io.block.id}")
 
+        # Zips/combines every input for a block into a single observable.
         combine_strategy = (
             rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
         )
@@ -172,6 +221,11 @@ def wire_flowchart(
 
 
 class Flow:
+    """Represents a currently running flow.
+
+    The flowchart is immediately started upon creation.
+    """
+
     flowchart: FlowChart
     control_blocks: dict[BlockID, Subject]
 

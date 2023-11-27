@@ -6,6 +6,11 @@ from captain.logging import logger
 
 
 def import_blocks(blocks_dir: str) -> Mapping[str, Callable]:
+    """Imports all Flojoy blocks from the blocks directory.
+
+    Note: This assumes all .py files in the directory contains Flojoy blocks.
+    """
+
     folder_path = os.path.join(blocks_dir, "flojoy")
     if not os.path.exists(folder_path):
         raise ValueError(
