@@ -3,7 +3,6 @@ import { useBlockState } from '@/hooks/useBlockState';
 
 const BigNumberDisplay = ({ id }: BlockProps) => {
   const [value] = useBlockState<number>(id);
-  console.log(value);
 
   return (
     <>
