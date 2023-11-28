@@ -62,7 +62,7 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     blocksLibraryWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/library');
   } else {
-    blocksLibraryWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/library'));
+    blocksLibraryWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'library' });
   }
 
   app.on('before-quit', () => {

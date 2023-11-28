@@ -38,8 +38,8 @@ export const useBlockState = <T>(
   const update = (data: T) => {
     if (running) {
       sendEvent(sendMessage, {
-        event_type: 'ui',
-        ui_input_id: id,
+        event_type: 'control',
+        block_id: id,
         value: data
       });
     } else {

@@ -7,9 +7,10 @@ import { Button } from '../ui/Button';
 import { trpcClient } from '@/main';
 
 const StatusBar = (): JSX.Element => {
-  const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
+  const { setCaptainReady, captainReady, setRunning } = useLifecycleStore((state) => ({
     setCaptainReady: state.setCaptainReady,
-    captainReady: state.captainReady
+    captainReady: state.captainReady,
+    setRunning: state.setRunning
   }));
 
   const [message, setMessage] = useState<string>('');
@@ -24,6 +25,7 @@ const StatusBar = (): JSX.Element => {
       setCaptainReady(true);
     } else {
       setCaptainReady(false);
+      setRunning(false);
     }
   }, [readyState]);
 

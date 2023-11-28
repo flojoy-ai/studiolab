@@ -28,7 +28,7 @@ interface FlowchartState {
 
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
-  setControls: (edges: Edge[]) => void;
+  setControls: (edges: Node[]) => void;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -73,7 +73,7 @@ export const useFlowchartStore = create<FlowchartState>()(
           set({
             nodes: get().nodes.concat([
               {
-                id: `${block_type}-${uuid}`,
+                id: uuid,
                 type: block_type,
                 position: position,
                 data: {
@@ -83,11 +83,14 @@ export const useFlowchartStore = create<FlowchartState>()(
               }
             ])
           });
-          if (block_type == 'slider' || block_type == 'bignum') {
+          if (
+            block_type == 'flojoy.control.slider' ||
+            block_type == 'flojoy.visualization.bignum'
+          ) {
             set({
               controls: get().controls.concat([
                 {
-                  id: `${block_type}-${uuid}`,
+                  id: uuid,
                   type: block_type,
                   position: position,
                   data: {

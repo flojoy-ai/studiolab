@@ -13,9 +13,9 @@ export interface FlowCancelEvent {
   event_type: 'cancel';
 }
 
-export interface FlowUIEvent {
-  event_type: 'ui';
-  ui_input_id: string;
+export interface FlowControlEvent {
+  event_type: 'control';
+  block_id: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any;
 }
@@ -28,5 +28,5 @@ export interface FlowStateUpdateEvent {
 }
 
 export interface FlowSocketMessage {
-  event: FlowStartEvent | FlowUIEvent | FlowCancelEvent;
+  event: FlowStartEvent | FlowControlEvent | FlowCancelEvent;
 }
