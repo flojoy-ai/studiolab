@@ -2,7 +2,19 @@ from typing import Literal
 from pydantic import BaseModel
 
 BlockType = Literal[
-    "slider", "gamepad", "button", "bignum", "add", "subtract", "constant"
+    "slider",
+    "toggle",
+    "gamepad",
+    "button",
+    "bignum",
+    "add",
+    "subtract",
+    "constant",
+    "rand",
+    "sequence",
+    "conditional",
+    "true",
+    "false",
 ]
 
 

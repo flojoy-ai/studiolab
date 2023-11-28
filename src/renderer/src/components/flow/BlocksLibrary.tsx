@@ -15,7 +15,15 @@ const BlocksLibrary = () => {
       <div className="flex flex-col gap-2">
         <BlockCard name="Add" desc="Add a bunch of stuff together" block_id="add" />
         <BlockCard name="Slider" desc="it slides" block_id="slider" />
+        <BlockCard name="Toggle" desc="flipflop" block_id="toggle" />
         <BlockCard name="Big Number" desc="Big number" block_id="bignum" />
+        <BlockCard name="Function Definition" desc="a -> b" block_id="function" />
+        <BlockCard name="Sequence" desc="0..10" block_id="sequence" />
+        <BlockCard name="Constant" desc="2" block_id="constant" />
+        <BlockCard name="Rand" desc="?" block_id="rand" />
+        <BlockCard name="Conditional" desc="if ... then ... else" block_id="conditional" />
+        <BlockCard name="True" desc="trueing" block_id="true" />
+        <BlockCard name="False" desc="no" block_id="false" />
       </div>
     </div>
   );

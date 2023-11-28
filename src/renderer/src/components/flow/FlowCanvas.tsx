@@ -19,12 +19,28 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
+import FunctionBlock from '../blocks/flow/FunctionBlock';
+import SequenceBlock from '../blocks/flow/SequenceBlock';
+import ConstantBlock from '../blocks/flow/ConstantBlock';
+import ConditionalBlock from '../blocks/flow/ConditionalBlock';
+import TrueBlock from '../blocks/flow/TrueBlock';
+import FalseBlock from '../blocks/flow/FalseBlock';
+import RandBlock from '../blocks/flow/RandBlock';
+import ToggleBlock from '../blocks/ctrl/ToggleBlock';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
 const nodeTypes = {
   slider: SliderBlock,
+  toggle: ToggleBlock,
   bignum: BigNumberBlock,
-  add: AddBlock
+  add: AddBlock,
+  function: FunctionBlock,
+  sequence: SequenceBlock,
+  constant: ConstantBlock,
+  rand: RandBlock,
+  conditional: ConditionalBlock,
+  true: TrueBlock,
+  false: FalseBlock
 };
 
 const edgeTypes = {

@@ -1,16 +1,21 @@
 import os
+import inspect
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Mapping, Tuple
+from typing import Any, Callable, Mapping, Tuple, is_typeddict
 
 import reactivex as rx
+from reactivex.abc import SchedulerBase
 import reactivex.operators as ops
 from reactivex import Observable, Subject
+from reactivex.scheduler import NewThreadScheduler, ThreadPoolScheduler
+from reactivex.scheduler.eventloop import AsyncIOScheduler
 
 from captain.logging import logger
+from captain.types.builtins import Ignore
 from captain.types.events import FlowUIEvent
 from captain.types.flowchart import FCBlock, FlowChart
-from captain.utils.blocks import import_blocks, is_ui_input
+from captain.lib.block_import import FlojoyBlock, import_blocks
 
 BLOCKS_DIR = os.path.join("captain", "blocks")
 
@@ -21,7 +26,7 @@ ZIPPED_BLOCKS = []  # TODO: I (sasha) am anti zip in all cases.
 class FCBlockIO:
     block: FCBlock
     i: Subject
-    o: Observable
+    o: Mapping[str, Observable]
 
 
 def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
@@ -51,7 +56,9 @@ def wire_flowchart(
     on_publish: Callable,
     starter: Observable,
     ui_inputs: Mapping[str, Observable],
-    block_funcs: Mapping[str, Callable],
+    block_funcs: Mapping[str, FlojoyBlock],
+    publish_scheduler: SchedulerBase | None = None,
+    publish_debounce_time: float = 1 / 120,
 ):
     blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
     islands = find_islands(blocks)
@@ -81,10 +88,19 @@ def wire_flowchart(
                 )
             )
 
+            fj_block = block_funcs[block.block_type]
+            map_strategy = (
+                ops.flat_map if inspect.isgeneratorfunction(fj_block.func) else ops.map
+            )
+
             output_observable = input_subject.pipe(
+                # run concurrently so the loop doesn't block everything
+                ops.subscribe_on(ThreadPoolScheduler()),
                 ops.map(partial(make_block_fn_props, block)),
-                ops.map(partial(run_block, block)),
-                ops.publish(),  # Makes it so values are not emitted on each subscribe
+                map_strategy(partial(run_block, block)),
+                # Makes it so values are not emitted on each subscribe
+                ops.observe_on(ThreadPoolScheduler()),
+                ops.publish(),
             )
 
             output_observable.subscribe(
@@ -93,11 +109,29 @@ def wire_flowchart(
                         f"Got {x} for {blk.id} after zip and transform"
                     ),
                     block,
-                )
+                ),
+                on_error=lambda e: logger.error(e),
             )
-            output_observable.subscribe(
+
+            if is_typeddict(fj_block.output):
+                output_observables = {
+                    name: output_observable.pipe(
+                        ops.pluck(name), ops.filter(lambda x: not isinstance(x, Ignore))
+                    )
+                    for name in fj_block.output.__annotations__
+                }
+            else:
+                output_observables = {"value": output_observable}
+
+            # TODO: Figure out what to publish when a block returns multiple values
+            # Current solution is just to publish the first value only
+            debounced = list(output_observables.values())[-1].pipe(
+                ops.debounce(publish_debounce_time, publish_scheduler),
+            )
+
+            debounced.subscribe(
                 partial(lambda blk, x: on_publish(x, blk.id), block),
-                on_error=lambda e: logger.debug(e),
+                on_error=lambda e: logger.error(e),
                 on_completed=lambda: logger.debug("completed"),
             )
 
@@ -116,13 +150,14 @@ def wire_flowchart(
                 )
 
             block_ios[block.id] = FCBlockIO(
-                block=block, i=input_subject, o=output_observable
+                block=block, i=input_subject, o=output_observables
             )
 
     visited_blocks = set()
 
     def rec_connect_blocks(io: FCBlockIO):
         logger.info(f"Recursively connecting {io.block.id} to its inputs")
+        logger.info(io.block.ins)
 
         if not io.block.ins and io.block.id not in ui_inputs:
             logger.info(
@@ -142,9 +177,9 @@ def wire_flowchart(
         )
         in_combined = combine_strategy(
             *(
-                block_ios[conn.source].o.pipe(
-                    ops.map(partial(lambda param, v: (param, v), conn.targetParam))
-                )
+                block_ios[conn.source]
+                .o[conn.sourceParam]
+                .pipe(ops.map(partial(lambda param, v: (param, v), conn.targetParam)))
                 for conn in io.block.ins
             )
         )
@@ -174,15 +209,20 @@ class Flow:
     ui_inputs: dict[str, Subject]
 
     def __init__(
-        self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
+        self,
+        flowchart: FlowChart,
+        publish_fn: Callable,
+        start_obs: Observable,
+        publish_scheduler: SchedulerBase | None = None,
     ) -> None:
         self.flowchart = flowchart
         self.ui_inputs = {}
 
         funcs = import_blocks(BLOCKS_DIR)
+        logger.info(funcs)
 
         for block in flowchart.blocks:
-            if is_ui_input(funcs[block.block_type]):
+            if funcs[block.block_type].is_ui_input:
                 logger.debug(f"Creating UI input for {block.id}")
                 self.ui_inputs[block.id] = Subject()
 
@@ -192,6 +232,7 @@ class Flow:
             starter=start_obs,
             ui_inputs=self.ui_inputs,
             block_funcs=funcs,
+            publish_scheduler=publish_scheduler,
         )
 
     @staticmethod

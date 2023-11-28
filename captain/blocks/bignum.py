@@ -1,2 +1,2 @@
-def bignum(x):
+def bignum(x: int) -> int:
     return x

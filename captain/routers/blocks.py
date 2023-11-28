@@ -7,6 +7,7 @@ from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
 from reactivex import Subject, create
 from reactivex.subject import BehaviorSubject
+from reactivex.scheduler.eventloop import AsyncIOThreadSafeScheduler
 
 from captain.controllers.reactive import Flow
 from captain.logging import logger
@@ -90,7 +91,7 @@ async def websocket_flowchart(websocket: WebSocket):
     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
     def publish_fn(x, id):
-        logger.debug(f"Publishing {x} for {id}")
+        logger.info(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
     await websocket.accept()
@@ -110,7 +111,12 @@ async def websocket_flowchart(websocket: WebSocket):
                 if flow is None:
                     fc = FlowChart.from_react_flow(rf)
                     logger.info("Creating flow from react flow instance")
-                    flow = Flow(fc, publish_fn, start_obs)
+
+                    loop = asyncio.get_event_loop()
+                    scheduler = AsyncIOThreadSafeScheduler(loop)
+                    flow = Flow(fc, publish_fn, start_obs, scheduler)
+
+                    start_obs.on_next({})
             case FlowCancelEvent():
                 flow = None
                 logger.info("Cancelling flow")
