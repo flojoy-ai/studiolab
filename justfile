@@ -1,7 +1,7 @@
 PROTO_DEST := './protos'
 
 proto:
-  just proto-py & just proto-js
+  just proto-py & just proto-js & just proto-ts
 
 proto-py:
   poetry run python3 -m grpc_tools.protoc \
