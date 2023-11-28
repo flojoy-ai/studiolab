@@ -2,7 +2,6 @@ import { Badge } from '../ui/Badge';
 import { useEffect, useState } from 'react';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { ModeToggle } from './ModeToggle';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { Button } from '../ui/Button';
 import { trpcClient } from '@/main';
 
@@ -15,19 +14,22 @@ const StatusBar = (): JSX.Element => {
 
   const [message, setMessage] = useState<string>('');
 
-  const { readyState } = useWebSocket('ws://localhost:2333/status', {
-    retryOnError: true,
-    shouldReconnect: () => true
-  });
-
   useEffect(() => {
-    if (readyState === ReadyState.OPEN) {
-      setCaptainReady(true);
-    } else {
-      setCaptainReady(false);
-      setRunning(false);
-    }
-  }, [readyState]);
+    const intervalId = setInterval(async () => {
+      try {
+        await trpcClient.checkHealth.query();
+        setCaptainReady(true);
+      } catch (e) {
+        setCaptainReady(false);
+        setRunning(false);
+      }
+    }, 1000); // poll every second
+    // TODO: find a better way to do health check
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   // Listen for messages from the main process
   window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {

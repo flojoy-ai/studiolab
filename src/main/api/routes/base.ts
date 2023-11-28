@@ -4,7 +4,6 @@ import { spawnBlocksLibraryWindow } from '../../windows';
 import { t } from '../trpc';
 
 import grpc from '@grpc/grpc-js';
-import log from 'electron-log/main';
 
 import { HelloRequest } from '../../../../protos/hello_pb';
 import { GreeterClient } from '../../../../protos/hello_grpc_pb';
@@ -24,8 +23,17 @@ export const baseRouter = t.router({
     await spawnBlocksLibraryWindow();
   }),
   checkHealth: t.procedure.query(async () => {
-    client.sayHello(request, function (_, response) {
-      log.info('Greeting:', response.getMessage());
+    return new Promise((resolve, reject) => {
+      client.sayHello(request, function (err, response) {
+        if (err) {
+          reject(err);
+        }
+        try {
+          resolve(response.getMessage());
+        } catch (err) {
+          reject(err);
+        }
+      });
     });
   })
 });

@@ -33,7 +33,6 @@ if __name__ == "__main__":
 
     class Greeter(hello_pb2_grpc.GreeterServicer):
         def SayHello(self, request, context):
-            print("yooooo sup", flush=True)
             return hello_pb2.HelloReply(message="Hello, %s!" % request.name)
 
     def serve():

@@ -255,7 +255,6 @@ const Index = (): JSX.Element => {
       </div>
 
       <div className="py-4"></div>
-
       {setupStatuses.find((status) => status.status === 'error') && (
         <Button
           onClick={async (): Promise<void> => {
