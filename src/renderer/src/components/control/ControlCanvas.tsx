@@ -20,8 +20,8 @@ import BigNumberDisplay from '../blocks/control/BigNumberDisplay';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
 const nodeTypes = {
-  slider: SliderControl,
-  bignum: BigNumberDisplay
+  'flojoy.control.slider': SliderControl,
+  'flojoy.visualization.bignum': BigNumberDisplay
 };
 //
 // const edgeTypes = {
