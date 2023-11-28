@@ -17,6 +17,13 @@ const FlowControlsTopLeft = (): JSX.Element => {
       <Button onClick={async () => await trpcClient.spawnBlockLibraryWindow.mutate()}>
         Add Blocks
       </Button>
+      <Button
+        onClick={async () => {
+          await trpcClient;
+        }}
+      >
+        Yooooo
+      </Button>
     </div>
   );
 };

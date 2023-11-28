@@ -8,7 +8,7 @@ import { createIPCHandler } from 'electron-trpc/main';
 import log from 'electron-log/main';
 import fixPath from 'fix-path';
 import { appRouter } from './api/root';
-import { killProcess } from './python';
+import { killProcess } from './setup';
 
 fixPath();
 

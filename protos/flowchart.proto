@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package flowchart;
+
+service Flowchart {
+  rpc RunFlowchart (stream FlowchartRequest) returns (stream FlowchartReply) {}
+}
+
+// The request message containing the user's name.
+message FlowchartRequest {
+  oneof request {
+    FlowchartStartRequest start = 1;
+    FlowchartCancelRequest cancel = 2;
+    FlowchartControlRequest control = 3;
+  }
+}
+
+message FlowchartStartRequest {
+  google.protobuf.Any rf = 1;
+}
+
+message FlowchartCancelRequest {
+}
+
+message FlowchartControlRequest {
+  string block_id = 1;
+  google.protobuf.Any value = 2;
+}
+
+// The response message containing the greetings
+message FlowchartReply {
+  string block_id = 1;
+  google.protobuf.Any value = 2;
+}
+

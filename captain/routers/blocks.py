@@ -4,72 +4,112 @@
 
 # import reactivex.operators as ops
 
-from typing import Any
+from typing import Any, Iterable
 
-from fastapi import APIRouter, WebSocket
-from pydantic import ValidationError
+# from fastapi import APIRouter, WebSocket
+# from pydantic import ValidationError
 from reactivex import Subject
 
 from captain.controllers.reactive import Flow
 from captain.logging import logger
-from captain.types.events import (
-    FlowCancelEvent,
-    FlowControlEvent,
-    FlowSocketMessage,
-    FlowStartEvent,
-    FlowStateUpdateEvent,
-)
+
+# from captain.types.events import (
+#     FlowCancelEvent,
+#     FlowControlEvent,
+#     FlowSocketMessage,
+#     FlowStartEvent,
+#     FlowStateUpdateEvent,
+# )
 from captain.types.flowchart import BlockID, FlowChart
-from captain.utils.ws import send_message_factory
+
+# router = APIRouter(tags=["blocks"], prefix="/blocks")
+from protos import flowchart_pb2, flowchart_pb2_grpc
+
+# from captain.utils.ws import send_message_factory
+
 
 # from reactivex import create
 # from reactivex.subject import BehaviorSubject
 
 
-router = APIRouter(tags=["blocks"], prefix="/blocks")
+class Flowchart(flowchart_pb2_grpc.FlowchartServicer):
+    def RunFlowchart(
+        self, request_iterator: Iterable[flowchart_pb2.FlowchartRequest], context
+    ):
+        start_obs = Subject()
+        start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
+
+        def publish_fn(id: BlockID, x: Any):
+            logger.debug(f"Publishing {x} for {id}")
+            yield flowchart_pb2.FlowchartReply(block_id=id, value=x)
+
+            # send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
+
+        flow: Flow | None = None
+        logger.info("HAHAHAHHAHAHHAHAH")
+        while True:
+            for request in request_iterator:
+                yield flowchart_pb2.FlowchartReply(block_id="69", value=dict())
+                logger.info("BROROOROAOSO")
+                if request.WhichOneof("request") == "start":
+                    logger.info("Starting flow")
+                    tmp: flowchart_pb2.FlowchartStartRequest = request.start
+                    if flow is None:
+                        fc = FlowChart.from_react_flow(tmp.rf)
+                        logger.info("Creating flow from react flow instance")
+                        flow = Flow(fc, publish_fn, start_obs)
+                if request.WhichOneof("request") == "cancel":
+                    flow = None
+                    logger.info("Cancelling flow")
+                if request.WhichOneof("request") == "control":
+                    if flow is None:
+                        logger.error("Can't process UI event for non existent flow")
+                    else:
+                        logger.debug(f"Got UI event {request.control}")
+                        flow.process_ui_event(request.control)
 
 
-@router.websocket("/flowchart")
-async def websocket_flowchart(websocket: WebSocket):
-    # TODO: Joey: try out gRPC streaming instead of WebSocket
-    """Entry point for running a flow chart."""
-    send_msg = send_message_factory(websocket)
-
-    start_obs = Subject()
-    start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
-
-    def publish_fn(id: BlockID, x: Any):
-        logger.debug(f"Publishing {x} for {id}")
-        send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
-
-    await websocket.accept()
-
-    flow: Flow | None = None
-
-    while True:
-        data = await websocket.receive_text()
-        try:
-            message = FlowSocketMessage.model_validate_json(data)
-        except ValidationError as e:
-            logger.error(str(e))
-            continue
-
-        match message.event:
-            case FlowStartEvent(rf=rf):
-                if flow is None:
-                    fc = FlowChart.from_react_flow(rf)
-                    logger.info("Creating flow from react flow instance")
-                    flow = Flow(fc, publish_fn, start_obs)
-            case FlowCancelEvent():
-                flow = None
-                logger.info("Cancelling flow")
-            case FlowControlEvent():
-                if flow is None:
-                    logger.error("Can't process UI event for non existent flow")
-                else:
-                    logger.debug(f"Got UI event {message.event}")
-                    flow.process_ui_event(message.event)
-
+# @router.websocket("/flowchart")
+# async def websocket_flowchart(websocket: WebSocket):
+#     # TODO: Joey: try out gRPC streaming instead of WebSocket
+#     """Entry point for running a flow chart."""
+#     send_msg = send_message_factory(websocket)
+#
+#     start_obs = Subject()
+#     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
+#
+#     def publish_fn(id: BlockID, x: Any):
+#         logger.debug(f"Publishing {x} for {id}")
+#         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
+#
+#     await websocket.accept()
+#
+#     flow: Flow | None = None
+#
+#     while True:
+#         data = await websocket.receive_text()
+#         try:
+#             message = FlowSocketMessage.model_validate_json(data)
+#         except ValidationError as e:
+#             logger.error(str(e))
+#             continue
+#
+#         match message.event:
+#             case FlowStartEvent(rf=rf):
+#                 if flow is None:
+#                     fc = FlowChart.from_react_flow(rf)
+#                     logger.info("Creating flow from react flow instance")
+#                     flow = Flow(fc, publish_fn, start_obs)
+#             case FlowCancelEvent():
+#                 flow = None
+#                 logger.info("Cancelling flow")
+#             case FlowControlEvent():
+#                 if flow is None:
+#                     logger.error("Can't process UI event for non existent flow")
+#                 else:
+#                     logger.debug(f"Got UI event {message.event}")
+#                     flow.process_ui_event(message.event)
+#
 
 # class IgnoreComplete:
 #     def __call__(self, source):
