@@ -1,5 +1,5 @@
 import log from 'electron-log/main';
-import http from 'http';
+import net from 'net';
 import { execCommand } from './executor';
 import { app } from 'electron';
 import { Command } from './command';
@@ -106,15 +106,20 @@ export function spawnCaptain(): void {
 
 export async function isPortFree(port: number) {
   return new Promise((resolve) => {
-    const server = http
-      .createServer()
-      .listen(port, '127.0.0.1', () => {
-        server.close();
-        resolve(true);
-      })
-      .on('error', () => {
+    const s = net.createServer();
+    s.once('error', (err) => {
+      s.close();
+      if (err['code'] == 'EADDRINUSE') {
         resolve(false);
-      });
+      } else {
+        resolve(false); // or throw error!!
+      }
+    });
+    s.once('listening', () => {
+      resolve(true);
+      s.close();
+    });
+    s.listen(port);
   });
 }
 
