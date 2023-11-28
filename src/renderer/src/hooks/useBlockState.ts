@@ -17,15 +17,17 @@ export const useBlockState = <T>(
     trpcClient.updateFlowchart.mutate(msg);
   };
 
-  // Listen for messages from the main process
-  window.electron.ipcRenderer.on('flowchart-response', (_, data) => {
-    console.log('received message', data);
-    const stateUpdate = JSON.parse(data) as FlowStateUpdateEvent;
-    if (stateUpdate.id === id) {
-      console.log('setting state', stateUpdate.data);
-      setState(stateUpdate.data);
-    }
-  });
+  useEffect(() => {
+    // Listen for messages from the main process
+    window.electron.ipcRenderer.on('flowchart-response', (_, data) => {
+      console.log('received message', data);
+      const stateUpdate = JSON.parse(data) as FlowStateUpdateEvent;
+      if (stateUpdate.id === id) {
+        console.log('setting state', stateUpdate.data);
+        setState(stateUpdate.data);
+      }
+    });
+  }, []);
 
   // useEffect(() => {
   //   if (lastMessage !== null) {
