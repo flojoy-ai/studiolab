@@ -1,5 +1,6 @@
+import time
+import reactivex as rx
+
+
 def sequence():
-    i = 0
-    while i < 10000:
-        yield i
-        i += 1
+    return rx.interval(1.0)
