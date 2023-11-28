@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    resolve: {
+      preserveSymlinks: true // required for gRPC to work
+    }
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
