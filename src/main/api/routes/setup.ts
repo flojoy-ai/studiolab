@@ -9,7 +9,7 @@ import {
   spawnCaptain
 } from '../../python';
 
-export const pythonRouter = t.router({
+export const setupRouter = t.router({
   checkPythonInstallation: t.procedure.query(async () => {
     return await checkPythonInstallation();
   }),

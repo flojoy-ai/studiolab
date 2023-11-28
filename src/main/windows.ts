@@ -133,8 +133,22 @@ export async function spawnControlWindow(): Promise<void> {
   };
 
   ipcMain.on('status-bar-logging', logListener);
+
+  const flowchartListener = (event): void => {
+    if (controlWindow) {
+      if (!controlWindow.isDestroyed()) {
+        controlWindow.webContents.send('flowchart-response', event);
+      } else {
+        log.error("Can't send message to statusBar: mainWindow is destroyed");
+      }
+    }
+  };
+
+  ipcMain.on('flowchart-response', flowchartListener);
+
   app.on('window-all-closed', () => {
     ipcMain.removeListener('status-bar-logging', logListener);
+    ipcMain.removeListener('flowchart-response', flowchartListener);
   });
 
   app.on('before-quit', () => {

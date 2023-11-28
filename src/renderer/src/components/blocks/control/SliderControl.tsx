@@ -6,6 +6,7 @@ const SliderBlock = ({ id }: BlockProps) => {
   const [value, update] = useBlockState(id, 50);
 
   const handleSetSlider = (event: ChangeEvent<HTMLInputElement>): void => {
+    console.log('YOOOOO ');
     update(parseInt(event.target.value));
   };
 
