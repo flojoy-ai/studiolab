@@ -24,8 +24,8 @@ class FCBlockIO:
     """
 
     block: FCBlock
-    i: Subject
-    o: Observable
+    input_subject: Subject
+    output_observable: Observable
 
 
 def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
@@ -65,9 +65,9 @@ def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
 
 def wire_flowchart(
     flowchart: FlowChart,
-    on_publish: Callable,
+    on_publish: Callable[[BlockID, Any], None],
     starter: Observable,
-    ui_inputs: Mapping[BlockID, Observable],
+    control_subjects: Mapping[BlockID, Observable],
     block_funcs: Mapping[BlockType, Callable],
 ):
     """Connects all of block functions in a flow chart using RxPY.
@@ -83,7 +83,7 @@ def wire_flowchart(
     starter
         An observable that blocks with no inputs will be subscribed to.
         The flowchart will be run from the start every time this observable emits an item.
-    ui_inputs
+    control_subjects
         Observables for each of the UI inputs in the flow chart.
     block_funcs
         Preimported functions for each block type.
@@ -95,6 +95,24 @@ def wire_flowchart(
 
     for island in islands:
         for block in island:
+            # input_subject is the subject that will be used to push values to the block
+            # output_observable is the observable that will be used to get values from the block
+
+            input_subject = Subject()
+
+            # TODO: should probably have a debug toggle in settings
+            # to turn on/off debugging and we can guard debug statements with that
+            input_subject.subscribe(
+                partial(
+                    lambda blk, x: logger.debug(f"Input got {x} for {blk.id}"),
+                    block,
+                )
+            )  # for logging purpose only
+
+            # A lot of the lambdas being passed created are partially applied,
+            # this is because Python has weird late binding with lambdas in a loop.
+            # Instead of using captured values, we need to pass it as a parameter
+            # so that it binds to the value and not the name.
 
             def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                 fn = block_funcs[blk.block_type]
@@ -107,27 +125,13 @@ def wire_flowchart(
                 logger.debug(f"Making params for block {blk.id} with {inputs}")
                 return dict(inputs)
 
-            # A lot of the lambdas being passed created are partially applied,
-            # this is because Python has weird late binding with lambdas in a loop.
-            # Instead of using captured values, we need to pass it as a parameter
-            # so that it binds to the value and not the name.
-
-            input_subject = Subject()
-            input_subject.subscribe(
-                on_next=partial(
-                    lambda blk, x: logger.debug(
-                        f"Input got {x} for {blk.id} regardless of zip"
-                    ),
-                    block,
-                )
-            )
-
             output_observable = input_subject.pipe(
                 ops.map(partial(make_block_fn_props, block)),
                 ops.map(partial(run_block, block)),
                 ops.publish(),  # Makes it so values are not emitted on each subscribe
             )
 
+            # TODO: check comment above, also can be guarded
             output_observable.subscribe(
                 partial(
                     lambda blk, x: logger.debug(
@@ -135,29 +139,34 @@ def wire_flowchart(
                     ),
                     block,
                 )
-            )
+            )  # for logging purpose only
+
             output_observable.subscribe(
-                on_next=partial(lambda blk, x: on_publish(x, blk.id), block),
+                on_next=partial(lambda blk, x: on_publish(blk.id, x), block),
                 on_error=lambda e: logger.debug(e),
                 on_completed=lambda: logger.debug("completed"),
-            )
+            )  # this is to stream data back to the client
 
             # Start emitting values for outputs
             output_observable.connect()
 
-            if block.id in ui_inputs:
-                logger.debug(f"Connecting {block.id} to ui input {ui_inputs[block.id]}")
-                ui_inputs[block.id].subscribe(
-                    input_subject.on_next,
-                    input_subject.on_error,
-                    input_subject.on_completed,
+            if block.id in control_subjects:
+                logger.debug(
+                    f"Connecting {block.id} to ui input {control_subjects[block.id]}"
                 )
-                ui_inputs[block.id].subscribe(
+                control_subjects[block.id].subscribe(
+                    on_next=input_subject.on_next,
+                    on_error=input_subject.on_error,
+                    on_completed=input_subject.on_completed,
+                )
+                control_subjects[block.id].subscribe(
                     on_next=lambda x: logger.debug(f"Got {x} from the UI input subject")
                 )
 
             block_ios[block.id] = FCBlockIO(
-                block=block, i=input_subject, o=output_observable
+                block=block,
+                input_subject=input_subject,
+                output_observable=output_observable,
             )
 
     visited_blocks: set[BlockID] = set()
@@ -172,15 +181,19 @@ def wire_flowchart(
             f"Recursively connecting {io.block.block_type}({io.block.id}) to its inputs"
         )
 
-        if not io.block.ins and io.block.id not in ui_inputs:
+        if not io.block.ins and io.block.id not in control_subjects:
             logger.info(
-                f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}"
+                f"Connected {io.block.id} to start observable with ui inputs {control_subjects.keys()}"
             )
             logger.debug(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
-            starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
+            starter.subscribe(
+                on_next=io.input_subject.on_next,
+                on_error=io.input_subject.on_error,
+                on_completed=io.input_subject.on_completed,
+            )
             return
 
-        if not io.block.ins and io.block.id in ui_inputs:
+        if not io.block.ins and io.block.id in control_subjects:
             return
 
         logger.debug(f"Connecting {io.block.id}")
@@ -188,7 +201,7 @@ def wire_flowchart(
         # combines every input for a block into a single observable.
         in_combined = rx.combine_latest(
             *(
-                block_ios[conn.source].o.pipe(
+                block_ios[conn.source].output_observable.pipe(
                     ops.map(partial(lambda param, v: (param, v), conn.targetParam))
                 )
                 for conn in io.block.ins
@@ -200,7 +213,11 @@ def wire_flowchart(
                 f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru 'combine_latest' via {conn.targetParam}"
             )
 
-        in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
+        in_combined.subscribe(
+            on_next=io.input_subject.on_next,
+            on_error=io.input_subject.on_error,
+            on_completed=io.input_subject.on_completed,
+        )
         for conn in io.block.ins:
             logger.debug(conn)
             if conn.source in visited_blocks:
@@ -222,26 +239,31 @@ class Flow:
     """
 
     flowchart: FlowChart
-    control_blocks: dict[BlockID, Subject]
+    control_subjects: dict[BlockID, Subject]
 
     def __init__(
-        self, flowchart: FlowChart, publish_fn: Callable, start_obs: Observable
+        self,
+        flowchart: FlowChart,
+        publish_fn: Callable[[BlockID, Any], None],
+        start_obs: Observable,
     ) -> None:
         self.flowchart = flowchart
-        self.control_blocks = {}
+        self.control_subjects = {}
 
         funcs = import_blocks(BLOCKS_DIR)
 
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):
-                logger.debug(f"Creating UI input for {block.id}")
-                self.control_blocks[block.id] = Subject()
+                logger.debug(
+                    f"Creating a Subject for {block.block_type}({block.id}) to react to changes."
+                )
+                self.control_subjects[block.id] = Subject()
 
         wire_flowchart(
             flowchart=self.flowchart,
             on_publish=publish_fn,
             starter=start_obs,
-            ui_inputs=self.control_blocks,
+            control_subjects=self.control_subjects,
             block_funcs=funcs,
         )
 
@@ -251,4 +273,4 @@ class Flow:
         return Flow(fc, publish_fn, start_obs)
 
     def process_ui_event(self, event: FlowControlEvent):
-        self.control_blocks[event.block_id].on_next([("x", event.value)])
+        self.control_subjects[event.block_id].on_next([("x", event.value)])

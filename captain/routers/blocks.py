@@ -4,6 +4,8 @@
 
 # import reactivex.operators as ops
 
+from typing import Any
+
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
 from reactivex import Subject
@@ -17,7 +19,7 @@ from captain.types.events import (
     FlowStartEvent,
     FlowStateUpdateEvent,
 )
-from captain.types.flowchart import FlowChart
+from captain.types.flowchart import BlockID, FlowChart
 from captain.utils.ws import send_message_factory
 
 # from reactivex import create
@@ -36,7 +38,7 @@ async def websocket_flowchart(websocket: WebSocket):
     start_obs = Subject()
     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
-    def publish_fn(x, id):
+    def publish_fn(id: BlockID, x: Any):
         logger.debug(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
