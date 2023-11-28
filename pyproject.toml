@@ -11,6 +11,8 @@ fastapi = "^0.104.0"
 uvicorn = { extras = ["standard"], version = "^0.23.2" }
 pydantic = "^2.4.2"
 reactivex = "^4.0.4"
+grpcio = "^1.59.3"
+grpcio-tools = "^1.59.3"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.1.3"
