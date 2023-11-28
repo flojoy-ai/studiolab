@@ -12,6 +12,7 @@ asarUnpack:
 extraResources:
   - captain/**
   - blocks/**
+  - protos/**
   - main.py
   - pyproject.toml
   - poetry.lock
