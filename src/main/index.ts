@@ -103,8 +103,17 @@ app.whenReady().then(async () => {
   });
 });
 
-app.on('quit', (e) => {
+app.on('quit', async (e) => {
   e.preventDefault();
+
+  try {
+    await killProcess(2333);
+    log.info('Successfully terminated captain :)');
+  } catch (error) {
+    log.error('Something went wrong when terminating captain!');
+    log.error(error);
+  }
+
   app.quit();
 });
 
@@ -119,6 +128,7 @@ app.on('window-all-closed', async () => {
     log.error('Something went wrong when terminating captain!');
     log.error(error);
   }
+
   if (process.platform !== 'darwin') {
     app.quit();
   }
