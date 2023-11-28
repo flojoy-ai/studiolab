@@ -118,6 +118,8 @@ async def websocket_flowchart(websocket: WebSocket):
 
                     start_obs.on_next({})
             case FlowCancelEvent():
+                if flow is not None:
+                    flow.destroy()
                 flow = None
                 logger.info("Cancelling flow")
             case FlowUIEvent():

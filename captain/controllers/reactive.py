@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any, Callable, Mapping, Tuple, is_typeddict
 
 import reactivex as rx
-from reactivex.abc import SchedulerBase
+from reactivex.abc import DisposableBase, SchedulerBase
 import reactivex.operators as ops
 from reactivex import Observable, Subject
 from reactivex.scheduler import NewThreadScheduler, ThreadPoolScheduler
@@ -51,159 +51,6 @@ def find_islands(blocks: dict[str, FCBlock]) -> list[list[FCBlock]]:
     return islands
 
 
-def wire_flowchart(
-    flowchart: FlowChart,
-    on_publish: Callable,
-    starter: Observable,
-    ui_inputs: Mapping[str, Observable],
-    block_funcs: Mapping[str, FlojoyBlock],
-    publish_scheduler: SchedulerBase | None = None,
-    publish_debounce_time: float = 1 / 120,
-):
-    blocks: dict[str, FCBlock] = {b.id: b for b in flowchart.blocks}
-    islands = find_islands(blocks)
-    block_ios: dict[str, FCBlockIO] = {}
-
-    for island in islands:
-        for block in island:
-
-            def run_block(blk: FCBlock, kwargs: dict[str, Any]):
-                fn = block_funcs[blk.block_type]
-                logger.debug(f"Running block {blk.id}")
-                return fn(**kwargs)
-
-            def make_block_fn_props(
-                blk: FCBlock, inputs: list[Tuple[str, Any]]
-            ) -> dict[str, Any]:
-                logger.debug(f"Making params for block {blk.id} with {inputs}")
-                return dict(inputs)
-
-            input_subject = Subject()
-            input_subject.subscribe(
-                partial(
-                    lambda blk, x: logger.debug(
-                        f"Input got {x} for {blk.id} regardless of zip"
-                    ),
-                    block,
-                )
-            )
-
-            fj_block = block_funcs[block.block_type]
-            map_strategy = (
-                ops.flat_map if inspect.isgeneratorfunction(fj_block.func) else ops.map
-            )
-
-            output_observable = input_subject.pipe(
-                # run concurrently so the loop doesn't block everything
-                ops.subscribe_on(ThreadPoolScheduler()),
-                ops.map(partial(make_block_fn_props, block)),
-                map_strategy(partial(run_block, block)),
-                # Makes it so values are not emitted on each subscribe
-                ops.observe_on(ThreadPoolScheduler()),
-                ops.publish(),
-            )
-
-            output_observable.subscribe(
-                partial(
-                    lambda blk, x: logger.debug(
-                        f"Got {x} for {blk.id} after zip and transform"
-                    ),
-                    block,
-                ),
-                on_error=lambda e: logger.error(e),
-            )
-
-            if is_typeddict(fj_block.output):
-                output_observables = {
-                    name: output_observable.pipe(
-                        ops.pluck(name), ops.filter(lambda x: not isinstance(x, Ignore))
-                    )
-                    for name in fj_block.output.__annotations__
-                }
-            else:
-                output_observables = {"value": output_observable}
-
-            # TODO: Figure out what to publish when a block returns multiple values
-            # Current solution is just to publish the first value only
-            debounced = list(output_observables.values())[-1].pipe(
-                ops.debounce(publish_debounce_time, publish_scheduler),
-            )
-
-            debounced.subscribe(
-                partial(lambda blk, x: on_publish(x, blk.id), block),
-                on_error=lambda e: logger.error(e),
-                on_completed=lambda: logger.debug("completed"),
-            )
-
-            # Start emitting values for outputs
-            output_observable.connect()
-
-            if block.id in ui_inputs:
-                logger.debug(f"Connecting {block.id} to ui input {ui_inputs[block.id]}")
-                ui_inputs[block.id].subscribe(
-                    input_subject.on_next,
-                    input_subject.on_error,
-                    input_subject.on_completed,
-                )
-                ui_inputs[block.id].subscribe(
-                    on_next=lambda x: logger.debug(f"Got {x} from the UI input subject")
-                )
-
-            block_ios[block.id] = FCBlockIO(
-                block=block, i=input_subject, o=output_observables
-            )
-
-    visited_blocks = set()
-
-    def rec_connect_blocks(io: FCBlockIO):
-        logger.info(f"Recursively connecting {io.block.id} to its inputs")
-        logger.info(io.block.ins)
-
-        if not io.block.ins and io.block.id not in ui_inputs:
-            logger.info(
-                f"Connected {io.block.id} to start observable with ui inputs {ui_inputs.keys()}"
-            )
-            logger.debug(f"CREATED REACTIVE EDGE {io.block.id} -> {starter}")
-            starter.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
-            return
-
-        if not io.block.ins and io.block.id in ui_inputs:
-            return
-
-        logger.debug(f"Connecting {io.block.id}")
-
-        combine_strategy = (
-            rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
-        )
-        in_combined = combine_strategy(
-            *(
-                block_ios[conn.source]
-                .o[conn.sourceParam]
-                .pipe(ops.map(partial(lambda param, v: (param, v), conn.targetParam)))
-                for conn in io.block.ins
-            )
-        )
-
-        for conn in io.block.ins:
-            logger.debug(
-                f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}"
-            )
-
-        in_combined.subscribe(io.i.on_next, io.i.on_error, io.i.on_completed)
-        for conn in io.block.ins:
-            logger.debug(conn)
-            if conn.source in visited_blocks:
-                continue
-            visited_blocks.add(conn.source)
-            rec_connect_blocks(block_ios[conn.source])
-
-    # Connect the graph backwards starting from the terminal nodes
-    terminals = filter(lambda b: not b.outs, blocks.values())
-    for block in terminals:
-        visited_blocks.add(block.id)
-        rec_connect_blocks(block_ios[block.id])
-
-
 class Flow:
     flowchart: FlowChart
     ui_inputs: dict[str, Subject]
@@ -217,6 +64,8 @@ class Flow:
     ) -> None:
         self.flowchart = flowchart
         self.ui_inputs = {}
+        self.on_publish = publish_fn
+        self.start_obs = start_obs
 
         funcs = import_blocks(BLOCKS_DIR)
         logger.info(funcs)
@@ -226,13 +75,8 @@ class Flow:
                 logger.debug(f"Creating UI input for {block.id}")
                 self.ui_inputs[block.id] = Subject()
 
-        wire_flowchart(
-            flowchart=self.flowchart,
-            on_publish=publish_fn,
-            starter=start_obs,
-            ui_inputs=self.ui_inputs,
-            block_funcs=funcs,
-            publish_scheduler=publish_scheduler,
+        self.subscriptions = self.connect(
+            block_funcs=funcs, publish_scheduler=publish_scheduler
         )
 
     @staticmethod
@@ -242,3 +86,179 @@ class Flow:
 
     def process_ui_event(self, event: FlowUIEvent):
         self.ui_inputs[event.ui_input_id].on_next([("x", event.value)])
+
+    def destroy(self):
+        for sub in self.subscriptions:
+            sub.dispose()
+
+    def connect(
+        self,
+        block_funcs: Mapping[str, FlojoyBlock],
+        publish_scheduler: SchedulerBase | None = None,
+        publish_debounce_time: float = 1 / 120,
+    ):
+        blocks: dict[str, FCBlock] = {b.id: b for b in self.flowchart.blocks}
+        islands = find_islands(blocks)
+        block_ios: dict[str, FCBlockIO] = {}
+
+        subscriptions: list[DisposableBase] = []
+
+        for island in islands:
+            for block in island:
+
+                def run_block(blk: FCBlock, kwargs: dict[str, Any]):
+                    fn = block_funcs[blk.block_type]
+                    logger.debug(f"Running block {blk.id}")
+                    return fn(**kwargs)
+
+                def make_block_fn_props(
+                    blk: FCBlock, inputs: list[Tuple[str, Any]]
+                ) -> dict[str, Any]:
+                    logger.debug(f"Making params for block {blk.id} with {inputs}")
+                    return dict(inputs)
+
+                input_subject = Subject()
+                input_subject.subscribe(
+                    partial(
+                        lambda blk, x: logger.debug(
+                            f"Input got {x} for {blk.id} regardless of zip"
+                        ),
+                        block,
+                    )
+                )
+
+                fj_block = block_funcs[block.block_type]
+                # map_strategy = (
+                #     ops.flat_map if inspect.isgeneratorfunction(fj_block.func) else ops.map
+                # )
+
+                output_observable = input_subject.pipe(
+                    # run concurrently so the loop doesn't block everything
+                    ops.subscribe_on(ThreadPoolScheduler()),
+                    ops.map(partial(make_block_fn_props, block)),
+                    ops.flat_map(partial(run_block, block)),
+                    ops.filter(lambda x: not isinstance(x, Ignore)),
+                    # Makes it so values are not emitted on each subscribe
+                    ops.observe_on(ThreadPoolScheduler()),
+                    ops.publish(),
+                )
+
+                disposable = output_observable.subscribe(
+                    partial(
+                        lambda blk, x: logger.info(
+                            f"Got {x} for {blk.id} after zip and transform"
+                        ),
+                        block,
+                    ),
+                    on_error=lambda e: logger.error(e),
+                )
+                subscriptions.append(disposable)
+
+                # Split blocks that return multiple things into individual observables
+                if is_typeddict(fj_block.output):
+                    output_observables = {
+                        name: output_observable.pipe(
+                            ops.pluck(name),
+                            ops.filter(lambda x: not isinstance(x, Ignore)),
+                        )
+                        for name in fj_block.output.__annotations__
+                    }
+                else:
+                    output_observables = {"value": output_observable}
+
+                # TODO: Figure out what to publish when a block returns multiple values
+                # Current solution is just to publish the first value only
+                debounced = next(iter(output_observables.values())).pipe(
+                    ops.debounce(publish_debounce_time, publish_scheduler),
+                )
+
+                disposable = debounced.subscribe(
+                    partial(lambda blk, x: self.on_publish(x, blk.id), block),
+                    on_error=lambda e: logger.error(e),
+                    on_completed=lambda: logger.debug("completed"),
+                )
+                subscriptions.append(disposable)
+
+                # Start emitting values for outputs
+                output_observable.connect()
+
+                if block.id in self.ui_inputs:
+                    logger.debug(
+                        f"Connecting {block.id} to ui input {self.ui_inputs[block.id]}"
+                    )
+                    disposable = self.ui_inputs[block.id].subscribe(
+                        input_subject.on_next,
+                        input_subject.on_error,
+                        input_subject.on_completed,
+                    )
+                    subscriptions.append(disposable)
+                    disposable = self.ui_inputs[block.id].subscribe(
+                        on_next=lambda x: logger.debug(
+                            f"Got {x} from the UI input subject"
+                        )
+                    )
+                    subscriptions.append(disposable)
+
+                block_ios[block.id] = FCBlockIO(
+                    block=block, i=input_subject, o=output_observables
+                )
+
+        visited_blocks = set()
+
+        def rec_connect_blocks(io: FCBlockIO):
+            logger.info(f"Recursively connecting {io.block.id} to its inputs")
+            logger.info(io.block.ins)
+
+            if not io.block.ins and io.block.id not in self.ui_inputs:
+                logger.info(
+                    f"Connected {io.block.id} to start observable with ui inputs {self.ui_inputs.keys()}"
+                )
+                logger.debug(f"CREATED REACTIVE EDGE {io.block.id} -> {self.start_obs}")
+                disposable = self.start_obs.subscribe(
+                    io.i.on_next, io.i.on_error, io.i.on_completed
+                )
+                subscriptions.append(disposable)
+                return
+
+            if not io.block.ins and io.block.id in self.ui_inputs:
+                return
+
+            logger.debug(f"Connecting {io.block.id}")
+
+            combine_strategy = (
+                rx.zip if io.block.block_type in ZIPPED_BLOCKS else rx.combine_latest
+            )
+            in_combined = combine_strategy(
+                *(
+                    block_ios[conn.source]
+                    .o[conn.sourceParam]
+                    .pipe(
+                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+                    )
+                    for conn in io.block.ins
+                )
+            )
+
+            for conn in io.block.ins:
+                logger.debug(
+                    f"CREATED REACTIVE EDGE {conn.source} -> {io.block.id} thru {'zip' if io.block.block_type in ZIPPED_BLOCKS else 'combine_latest'} via {conn.targetParam}"
+                )
+
+            disposable = in_combined.subscribe(
+                io.i.on_next, io.i.on_error, io.i.on_completed
+            )
+            subscriptions.append(disposable)
+            for conn in io.block.ins:
+                logger.debug(conn)
+                if conn.source in visited_blocks:
+                    continue
+                visited_blocks.add(conn.source)
+                rec_connect_blocks(block_ios[conn.source])
+
+        # Connect the graph backwards starting from the terminal nodes
+        terminals = filter(lambda b: not b.outs, blocks.values())
+        for block in terminals:
+            visited_blocks.add(block.id)
+            rec_connect_blocks(block_ios[block.id])
+
+        return subscriptions
