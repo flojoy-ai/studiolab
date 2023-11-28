@@ -86,6 +86,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-react": "^7.33.2",
     "grpc-tools": "^1.12.4",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
     "postcss": "^8.4.31",
     "prettier": "^3.1.0",
     "prettier-plugin-tailwindcss": "^0.5.7",
