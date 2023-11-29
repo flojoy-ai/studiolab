@@ -1,7 +1,9 @@
 import { FlowSocketMessage } from '@/types/flow';
-import { SendMessage } from 'react-use-websocket/dist/lib/types';
 
-export const sendEvent = (sendMessage: SendMessage, event: FlowSocketMessage['event']) => {
+export const sendEvent = (
+  sendMessage: (msg: string) => void,
+  event: FlowSocketMessage['event']
+) => {
   sendMessage(
     JSON.stringify({
       event

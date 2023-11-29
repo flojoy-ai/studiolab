@@ -234,6 +234,7 @@ const Index = (): JSX.Element => {
   useEffect(() => {
     if (captainReady) {
       navigate('/flow');
+      trpcClient.spawnControlWindow.mutate();
     }
   }, [captainReady]);
 

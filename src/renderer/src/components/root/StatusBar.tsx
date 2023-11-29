@@ -29,10 +29,13 @@ const StatusBar = (): JSX.Element => {
     }
   }, [readyState]);
 
-  // Listen for messages from the main process
-  window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
-    setMessage(data);
-  });
+  useEffect(() => {
+    // Listen for messages from the main process
+    window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
+      setMessage(data);
+      console.log(data);
+    });
+  }, []);
 
   return (
     <div className="statusbar flex items-center gap-2 bg-background p-4">

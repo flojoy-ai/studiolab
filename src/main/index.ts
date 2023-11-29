@@ -38,11 +38,8 @@ async function createWindow(): Promise<void> {
     }
   });
 
-  createIPCHandler({ router: appRouter, windows: [mainWindow] });
-
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
-    mainWindow.maximize();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -93,6 +90,8 @@ app.whenReady().then(async () => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window);
   });
+
+  createIPCHandler({ router: appRouter });
 
   await createWindow();
 
