@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { shared } from 'use-broadcast-ts';
 
 export interface LifecycleState {
   captainReady: boolean;
@@ -8,10 +9,12 @@ export interface LifecycleState {
   setRunning: (running: boolean) => void;
 }
 
-export const useLifecycleStore = create<LifecycleState>((set) => ({
-  captainReady: false,
-  setCaptainReady: (state: boolean): void => set({ captainReady: state }),
+export const useLifecycleStore = create<LifecycleState>(
+  shared((set) => ({
+    captainReady: false,
+    setCaptainReady: (state: boolean): void => set({ captainReady: state }),
 
-  running: false,
-  setRunning: (running: boolean) => set(() => ({ running }))
-}));
+    running: false,
+    setRunning: (running: boolean) => set(() => ({ running }))
+  }))
+);

@@ -1,6 +1,3 @@
-import AddBlock from '@/components/blocks/flow/AddBlock';
-import BigNumberBlock from '@/components/blocks/ctrl/BigNumberDisplay';
-import SliderBlock from '@/components/blocks/ctrl/SliderBlock';
 import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
@@ -19,29 +16,8 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
-import FunctionBlock from '../blocks/flow/FunctionBlock';
-import SequenceBlock from '../blocks/flow/SequenceBlock';
-import ConstantBlock from '../blocks/flow/ConstantBlock';
-import ConditionalBlock from '../blocks/flow/ConditionalBlock';
-import TrueBlock from '../blocks/flow/TrueBlock';
-import FalseBlock from '../blocks/flow/FalseBlock';
-import RandBlock from '../blocks/flow/RandBlock';
-import ToggleBlock from '../blocks/ctrl/ToggleBlock';
-// import useUndoRedo from '@/hooks/useUndoRedo';
 
-const nodeTypes = {
-  slider: SliderBlock,
-  toggle: ToggleBlock,
-  bignum: BigNumberBlock,
-  add: AddBlock,
-  function: FunctionBlock,
-  sequence: SequenceBlock,
-  constant: ConstantBlock,
-  rand: RandBlock,
-  conditional: ConditionalBlock,
-  true: TrueBlock,
-  false: FalseBlock
-};
+import { nodeTypes } from '@/configs/flowchart';
 
 const edgeTypes = {
   smart: SmartBezierEdge
@@ -100,10 +76,10 @@ const FlowCanvas = () => {
         return;
       }
 
-      const block_id = event.dataTransfer.getData('application/reactflow');
+      const block_type = event.dataTransfer.getData('application/reactflow');
 
       // check if the dropped element is valid
-      if (typeof block_id === 'undefined' || !block_id) {
+      if (typeof block_type === 'undefined' || !block_type) {
         return;
       }
 
@@ -115,7 +91,7 @@ const FlowCanvas = () => {
         y: event.clientY
       });
 
-      addNode(block_id, position);
+      addNode(block_type, position);
     },
     [reactFlowInstance]
   );

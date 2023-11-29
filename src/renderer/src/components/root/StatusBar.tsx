@@ -7,9 +7,10 @@ import { Button } from '../ui/Button';
 import { trpcClient } from '@/main';
 
 const StatusBar = (): JSX.Element => {
-  const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
+  const { setCaptainReady, captainReady, setRunning } = useLifecycleStore((state) => ({
     setCaptainReady: state.setCaptainReady,
-    captainReady: state.captainReady
+    captainReady: state.captainReady,
+    setRunning: state.setRunning
   }));
 
   const [message, setMessage] = useState<string>('');
@@ -24,13 +25,17 @@ const StatusBar = (): JSX.Element => {
       setCaptainReady(true);
     } else {
       setCaptainReady(false);
+      setRunning(false);
     }
   }, [readyState]);
 
-  // Listen for messages from the main process
-  window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
-    setMessage(data);
-  });
+  useEffect(() => {
+    // Listen for messages from the main process
+    window.electron.ipcRenderer.on('status-bar-logging', (_, data) => {
+      setMessage(data);
+      console.log(data);
+    });
+  }, []);
 
   return (
     <div className="statusbar flex items-center gap-2 bg-background p-4">

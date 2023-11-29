@@ -10,6 +10,7 @@ import Home from './routes/home/Home';
 import { ipcLink } from 'electron-trpc/renderer';
 import { createTRPCProxyClient } from '@trpc/client';
 import type { AppRouter } from 'src/main/api/root.d';
+import Control from './routes/control/Control';
 
 const queryClient = new QueryClient();
 export const trpcClient = createTRPCProxyClient<AppRouter>({
@@ -34,6 +35,10 @@ const router = createHashRouter([
             element: <Flow />
           }
         ]
+      },
+      {
+        path: '/control',
+        element: <Control />
       },
       {
         path: '/library',

@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import Literal, Any, Union
+from typing import Any, Literal, Union
 
-from captain.types.flowchart import ReactFlow
+from pydantic import BaseModel, Field
+
+from captain.types.flowchart import BlockID, ReactFlow
 
 
 class FlowStartEvent(BaseModel):
@@ -13,9 +14,9 @@ class FlowCancelEvent(BaseModel):
     event_type: Literal["cancel"]
 
 
-class FlowUIEvent(BaseModel):
-    event_type: Literal["ui"]
-    ui_input_id: str
+class FlowControlEvent(BaseModel):
+    event_type: Literal["control"]
+    block_id: BlockID
     value: Any
 
 
@@ -26,6 +27,6 @@ class FlowStateUpdateEvent(BaseModel):
 
 
 class FlowSocketMessage(BaseModel):
-    event: Union[FlowStartEvent, FlowCancelEvent, FlowUIEvent] = Field(
+    event: Union[FlowStartEvent, FlowCancelEvent, FlowControlEvent] = Field(
         ..., discriminator="event_type"
     )

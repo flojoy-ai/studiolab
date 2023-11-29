@@ -1,12 +1,12 @@
-import { app, shell, BrowserWindow } from 'electron';
-import { appRouter } from './api/root';
+import { app, shell, BrowserWindow, ipcMain } from 'electron';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
-import { createIPCHandler } from 'electron-trpc/main';
+import log from 'electron-log/main';
 
 let blocksLibraryWindow: BrowserWindow | null = null;
+let controlWindow: BrowserWindow | null = null;
 
 export async function spawnBlocksLibraryWindow(): Promise<void> {
   if (blocksLibraryWindow) {
@@ -34,8 +34,6 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
     }
   });
 
-  createIPCHandler({ router: appRouter, windows: [blocksLibraryWindow] });
-
   blocksLibraryWindow.on('ready-to-show', () => {
     if (blocksLibraryWindow) {
       blocksLibraryWindow.show();
@@ -60,7 +58,7 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     blocksLibraryWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/library');
   } else {
-    blocksLibraryWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/library'));
+    blocksLibraryWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'library' });
   }
 
   app.on('before-quit', () => {
@@ -71,5 +69,89 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
 
   blocksLibraryWindow.on('closed', () => {
     blocksLibraryWindow = null;
+  });
+}
+
+export async function spawnControlWindow(): Promise<void> {
+  if (controlWindow) {
+    if (controlWindow.isMinimized()) controlWindow.restore();
+    controlWindow.focus();
+    return;
+  }
+
+  // Create the browser window.
+  controlWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  controlWindow.on('ready-to-show', () => {
+    if (controlWindow) {
+      controlWindow.show();
+    }
+  });
+
+  controlWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    controlWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/control');
+  } else {
+    controlWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/control'));
+  }
+
+  const logListener = (event): void => {
+    if (controlWindow) {
+      if (!controlWindow.isDestroyed()) {
+        controlWindow.webContents.send('status-bar-logging', event);
+      } else {
+        log.error("Can't send message to statusBar: mainWindow is destroyed");
+      }
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+
+  const flowchartListener = (event): void => {
+    if (controlWindow) {
+      if (!controlWindow.isDestroyed()) {
+        controlWindow.webContents.send('flowchart-response', event);
+      } else {
+        log.error("Can't send message to statusBar: mainWindow is destroyed");
+      }
+    }
+  };
+
+  ipcMain.on('flowchart-response', flowchartListener);
+
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+    ipcMain.removeListener('flowchart-response', flowchartListener);
+  });
+
+  app.on('before-quit', () => {
+    if (controlWindow) {
+      controlWindow.removeAllListeners('close');
+    }
+  });
+
+  controlWindow.on('closed', () => {
+    controlWindow = null;
   });
 }

@@ -13,17 +13,25 @@ const BlocksLibrary = () => {
       </div>
       <div className="py-2"></div>
       <div className="flex flex-col gap-2">
-        <BlockCard name="Add" desc="Add a bunch of stuff together" block_id="add" />
-        <BlockCard name="Slider" desc="it slides" block_id="slider" />
-        <BlockCard name="Toggle" desc="flipflop" block_id="toggle" />
-        <BlockCard name="Big Number" desc="Big number" block_id="bignum" />
-        <BlockCard name="Function Definition" desc="a -> b" block_id="function" />
-        <BlockCard name="Sequence" desc="0..10" block_id="sequence" />
-        <BlockCard name="Constant" desc="2" block_id="constant" />
-        <BlockCard name="Rand" desc="?" block_id="rand" />
-        <BlockCard name="Conditional" desc="if ... then ... else" block_id="conditional" />
-        <BlockCard name="True" desc="trueing" block_id="true" />
-        <BlockCard name="False" desc="no" block_id="false" />
+        <BlockCard
+          name="Add"
+          desc="Add a bunch of stuff together"
+          block_type="flojoy.math.arithmetic.add"
+        />
+        <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" />
+        <BlockCard name="Toggle" desc="flipflop" block_type="flojoy.control.toggle" />
+        <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.bignum" />
+        <BlockCard name="Function Definition" desc="a -> b" block_type="flojoy.logic.function" />
+        <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" />
+        <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" />
+        <BlockCard name="Rand" desc="?" block_type="flojoy.math.rand" />
+        <BlockCard
+          name="Conditional"
+          desc="if ... then ... else"
+          block_type="flojoy.logic.conditional"
+        />
+        <BlockCard name="True" desc="trueing" block_type="flojoy.logic.true" />
+        <BlockCard name="False" desc="no" block_type="flojoy.logic.false" />
       </div>
     </div>
   );

@@ -1,6 +1,12 @@
 import { NodeProps } from 'reactflow';
 
-export type BlockType = 'slider' | 'gamepad' | 'button' | 'bignum' | 'add' | 'subtract';
+// TODO: This should not be hardcoded
+export type BlockType =
+  | 'flojoy.control.slider'
+  | 'flojoy.visualization.bignum'
+  | 'flojoy.math.arithmetic.add'
+  | 'flojoy.math.arithmetic.subtract'
+  | 'flojoy.math.constant';
 
 export type BlockData = {
   block_type: BlockType;
