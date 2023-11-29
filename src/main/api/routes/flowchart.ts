@@ -2,7 +2,7 @@ import { t } from '../trpc';
 import { WebSocket } from 'ws';
 import { ipcMain } from 'electron';
 import { z } from 'zod';
-import log from 'electron-log/main';
+// import log from 'electron-log/main';
 
 export const flowchartRouter = t.router({
   startFlowchart: t.procedure.input(z.string()).mutation((opts) => {
@@ -12,10 +12,10 @@ export const flowchartRouter = t.router({
     });
     websocket.on('message', (data) => {
       ipcMain.emit('flowchart-response', data.toString());
-      log.debug('ws server responded with', data.toString());
+      // log.debug('ws server responded with', data.toString());
     });
     ipcMain.on('flowchart-update', (data) => {
-      log.debug('sending update to ws', data);
+      // log.debug('sending update to ws', data);
       websocket.send(data.toString());
     });
     ipcMain.on('flowchart-cancel', () => {
@@ -23,7 +23,7 @@ export const flowchartRouter = t.router({
     });
   }),
   updateFlowchart: t.procedure.input(z.string()).mutation((opts) => {
-    log.debug('trpc udpate received');
+    // log.debug('trpc udpate received');
     ipcMain.emit('flowchart-update', opts.input);
   }),
   cancelFlowchart: t.procedure.mutation(async () => {
