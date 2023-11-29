@@ -36,8 +36,6 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
     }
   });
 
-  createIPCHandler({ router: appRouter, windows: [blocksLibraryWindow] });
-
   blocksLibraryWindow.on('ready-to-show', () => {
     if (blocksLibraryWindow) {
       blocksLibraryWindow.show();
@@ -100,8 +98,6 @@ export async function spawnControlWindow(): Promise<void> {
       sandbox: false
     }
   });
-
-  createIPCHandler({ router: appRouter, windows: [controlWindow] });
 
   controlWindow.on('ready-to-show', () => {
     if (controlWindow) {
