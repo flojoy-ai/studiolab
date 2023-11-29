@@ -33,6 +33,8 @@ interface FlowchartState {
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
+  onControlsChange: OnNodesChange;
+
   onConnect: OnConnect;
 
   addNode: (block_type: BlockType, position: XYPosition) => void;
@@ -46,6 +48,7 @@ export const useFlowchartStore = create<FlowchartState>()(
         nodes: [] as Node[],
         edges: [] as Edge[],
         controls: [] as Node[],
+
         setNodes: (nodes: Node[]) => set({ nodes }),
         setEdges: (edges: Edge[]) => set({ edges }),
         setControls: (controls: Node[]) => set({ controls }),
@@ -60,6 +63,12 @@ export const useFlowchartStore = create<FlowchartState>()(
             edges: applyEdgeChanges(changes, get().edges)
           });
         },
+        onControlsChange: (changes: NodeChange[]) => {
+          set({
+            controls: applyNodeChanges(changes, get().controls)
+          });
+        },
+
         onConnect: (connection: Connection) => {
           const undoredoStore = useUndoRedoStore.getState();
           undoredoStore.takeSnapshot();
@@ -103,7 +112,8 @@ export const useFlowchartStore = create<FlowchartState>()(
         reset: () => {
           set({
             nodes: [],
-            edges: []
+            edges: [],
+            controls: []
           });
         }
       }),

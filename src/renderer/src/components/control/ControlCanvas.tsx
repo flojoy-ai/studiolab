@@ -21,9 +21,10 @@ const ControlCanvas = () => {
 
   // const { takeSnapshot } = useUndoRedo();
 
-  const { controls } = useFlowchartStore(
+  const { controls, onControlsChange } = useFlowchartStore(
     useShallow((state) => ({
-      controls: state.controls
+      controls: state.controls,
+      onControlsChange: state.onControlsChange
     }))
   );
 
@@ -47,7 +48,7 @@ const ControlCanvas = () => {
     <ReactFlow
       nodes={controls}
       nodeTypes={nodeTypes}
-      // onNodesChange={onNodesChange}
+      onNodesChange={onControlsChange}
       // onConnect={onConnect}
       // onNodeDragStart={onNodeDragStart}
       // onSelectionDragStart={onSelectionDragStart}
