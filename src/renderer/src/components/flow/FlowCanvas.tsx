@@ -4,7 +4,6 @@ import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import ReactFlow, {
   Controls,
   Background,
-  MiniMap,
   NodeDragHandler,
   SelectionDragHandler,
   OnNodesDelete,
@@ -118,7 +117,6 @@ const FlowCanvas = () => {
       <FlowControlsTopRight />
       <Background />
       <Controls />
-      <MiniMap />
     </ReactFlow>
   );
 };
