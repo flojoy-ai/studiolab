@@ -15,6 +15,7 @@ from captain.logging import logger
 from captain.types.events import (
     FlowCancelEvent,
     FlowControlEvent,
+    FlowReadyEvent,
     FlowSocketMessage,
     FlowStartEvent,
     FlowStateUpdateEvent,
@@ -38,7 +39,7 @@ async def websocket_flowchart(websocket: WebSocket):
     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
     def publish_fn(id: BlockID, x: Any):
-        logger.debug(f"Publishing {x} for {id}")
+        logger.info(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
     await websocket.accept()
@@ -47,7 +48,7 @@ async def websocket_flowchart(websocket: WebSocket):
 
     while True:
         data = await websocket.receive_text()
-        # logger.info(f"Got message {data}")
+        logger.info(f"Got message {data}")
         try:
             message = FlowSocketMessage.model_validate_json(data)
         except ValidationError as e:
@@ -60,6 +61,8 @@ async def websocket_flowchart(websocket: WebSocket):
                     fc = FlowChart.from_react_flow(rf)
                     logger.info("Creating flow from react flow instance")
                     flow = Flow(fc, publish_fn, start_obs)
+                    send_msg(FlowReadyEvent().model_dump_json())
+                    logger.info("flow ready")
             case FlowCancelEvent():
                 flow = None
                 logger.info("Cancelling flow")
@@ -67,7 +70,7 @@ async def websocket_flowchart(websocket: WebSocket):
                 if flow is None:
                     logger.error("Can't process UI event for non existent flow")
                 else:
-                    logger.debug(f"Got UI event {message.event}")
+                    logger.info(f"Got UI event {message.event}")
                     flow.process_ui_event(message.event)
 
 

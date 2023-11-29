@@ -135,7 +135,7 @@ def wire_flowchart(
             output_observable.subscribe(
                 partial(
                     lambda blk, x: logger.debug(
-                        f"Got {x} for {blk.id} after zip and transform"
+                        f"Got {x} for {blk.id} after transform"
                     ),
                     block,
                 )
@@ -254,7 +254,7 @@ class Flow:
 
         for block in flowchart.blocks:
             if is_ui_input(funcs[block.block_type]):
-                logger.debug(
+                logger.info(
                     f"Creating a Subject for {block.block_type}({block.id}) to react to changes."
                 )
                 self.control_subjects[block.id] = Subject()

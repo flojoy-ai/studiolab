@@ -13,10 +13,10 @@ const FlowControlsTopRight = (): JSX.Element => {
     }))
   );
 
-  const { running, setRunning } = useLifecycleStore(
+  const { flowRunning, setFlowRunning } = useLifecycleStore(
     useShallow((state) => ({
-      running: state.running,
-      setRunning: state.setRunning
+      flowRunning: state.flowRunning,
+      setFlowRunning: state.setFlowRunning
     }))
   );
 
@@ -28,7 +28,7 @@ const FlowControlsTopRight = (): JSX.Element => {
         }
       })
     );
-    setRunning(false);
+    setFlowRunning(false);
   };
 
   const onStart = async () => {
@@ -40,12 +40,12 @@ const FlowControlsTopRight = (): JSX.Element => {
         }
       })
     );
-    setRunning(true);
+    setFlowRunning(true);
   };
 
   return (
     <div className="absolute right-0 z-50 flex gap-2 p-4">
-      {!running ? (
+      {!flowRunning ? (
         <Button onClick={onStart}>Run Flowchart</Button>
       ) : (
         <Button onClick={onCancel} variant="destructive">
