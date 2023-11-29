@@ -1,6 +1,3 @@
-import AddBlock from '@/components/blocks/flow/AddBlock';
-import BigNumberBlock from '@/components/blocks/flow/BigNumberBlock';
-import SliderBlock from '@/components/blocks/flow/SliderBlock';
 import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
@@ -19,12 +16,7 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
-
-const nodeTypes = {
-  'flojoy.control.slider': SliderBlock,
-  'flojoy.visualization.bignum': BigNumberBlock,
-  'flojoy.math.arithmetic.add': AddBlock
-};
+import { nodeTypes } from '@/configs/flowchart';
 
 const edgeTypes = {
   smart: SmartBezierEdge

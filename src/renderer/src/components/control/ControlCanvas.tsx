@@ -14,15 +14,10 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import SliderControl from '../blocks/control/SliderControl';
-import BigNumberDisplay from '../blocks/control/BigNumberDisplay';
+import { nodeTypes } from '@/configs/control';
 // import { useCallback, useState } from 'react';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
-const nodeTypes = {
-  'flojoy.control.slider': SliderControl,
-  'flojoy.visualization.bignum': BigNumberDisplay
-};
 //
 // const edgeTypes = {
 //   smart: SmartBezierEdge

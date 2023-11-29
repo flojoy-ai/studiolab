@@ -20,6 +20,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { useUndoRedoStore } from './undoredo';
 
 import { shared } from 'use-broadcast-ts';
+import { nodeTypes } from '@/configs/control';
 
 interface FlowchartState {
   nodes: Node[];
@@ -83,10 +84,7 @@ export const useFlowchartStore = create<FlowchartState>()(
               }
             ])
           });
-          if (
-            block_type == 'flojoy.control.slider' ||
-            block_type == 'flojoy.visualization.bignum'
-          ) {
+          if (Object.keys(nodeTypes).includes(block_type)) {
             set({
               controls: get().controls.concat([
                 {
