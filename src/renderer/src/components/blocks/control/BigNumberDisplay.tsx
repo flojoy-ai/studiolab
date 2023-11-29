@@ -8,7 +8,6 @@ const BigNumberDisplay = ({ id }: BlockProps) => {
     <>
       <div className="flex h-32 w-32 items-center justify-center border">
         <div className="text-4xl">{value}</div>
-        <div className="">{id}</div>
       </div>
     </>
   );

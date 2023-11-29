@@ -1,11 +1,11 @@
+import { Hash } from 'lucide-react';
 import { Handle, Position } from 'reactflow';
-import { BlockProps } from '@/types/block';
 
-const BigNumberBlock = ({ id }: BlockProps) => {
+const BigNumberBlock = () => {
   return (
     <>
-      <div className="flex h-32 w-32 items-center justify-center border">
-        <div className="">Big Number Block {id}</div>
+      <div className="border p-2">
+        <Hash />
       </div>
       <Handle type="target" position={Position.Left} id="x" />
     </>
