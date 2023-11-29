@@ -1,10 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron';
-import { appRouter } from './api/root';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
-import { createIPCHandler } from 'electron-trpc/main';
 import log from 'electron-log/main';
 
 let blocksLibraryWindow: BrowserWindow | null = null;
