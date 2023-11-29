@@ -1,7 +1,5 @@
 import ReactFlow, {
-  Controls,
-  Background,
-  MiniMap
+  Background
   // NodeDragHandler,
   // SelectionDragHandler,
   // OnNodesDelete,
@@ -58,8 +56,6 @@ const ControlCanvas = () => {
       className="rounded-lg bg-background"
     >
       <Background />
-      <Controls />
-      <MiniMap />
     </ReactFlow>
   );
 };

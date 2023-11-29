@@ -2,9 +2,7 @@ import FlowControlsTopLeft from '@/components/flow/FlowControlsTopLeft';
 import FlowControlsTopRight from '@/components/flow/FlowControlsTopRight';
 import SmartBezierEdge from '@tisoap/react-flow-smart-edge';
 import ReactFlow, {
-  Controls,
   Background,
-  MiniMap,
   NodeDragHandler,
   SelectionDragHandler,
   OnNodesDelete,
@@ -17,6 +15,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCallback, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
 import { nodeTypes } from '@/configs/flowchart';
+import CanvasControlsBottomLeft from '../reactflow/CanvasControlsBottomLeft';
+import FlowControlsBottomRight from './FlowControlsBottomRight';
 
 const edgeTypes = {
   smart: SmartBezierEdge
@@ -116,9 +116,9 @@ const FlowCanvas = () => {
     >
       <FlowControlsTopLeft />
       <FlowControlsTopRight />
+      <FlowControlsBottomRight />
+      <CanvasControlsBottomLeft />
       <Background />
-      <Controls />
-      <MiniMap />
     </ReactFlow>
   );
 };
