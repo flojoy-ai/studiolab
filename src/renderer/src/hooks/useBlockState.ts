@@ -11,8 +11,6 @@ export const useBlockState = <T>(
   const [state, setState] = useState<T | undefined>(defaultValue);
   const running = useLifecycleStore((state) => state.running);
 
-  // const [lastMessage, setLastMessage] = useState<string | null>(null);
-
   const sendMessage = (msg: string) => {
     trpcClient.updateFlowchart.mutate(msg);
   };
@@ -23,25 +21,11 @@ export const useBlockState = <T>(
       // console.log('received message', data);
       const stateUpdate = JSON.parse(data) as FlowStateUpdateEvent;
       if (stateUpdate.id === id) {
-        console.log('setting state', stateUpdate.data);
+        // console.log('setting state', stateUpdate.data);
         setState(stateUpdate.data);
       }
     });
   }, []);
-
-  // useEffect(() => {
-  //   if (lastMessage !== null) {
-  //     // TODO: Potential performance issues with this
-  //     // Each time there is a state update, each block
-  //     // that calls this hook must deserialize the socket message
-  //     // to check if the state update is for that block
-  //     const stateUpdate = JSON.parse(lastMessage) as FlowStateUpdateEvent;
-  //     if (stateUpdate.id === id) {
-  //       console.log('setting state', stateUpdate.data);
-  //       setState(stateUpdate.data);
-  //     }
-  //   }
-  // }, [lastMessage]);
 
   useEffect(() => {
     if (running && state !== undefined && defaultValue !== undefined) {
@@ -50,7 +34,6 @@ export const useBlockState = <T>(
   }, [running]);
 
   const update = (data: T) => {
-    // console.log('hook update called');
     if (running) {
       sendEvent(sendMessage, {
         event_type: 'control',
