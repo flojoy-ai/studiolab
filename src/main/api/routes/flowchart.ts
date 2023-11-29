@@ -2,7 +2,6 @@ import { t } from '../trpc';
 import { WebSocket } from 'ws';
 import { ipcMain } from 'electron';
 import { z } from 'zod';
-// import log from 'electron-log/main';
 
 export const flowchartRouter = t.router({
   startFlowchart: t.procedure.input(z.string()).mutation((opts) => {
@@ -19,6 +18,7 @@ export const flowchartRouter = t.router({
       websocket.send(data.toString());
     });
     ipcMain.on('flowchart-cancel', () => {
+      websocket.send(JSON.stringify({ event: { event_type: 'cancel' } }));
       websocket.close();
     });
   }),

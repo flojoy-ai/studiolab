@@ -158,7 +158,7 @@ class Flow:
                 input_subject.subscribe(
                     partial(
                         lambda blk, x: logger.debug(
-                            f"Input got {x} for {blk.id} regardless of zip"
+                            f"Input got {x} for {blk.block_type} ({blk.id}) regardless of zip"
                         ),
                         block,
                     )
@@ -173,23 +173,26 @@ class Flow:
                 #
                 def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                     fn = block_funcs[blk.block_type]
-                    logger.debug(f"Running block {blk.id}")
+                    logger.debug(f"Running block {blk.block_type} ({blk.id})")
                     res = fn(**kwargs)
-                    if isinstance(res, Observable):
-                        return res
-                    return rx.just(res)
+                    return res
+                    # if isinstance(res, Observable):
+                    #     return res
+                    # return rx.just(res)
 
                 def make_block_fn_props(
                     blk: FCBlock, inputs: list[Tuple[str, Any]]
                 ) -> dict[str, Any]:
-                    logger.debug(f"Making params for block {blk.id} with {inputs}")
+                    logger.debug(
+                        f"Making params for block {blk.block_type} ({blk.id}) with {inputs}"
+                    )
                     return dict(inputs)
 
                 output_observable = input_subject.pipe(
                     # run concurrently so the loop doesn't block everything
                     ops.subscribe_on(ThreadPoolScheduler()),
                     ops.map(partial(make_block_fn_props, block)),
-                    ops.flat_map(partial(run_block, block)),
+                    ops.map(partial(run_block, block)),
                     ops.filter(lambda x: not isinstance(x, Ignore)),
                     # Makes it so values are not emitted on each subscribe
                     ops.observe_on(ThreadPoolScheduler()),
@@ -199,7 +202,7 @@ class Flow:
                 disposable = output_observable.subscribe(
                     partial(
                         lambda blk, x: logger.info(
-                            f"Got {x} for {blk.id} after zip and transform"
+                            f"Got {x} for {blk.block_type} ({blk.id}) after zip and transform"
                         ),
                         block,
                     ),
@@ -237,7 +240,7 @@ class Flow:
 
                 if block.id in self.control_subjects:
                     logger.debug(
-                        f"Connecting {block.id} to ui input {self.control_subjects[block.id]}"
+                        f"Connecting {block.block_type} ({block.id}) to ui input {self.control_subjects[block.id]}"
                     )
                     disposable = self.control_subjects[block.id].subscribe(
                         input_subject.on_next,
@@ -264,7 +267,6 @@ class Flow:
             logger.info(
                 f"Recursively connecting {io.block.block_type} ({io.block.id}) to its inputs"
             )
-            logger.info(io.block.ins)
 
             if not io.block.ins and io.block.id not in self.control_subjects:
                 logger.info(
@@ -283,7 +285,6 @@ class Flow:
                 return
 
             logger.debug(f"Connecting {io.block.id}")
-            logger.info(block_ios)
 
             # combines every input for a block into a single observable.
             in_combined = rx.combine_latest(
@@ -291,9 +292,7 @@ class Flow:
                     block_ios[conn.source]
                     .output_observables[conn.sourceParam]
                     .pipe(
-                        ops.flat_map(
-                            partial(lambda param, v: (param, v), conn.targetParam)
-                        )
+                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
                     )
                     for conn in io.block.ins
                 )

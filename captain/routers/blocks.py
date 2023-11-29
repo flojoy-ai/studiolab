@@ -66,7 +66,7 @@ async def websocket_flowchart(websocket: WebSocket):
                 if flow is None:
                     logger.error("Can't process UI event for non existent flow")
                 else:
-                    logger.debug(f"Got UI event {message.event}")
+                    logger.info(f"Got UI event {message.event}")
                     flow.process_ui_event(message.event)
 
 
