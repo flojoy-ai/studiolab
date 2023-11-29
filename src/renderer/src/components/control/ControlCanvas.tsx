@@ -1,5 +1,4 @@
 import ReactFlow, {
-  Controls,
   Background
   // NodeDragHandler,
   // SelectionDragHandler,
@@ -57,7 +56,6 @@ const ControlCanvas = () => {
       className="rounded-lg bg-background"
     >
       <Background />
-      <Controls />
     </ReactFlow>
   );
 };
