@@ -21,7 +21,13 @@ const FlowControlsTopRight = (): JSX.Element => {
   );
 
   const onCancel = async () => {
-    await trpcClient.cancelFlowchart.mutate();
+    await trpcClient.cancelFlowchart.mutate(
+      JSON.stringify({
+        event: {
+          event_type: 'cancel'
+        }
+      })
+    );
     setRunning(false);
   };
 
