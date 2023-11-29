@@ -37,9 +37,6 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, FlojoyBlock]:
         for file in files:
             if not file.endswith(".py"):
                 continue
-            full_path = os.path.join(blocks_dir, file)
-            if not os.path.isfile(full_path) or not file.endswith(".py"):
-                continue
 
             block_name = file.strip(".py")
             block_path = os.path.join(root, file)
@@ -47,14 +44,14 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, FlojoyBlock]:
                 os.path.splitext(block_path)[0], blocks_dir
             ).replace(os.path.sep, ".")
 
-            spec = importlib.util.spec_from_file_location(block_name, full_path)
+            spec = importlib.util.spec_from_file_location(block_name, block_path)
 
             if not spec:
-                raise ValueError(f"Invalid block spec from {full_path}")
+                raise ValueError(f"Invalid block spec from {block_path}")
 
             module = importlib.util.module_from_spec(spec)
             if not spec.loader:
-                raise ValueError(f"Could not get loader from {full_path}")
+                raise ValueError(f"Could not get loader from {block_path}")
 
             spec.loader.exec_module(module)
             func = getattr(module, block_name)

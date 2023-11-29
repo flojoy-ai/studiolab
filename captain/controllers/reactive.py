@@ -16,7 +16,7 @@ from captain.lib.block_import import FlojoyBlock, import_blocks
 from captain.types.events import FlowControlEvent
 from captain.types.flowchart import BlockID, BlockType, FCBlock, FlowChart
 
-BLOCKS_DIR = os.path.join("blocks")
+BLOCKS_DIR = "blocks"
 
 
 @dataclass
@@ -174,7 +174,10 @@ class Flow:
                 def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                     fn = block_funcs[blk.block_type]
                     logger.debug(f"Running block {blk.id}")
-                    return fn(**kwargs)
+                    res = fn(**kwargs)
+                    if isinstance(res, Observable):
+                        return res
+                    return rx.just(res)
 
                 def make_block_fn_props(
                     blk: FCBlock, inputs: list[Tuple[str, Any]]
@@ -223,7 +226,7 @@ class Flow:
                 )
 
                 disposable = debounced.subscribe(
-                    partial(lambda blk, x: self.on_publish(x, blk.id), block),
+                    partial(lambda blk, x: self.on_publish(blk.id, x), block),
                     on_error=lambda e: logger.error(e),
                     on_completed=lambda: logger.debug("completed"),
                 )  # this is to stream data back to the client
@@ -258,7 +261,9 @@ class Flow:
         visited_blocks = set()
 
         def rec_connect_blocks(io: FCBlockIO):
-            logger.info(f"Recursively connecting {io.block.id} to its inputs")
+            logger.info(
+                f"Recursively connecting {io.block.block_type} ({io.block.id}) to its inputs"
+            )
             logger.info(io.block.ins)
 
             if not io.block.ins and io.block.id not in self.control_subjects:
@@ -278,6 +283,7 @@ class Flow:
                 return
 
             logger.debug(f"Connecting {io.block.id}")
+            logger.info(block_ios)
 
             # combines every input for a block into a single observable.
             in_combined = rx.combine_latest(
@@ -285,7 +291,9 @@ class Flow:
                     block_ios[conn.source]
                     .output_observables[conn.sourceParam]
                     .pipe(
-                        ops.map(partial(lambda param, v: (param, v), conn.targetParam))
+                        ops.flat_map(
+                            partial(lambda param, v: (param, v), conn.targetParam)
+                        )
                     )
                     for conn in io.block.ins
                 )

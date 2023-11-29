@@ -31,7 +31,7 @@ async def websocket_flowchart(websocket: WebSocket):
     start_obs.subscribe(on_next=lambda x: logger.info(f"Got start {x}"))
 
     def publish_fn(id: BlockID, x: Any):
-        logger.debug(f"Publishing {x} for {id}")
+        logger.info(f"Publishing {x} for {id}")
         send_msg(FlowStateUpdateEvent(id=id, data=x).model_dump_json())
 
     await websocket.accept()
