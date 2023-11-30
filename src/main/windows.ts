@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
@@ -25,6 +25,7 @@ export async function spawnFlowWindow(): Promise<void> {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
     trafficLightPosition: {
       x: 15,
       y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
@@ -94,6 +95,7 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
     alwaysOnTop: true,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
     trafficLightPosition: {
       x: 15,
       y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
@@ -157,6 +159,7 @@ export async function spawnControlWindow(): Promise<void> {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
     trafficLightPosition: {
       x: 15,
       y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
