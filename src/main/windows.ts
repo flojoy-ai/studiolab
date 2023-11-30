@@ -113,7 +113,7 @@ export async function spawnControlWindow(): Promise<void> {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     controlWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/control');
   } else {
-    controlWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/control'));
+    controlWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'control' });
   }
 
   const logListener = (event): void => {
