@@ -33,7 +33,7 @@ const useThemeStore = create<ThemeState>()(
       }),
       {
         name: 'theme-state',
-        storage: createJSONStorage(() => sessionStorage)
+        storage: createJSONStorage(() => localStorage)
       }
     )
   )

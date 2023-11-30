@@ -1,6 +1,6 @@
 import { openLogFolder } from '../../logging';
 import { app } from 'electron';
-import { spawnBlocksLibraryWindow, spawnControlWindow } from '../../windows';
+import { spawnBlocksLibraryWindow, spawnControlWindow, spawnFlowWindow } from '../../windows';
 import { t } from '../trpc';
 
 export const baseRouter = t.router({
@@ -13,6 +13,9 @@ export const baseRouter = t.router({
   }),
   spawnBlockLibraryWindow: t.procedure.mutation(async () => {
     await spawnBlocksLibraryWindow();
+  }),
+  spawnFlowWindow: t.procedure.mutation(async () => {
+    await spawnFlowWindow();
   }),
   spawnControlWindow: t.procedure.mutation(async () => {
     await spawnControlWindow();

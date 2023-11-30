@@ -5,8 +5,78 @@ import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import log from 'electron-log/main';
 
+// TODO: DRY this up
+
 let blocksLibraryWindow: BrowserWindow | null = null;
 let controlWindow: BrowserWindow | null = null;
+let flowWindow: BrowserWindow | null = null;
+
+export async function spawnFlowWindow(): Promise<void> {
+  if (flowWindow) {
+    if (flowWindow.isMinimized()) flowWindow.restore();
+    flowWindow.focus();
+    return;
+  }
+  // Create the browser window.
+  flowWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  flowWindow.on('ready-to-show', () => {
+    if (flowWindow) {
+      flowWindow.show();
+    }
+  });
+
+  flowWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    flowWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/setup');
+  } else {
+    flowWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'setup' });
+  }
+
+  app.on('before-quit', () => {
+    if (flowWindow) {
+      flowWindow.removeAllListeners('close');
+    }
+  });
+
+  const logListener = (event): void => {
+    if (flowWindow && !flowWindow.isDestroyed()) {
+      flowWindow.webContents.send('status-bar-logging', event);
+    } else {
+      log.error("Can't send message to statusBar: mainWindow is destroyed");
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+  });
+
+  flowWindow.on('closed', () => {
+    flowWindow = null;
+  });
+}
 
 export async function spawnBlocksLibraryWindow(): Promise<void> {
   if (blocksLibraryWindow) {
