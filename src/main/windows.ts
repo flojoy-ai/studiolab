@@ -17,6 +17,7 @@ export async function spawnFlowWindow(): Promise<void> {
     flowWindow.focus();
     return;
   }
+
   // Create the browser window.
   flowWindow = new BrowserWindow({
     width: 900,
