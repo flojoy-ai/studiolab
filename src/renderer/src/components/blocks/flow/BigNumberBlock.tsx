@@ -4,7 +4,7 @@ import { Handle, Position } from 'reactflow';
 const BigNumberBlock = () => {
   return (
     <>
-      <div className="border p-2">
+      <div className="border p-4">
         <Hash />
       </div>
       <Handle type="target" position={Position.Left} id="x" />

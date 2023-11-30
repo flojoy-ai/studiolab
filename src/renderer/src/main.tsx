@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import './styles/index.css';
+import './styles/reactflow.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Root from './routes/root/Root';
 import Index from './routes/index/Index';
