@@ -3,4 +3,4 @@ import reactivex as rx
 
 
 def sequence():
-    return rx.interval(1.0)
+    return rx.range(1000)

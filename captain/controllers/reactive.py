@@ -1,18 +1,16 @@
-import os
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Mapping, Tuple, is_typeddict
 
 import reactivex as rx
-from reactivex.abc import DisposableBase, SchedulerBase
 import reactivex.operators as ops
 from reactivex import Observable, Subject
-from reactivex.scheduler import NewThreadScheduler, ThreadPoolScheduler
-from reactivex.scheduler.eventloop import AsyncIOScheduler
+from reactivex.abc import DisposableBase, SchedulerBase
+from reactivex.scheduler import ThreadPoolScheduler
 
+from captain.lib.block_import import FlojoyBlock, import_blocks
 from captain.logging import logger
 from captain.types.builtins import Ignore
-from captain.lib.block_import import FlojoyBlock, import_blocks
 from captain.types.events import FlowControlEvent
 from captain.types.flowchart import BlockID, BlockType, FCBlock, FlowChart
 
@@ -108,7 +106,7 @@ class Flow:
 
         for block in flowchart.blocks:
             if funcs[block.block_type].is_ui_input:
-                logger.debug(
+                logger.info(
                     f"Creating a Subject for {block.block_type}({block.id}) to react to changes."
                 )
                 self.control_subjects[block.id] = Subject()
@@ -130,7 +128,7 @@ class Flow:
     def connect(
         self,
         block_funcs: Mapping[BlockType, FlojoyBlock],
-        publish_debounce_time: float = 1 / 120,
+        publish_sample_time: float = 1 / 30,
     ):
         """Connects all of block functions in a flow chart using RxPY.
 
@@ -157,11 +155,12 @@ class Flow:
                 # to turn on/off debugging and we can guard debug statements with that
                 input_subject.subscribe(
                     partial(
-                        lambda blk, x: logger.debug(
+                        lambda blk, x: logger.info(
                             f"Input got {x} for {blk.block_type} ({blk.id}) regardless of zip"
                         ),
                         block,
-                    )
+                    ),
+                    on_error=lambda e: logger.error(e),
                 )
 
                 fj_block = block_funcs[block.block_type]
@@ -173,30 +172,30 @@ class Flow:
                 #
                 def run_block(blk: FCBlock, kwargs: dict[str, Any]):
                     fn = block_funcs[blk.block_type]
-                    logger.debug(f"Running block {blk.block_type} ({blk.id})")
+                    logger.info(f"Running block {blk.block_type} ({blk.id})")
                     res = fn(**kwargs)
-                    return res
-                    # if isinstance(res, Observable):
-                    #     return res
-                    # return rx.just(res)
+                    match res:
+                        case Observable():
+                            return res
+                        case _:
+                            return rx.just(res)
 
                 def make_block_fn_props(
                     blk: FCBlock, inputs: list[Tuple[str, Any]]
                 ) -> dict[str, Any]:
-                    logger.debug(
+                    logger.info(
                         f"Making params for block {blk.block_type} ({blk.id}) with {inputs}"
                     )
                     return dict(inputs)
 
                 output_observable = input_subject.pipe(
                     # run concurrently so the loop doesn't block everything
-                    ops.subscribe_on(ThreadPoolScheduler()),
                     ops.map(partial(make_block_fn_props, block)),
-                    ops.map(partial(run_block, block)),
+                    ops.flat_map(partial(run_block, block)),
                     ops.filter(lambda x: not isinstance(x, Ignore)),
-                    # Makes it so values are not emitted on each subscribe
                     ops.observe_on(ThreadPoolScheduler()),
-                    ops.publish(),  # Makes it so values are not emitted on each subscribe
+                    # Makes it so values are not emitted on each subscribe
+                    ops.publish(),
                 )
 
                 disposable = output_observable.subscribe(
@@ -225,13 +224,12 @@ class Flow:
                 # TODO: Figure out what to publish when a block returns multiple values
                 # Current solution is just to publish the first value only
                 debounced = next(iter(output_observables.values())).pipe(
-                    ops.debounce(publish_debounce_time, self.publish_scheduler),
+                    ops.sample(publish_sample_time, self.publish_scheduler),
                 )
 
                 disposable = debounced.subscribe(
                     partial(lambda blk, x: self.on_publish(blk.id, x), block),
                     on_error=lambda e: logger.error(e),
-                    on_completed=lambda: logger.debug("completed"),
                 )  # this is to stream data back to the client
                 subscriptions.append(disposable)
 
@@ -269,8 +267,8 @@ class Flow:
             )
 
             if not io.block.ins and io.block.id not in self.control_subjects:
-                logger.info(
-                    f"Connected {io.block.id} to start observable with ui inputs {self.control_subjects.keys()}"
+                logger.debug(
+                    f"Connected {io.block.id} to start observable with ui inputs {list(self.control_subjects.keys())}"
                 )
                 logger.debug(f"CREATED REACTIVE EDGE {io.block.id} -> {self.start_obs}")
                 disposable = self.start_obs.subscribe(
