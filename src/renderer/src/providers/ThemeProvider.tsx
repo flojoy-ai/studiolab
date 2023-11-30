@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
 
 import { shared } from 'use-broadcast-ts';
+import { trpcClient } from '@/main';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -29,7 +30,10 @@ const useThemeStore = create<ThemeState>()(
     persist(
       (set) => ({
         theme: 'system' as Theme,
-        setTheme: (theme: Theme) => set({ theme })
+        setTheme: (theme: Theme) => {
+          set({ theme });
+          trpcClient.setTheme.mutate(theme);
+        }
       }),
       {
         name: 'theme-state',
