@@ -13,11 +13,10 @@ import {
 } from '@/components/ui/AlertDialog';
 import { Button } from '@/components/ui/Button';
 import { useLifecycleStore } from '@/stores/lifecycle';
-import { useNavigate } from 'react-router-dom';
 import { isPackaged } from '@/utils/build';
 import { trpcClient } from '@/main';
 
-const Index = (): JSX.Element => {
+const Setup = (): JSX.Element => {
   const captainReady = useLifecycleStore((state) => state.captainReady);
 
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
@@ -48,7 +47,6 @@ const Index = (): JSX.Element => {
   const [errorDesc, setErrorDesc] = useState<string>('');
   const [errorActionName, setErrorActionName] = useState<string>('');
   const [needRestart, setNeedRestart] = useState<boolean>(false);
-  const navigate = useNavigate();
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
@@ -233,7 +231,8 @@ const Index = (): JSX.Element => {
 
   useEffect(() => {
     if (captainReady) {
-      navigate('/flow');
+      console.log('LOOOOL');
+      trpcClient.spawnFlowWindow.mutate();
     }
   }, [captainReady]);
 
@@ -288,4 +287,4 @@ const Index = (): JSX.Element => {
   );
 };
 
-export default Index;
+export default Setup;

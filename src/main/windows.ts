@@ -10,6 +10,7 @@ import log from 'electron-log/main';
 let blocksLibraryWindow: BrowserWindow | null = null;
 let controlWindow: BrowserWindow | null = null;
 let flowWindow: BrowserWindow | null = null;
+let setupWindow: BrowserWindow | null = null;
 
 export async function spawnFlowWindow(): Promise<void> {
   if (flowWindow) {
@@ -51,9 +52,9 @@ export async function spawnFlowWindow(): Promise<void> {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    flowWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/setup');
+    flowWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/flow');
   } else {
-    flowWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'setup' });
+    flowWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'flow' });
   }
 
   app.on('before-quit', () => {
@@ -227,5 +228,77 @@ export async function spawnControlWindow(): Promise<void> {
 
   controlWindow.on('closed', () => {
     controlWindow = null;
+  });
+}
+
+export async function spawnSetupWindow(): Promise<void> {
+  if (setupWindow) {
+    if (setupWindow.isMinimized()) setupWindow.restore();
+    setupWindow.focus();
+    return;
+  }
+
+  // Create the browser window.
+  setupWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  setupWindow.on('ready-to-show', () => {
+    if (setupWindow) {
+      setupWindow.show();
+    }
+  });
+
+  setupWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    setupWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/setup');
+  } else {
+    setupWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'setup' });
+  }
+
+  const logListener = (event): void => {
+    if (setupWindow) {
+      if (!setupWindow.isDestroyed()) {
+        setupWindow.webContents.send('status-bar-logging', event);
+      } else {
+        log.error("Can't send message to statusBar: mainWindow is destroyed");
+      }
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+  });
+
+  app.on('before-quit', () => {
+    if (setupWindow) {
+      setupWindow.removeAllListeners('close');
+    }
+  });
+
+  setupWindow.on('closed', () => {
+    setupWindow = null;
   });
 }
