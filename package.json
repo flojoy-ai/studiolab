@@ -5,6 +5,15 @@
   "main": "./out/main/index.js",
   "author": "Flojoy Inc.",
   "homepage": "https://flojoy.ai",
+  "build": {
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "flojoy-ai",
+        "repo": "studio"
+      }
+    ]
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
