@@ -78,6 +78,9 @@ jobs:
         run: |
           dotnet tool install --global AzureSignTool
 
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+
       - name: Build/release Electron app
         uses: flojoy-ai/action-electron-builder@v2.0.0
         with:
