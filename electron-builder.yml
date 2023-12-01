@@ -40,12 +40,13 @@ linux:
     - AppImage
     # - snap # TODO: painful to configure this, snapcraft keeps 404
     - deb
-  maintainer: electronjs.org
+  maintainer: flojoy.ai
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: flojoy-ai
+  repo: studiolab
