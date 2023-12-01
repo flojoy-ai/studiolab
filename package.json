@@ -15,7 +15,7 @@
     "dev": "electron-vite dev --inspect --watch",
     "build": "pnpm run typecheck && electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "electron-package:win": "pnpm run build && electron-builder --win --config",
+    "electron-package:windows": "pnpm run build && electron-builder --win --config",
     "electron-package:mac": "pnpm run build && electron-builder --mac --config",
     "electron-package:linux": "pnpm run build && electron-builder --linux --config"
   },
