@@ -22,13 +22,14 @@ env:
   AZURE_CERT_NAME: ${{ secrets.AZURE_CERT_NAME }}
 
 jobs:
-  buildElectron:
+  build-electron:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest-xlarge, ubuntu-latest, windows-latest]
     env:
       DEBUG: electron-builder
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -78,8 +79,8 @@ jobs:
         run: |
           dotnet tool install --global AzureSignTool
 
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v2
+      # - name: Install Snapcraft
+      #   uses: samuelmeuli/action-snapcraft@v2
 
       - name: Build/release Electron app
         uses: flojoy-ai/action-electron-builder@v2.0.0
