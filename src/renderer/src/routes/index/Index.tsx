@@ -18,6 +18,8 @@ import { trpcClient } from '@/main';
 import { Progress } from '@/components/ui/Progress';
 import logo from '../../../../../build/logo.png';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 const Setup = (): JSX.Element => {
   const [latestStatus, setLatestStatus] = useState<string>('');
@@ -304,6 +306,18 @@ const Setup = (): JSX.Element => {
       {/*   </Button> */}
       {/* )} */}
 
+      <div className="absolute right-2 top-2">
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => {
+            trpcClient.closeSetupWindow.mutate();
+          }}
+        >
+          <X />
+        </Button>
+      </div>
+
       <div className="grow"></div>
 
       <div className="flex items-center px-4">
@@ -311,7 +325,7 @@ const Setup = (): JSX.Element => {
         <span className="font-ponymaker text-flojoy text-6xl">Flojoy</span>
       </div>
 
-      <div className="py-2"></div>
+      <div className="py-1"></div>
       <div className="px-8 text-sm">{latestStatus}</div>
       <div className="py-2"></div>
 

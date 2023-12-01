@@ -13,10 +13,7 @@ let flowWindow: BrowserWindow | null = null;
 let setupWindow: BrowserWindow | null = null;
 
 export async function spawnFlowWindow(): Promise<void> {
-  if (setupWindow) {
-    setupWindow.close();
-    setupWindow = null;
-  }
+  await closeSetupWindow();
 
   if (flowWindow) {
     if (flowWindow.isMinimized()) flowWindow.restore();
@@ -307,4 +304,9 @@ export async function spawnSetupWindow(): Promise<void> {
   setupWindow.on('closed', () => {
     setupWindow = null;
   });
+}
+
+export async function closeSetupWindow(): Promise<void> {
+  setupWindow?.close();
+  setupWindow = null;
 }
