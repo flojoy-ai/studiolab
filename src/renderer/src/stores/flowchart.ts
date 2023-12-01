@@ -13,7 +13,7 @@ import {
   applyEdgeChanges,
   XYPosition
 } from 'reactflow';
-import { BlockType } from '@/types/block';
+import { BlockData, BlockType, IntrinsicParameterValue } from '@/types/block';
 
 import { v4 as uuidv4 } from 'uuid';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -23,13 +23,19 @@ import { shared } from 'use-broadcast-ts';
 import { nodeTypes } from '@/configs/control';
 
 interface FlowchartState {
-  nodes: Node[];
+  nodes: Node<BlockData>[];
   edges: Edge[];
   controls: Node[];
 
-  setNodes: (nodes: Node[]) => void;
+  setNodes: (nodes: Node<BlockData>[]) => void;
   setEdges: (edges: Edge[]) => void;
   setControls: (edges: Node[]) => void;
+
+  updateIntrinsicParameter: (
+    id: string,
+    paramName: string,
+    paramVal: IntrinsicParameterValue
+  ) => void;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -45,19 +51,38 @@ export const useFlowchartStore = create<FlowchartState>()(
   shared(
     persist(
       (set, get) => ({
-        nodes: [] as Node[],
+        nodes: [] as Node<BlockData>[],
         edges: [] as Edge[],
         controls: [] as Node[],
 
-        setNodes: (nodes: Node[]) => set({ nodes }),
+        setNodes: (nodes: Node<BlockData>[]) => set({ nodes }),
         setEdges: (edges: Edge[]) => set({ edges }),
         setControls: (controls: Node[]) => set({ controls }),
 
-        onNodesChange: (changes: NodeChange[]) => {
+        updateIntrinsicParameter: (
+          id: string,
+          paramName: string,
+          paramVal: IntrinsicParameterValue
+        ) => {
+          set((state) => ({
+            nodes: state.nodes.map((n) =>
+              n.id === id
+                ? {
+                  ...n,
+                  data: {
+                    ...n.data,
+                    intrinsic_parameters: { ...n.data.intrinsic_parameters, [paramName]: paramVal }
+                  }
+                }
+                : n
+            )
+          }));
+        },
+
+        onNodesChange: (changes: NodeChange[]) =>
           set({
             nodes: applyNodeChanges(changes, get().nodes)
-          });
-        },
+          }),
         onEdgesChange: (changes: EdgeChange[]) => {
           set({
             edges: applyEdgeChanges(changes, get().edges)
@@ -101,6 +126,14 @@ export const useFlowchartStore = create<FlowchartState>()(
               x: position.x - parent.position.x,
               y: position.y - parent.position.y
             };
+
+          const intrinsic_parameters: Record<string, IntrinsicParameterValue> =
+            block_type === 'flojoy.math.constant'
+              ? {
+                val: 0
+              }
+              : {};
+
           set({
             nodes: get().nodes.concat([
               {
@@ -109,7 +142,8 @@ export const useFlowchartStore = create<FlowchartState>()(
                 position: adjustedPosition,
                 data: {
                   label: block_type,
-                  block_type
+                  block_type,
+                  intrinsic_parameters
                 }
               }
             ])

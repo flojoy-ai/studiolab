@@ -1,9 +1,21 @@
+import { Input } from '@/components/ui/Input';
+import { useFlowchartStore } from '@/stores/flowchart';
+import { BlockProps } from '@/types/block';
 import { Handle, Position } from 'reactflow';
 
-const ConstantBlock = () => {
+const ConstantBlock = ({ id, data }: BlockProps) => {
+  const update = useFlowchartStore((state) => state.updateIntrinsicParameter);
+
   return (
     <>
-      <div className="border p-2">2</div>
+      {/*TODO: Find a more typesafe way to do this*/}
+      <div className="p-1 w-24">
+        <Input
+          onChange={e => update(id, "val", parseInt(e.target.value, 10))}
+          type="number"
+          value={data.intrinsic_parameters['val']}
+        />
+      </div>
       <Handle type="source" position={Position.Right} id="value" />
     </>
   );

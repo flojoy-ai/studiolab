@@ -186,7 +186,7 @@ class Flow:
                     logger.info(
                         f"Making params for block {blk.block_type} ({blk.id}) with {inputs}"
                     )
-                    return dict(inputs)
+                    return dict(inputs) | blk.intrinsic_parameters
 
                 output_observable = input_subject.pipe(
                     # run concurrently so the loop doesn't block everything

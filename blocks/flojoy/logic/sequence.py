@@ -2,5 +2,5 @@ import time
 import reactivex as rx
 
 
-def sequence():
-    return rx.range(10000)
+def sequence(start: int = 0, stop: int | None = None, step: int | None = None):
+    return rx.range(start=start, stop=stop, step=step)

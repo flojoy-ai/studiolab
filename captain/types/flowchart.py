@@ -31,9 +31,12 @@ Everything related to ReactFlow
 # input param name and output param name.
 RFHandleID: TypeAlias = str
 
+IntrinsicParameterValue: TypeAlias = str | int
+
 
 class RFNodeData(BaseModel):
     block_type: BlockType
+    intrinsic_parameters: dict[str, IntrinsicParameterValue]
 
 
 class RFNode(BaseModel):
@@ -76,6 +79,7 @@ class _Block(BaseModel):
 
     id: BlockID
     block_type: BlockType
+    intrinsic_parameters: dict[str, IntrinsicParameterValue]
 
 
 class FCBlock(_Block):
@@ -84,7 +88,13 @@ class FCBlock(_Block):
 
     @staticmethod
     def from_block(block: _Block):
-        return FCBlock(id=block.id, block_type=block.block_type, ins=[], outs=[])
+        return FCBlock(
+            id=block.id,
+            block_type=block.block_type,
+            ins=[],
+            outs=[],
+            intrinsic_parameters=block.intrinsic_parameters,
+        )
 
 
 class FlowChart(BaseModel):
@@ -114,7 +124,14 @@ class FlowChart(BaseModel):
 
     @staticmethod
     def from_react_flow(rf: ReactFlow):
-        blocks = [_Block(id=n.id, block_type=n.data.block_type) for n in rf.nodes]
+        blocks = [
+            _Block(
+                id=n.id,
+                block_type=n.data.block_type,
+                intrinsic_parameters=n.data.intrinsic_parameters,
+            )
+            for n in rf.nodes
+        ]
         edges = [
             FCConnection(
                 target=e.target,

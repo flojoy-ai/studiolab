@@ -51,6 +51,7 @@
     "electron-updater": "^6.1.7",
     "fix-path": "^3.0.0",
     "gamepad.js": "^2.1.0",
+    "immer": "^10.0.3",
     "localforage": "^1.10.0",
     "lucide-react": "^0.294.0",
     "match-sorter": "^6.3.1",
