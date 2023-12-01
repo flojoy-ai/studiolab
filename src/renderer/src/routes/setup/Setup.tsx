@@ -264,7 +264,7 @@ const Setup = (): JSX.Element => {
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
       setCaptainReady(true);
-      // trpcClient.spawnFlowWindow.mutate();
+      trpcClient.spawnFlowWindow.mutate();
     } else {
       setCaptainReady(false);
     }
