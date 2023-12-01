@@ -265,7 +265,7 @@ const Setup = (): JSX.Element => {
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
       setCaptainReady(true);
-      trpcClient.spawnFlowWindow.mutate();
+      // trpcClient.spawnFlowWindow.mutate();
     } else {
       setCaptainReady(false);
     }
@@ -320,14 +320,14 @@ const Setup = (): JSX.Element => {
 
       <div className="grow"></div>
 
-      <div className="flex items-center px-4">
+      <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform items-center">
         <img src={logo} alt="logo" className="h-20 w-20" />
         <span className="font-ponymaker text-flojoy text-6xl">Flojoy</span>
       </div>
 
-      <div className="py-1"></div>
-      <div className="px-8 text-sm">{latestStatus}</div>
       <div className="py-2"></div>
+      <div className="px-2 text-center text-sm">{latestStatus}</div>
+      <div className="py-1"></div>
 
       <Progress value={progress} className="h-2 w-full animate-pulse rounded-none" />
 
