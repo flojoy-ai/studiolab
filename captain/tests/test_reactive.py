@@ -33,7 +33,7 @@ def test_add():
 
     # TODO: Maybe we should do something like flow.wire() to trigger the
     # wire process instead of doing it upon construction?
-    flow = Flow(fc, pub, start_obs)
+    _ = Flow(fc, pub, start_obs)
     start_obs.on_next({})
 
     assert outputs["constant1"] == 2
