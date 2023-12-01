@@ -25,9 +25,8 @@ const Setup = (): JSX.Element => {
   const [latestStatus, setLatestStatus] = useState<string>('');
   const [progress, setProgress] = useState(13);
 
-  const { setCaptainReady, captainReady } = useLifecycleStore((state) => ({
-    setCaptainReady: state.setCaptainReady,
-    captainReady: state.captainReady
+  const { setCaptainReady } = useLifecycleStore((state) => ({
+    setCaptainReady: state.setCaptainReady
   }));
 
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
@@ -320,9 +319,11 @@ const Setup = (): JSX.Element => {
 
       <div className="grow"></div>
 
-      <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 transform items-center">
-        <img src={logo} alt="logo" className="h-20 w-20" />
-        <span className="font-ponymaker text-flojoy text-6xl">Flojoy</span>
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="logo" className="h-20 w-20 " />
+          <span className="font-ponymaker text-6xl text-flojoy">Flojoy</span>
+        </div>
       </div>
 
       <div className="py-2"></div>

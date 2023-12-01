@@ -3,7 +3,7 @@ import './styles/index.css';
 import './styles/reactflow.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Root from './routes/root/Root';
-import Setup from './routes/index/Index';
+import Setup from './routes/setup/Setup';
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import Flow from './routes/flow/Flow';
 import Library from './routes/library/Library';
