@@ -13,6 +13,11 @@ let flowWindow: BrowserWindow | null = null;
 let setupWindow: BrowserWindow | null = null;
 
 export async function spawnFlowWindow(): Promise<void> {
+  if (setupWindow) {
+    setupWindow.close();
+    setupWindow = null;
+  }
+
   if (flowWindow) {
     if (flowWindow.isMinimized()) flowWindow.restore();
     flowWindow.focus();
@@ -240,8 +245,8 @@ export async function spawnSetupWindow(): Promise<void> {
 
   // Create the browser window.
   setupWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 640,
+    height: 360,
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',

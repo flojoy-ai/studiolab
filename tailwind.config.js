@@ -16,7 +16,11 @@ module.exports = {
       }
     },
     extend: {
+      fontFamily: {
+        ponymaker: ['PonyMaker', 'sans-serif'] // after you font, add some fonts separated by commas to handle fallback.
+      },
       colors: {
+        flojoy: 'rgb(var(--flojoy) / <alpha-value>)',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
