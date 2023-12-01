@@ -23,6 +23,7 @@ const BlocksLibrary = () => {
         <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.bignum" />
         <BlockCard name="Function Definition" desc="a -> b" block_type="flojoy.logic.function" />
         <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" />
+        <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" />
         <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" />
         <BlockCard name="Rand" desc="?" block_type="flojoy.math.rand" />
         <BlockCard

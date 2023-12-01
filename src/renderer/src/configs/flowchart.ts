@@ -9,10 +9,11 @@ import TrueBlock from '@/components/blocks/flow/TrueBlock';
 import FalseBlock from '@/components/blocks/flow/FalseBlock';
 import RandBlock from '@/components/blocks/flow/RandBlock';
 import ToggleBlock from '@/components/blocks/flow/ToggleBlock';
+import ClockBlock from '@/components/blocks/flow/ClockBlock';
 
 export const nodeTypes = {
   'flojoy.control.slider': SliderBlock,
-  'flojoy.logic.toggle': ToggleBlock,
+  'flojoy.control.toggle': ToggleBlock,
   'flojoy.visualization.bignum': BigNumberBlock,
   'flojoy.math.arithmetic.add': AddBlock,
   'flojoy.math.constant': ConstantBlock,
@@ -20,6 +21,7 @@ export const nodeTypes = {
   'flojoy.logic.conditional': ConditionalBlock,
   'flojoy.logic.function': FunctionBlock,
   'flojoy.logic.sequence': SequenceBlock,
+  'flojoy.logic.clock': ClockBlock,
   'flojoy.logic.true': TrueBlock,
   'flojoy.logic.false': FalseBlock
 };

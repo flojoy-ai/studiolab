@@ -1,7 +1,5 @@
-import time
+import reactivex as rx
 
 
-def clock(interval: float):
-    while True:
-        time.sleep(interval)
-        yield None
+def clock():
+    return rx.interval(1 / 60)
