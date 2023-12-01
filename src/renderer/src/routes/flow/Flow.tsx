@@ -6,7 +6,7 @@ import { version } from '../../../../../package.json';
 const Flow = (): JSX.Element => {
   return (
     <div className="h-screen bg-muted">
-      <Header title={`Control Panel ${version}`} />
+      <Header title={`Flow Panel ${version}`} />
       <div className="main-content flex bg-muted py-4">
         <div className="px-2"></div>
         <FlowCanvas />
