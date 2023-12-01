@@ -247,7 +247,7 @@ const Setup = (): JSX.Element => {
           stage: 'spawn-captain',
           status: 'running',
           message: 'Almost there, starting Flojoy Studio...',
-          percent: 70
+          percent: 90
         });
         spawnCaptain();
         break;
@@ -263,16 +263,11 @@ const Setup = (): JSX.Element => {
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
       setCaptainReady(true);
+      trpcClient.spawnFlowWindow.mutate();
     } else {
       setCaptainReady(false);
     }
   }, [readyState]);
-
-  useEffect(() => {
-    if (captainReady) {
-      trpcClient.spawnFlowWindow.mutate();
-    }
-  }, [captainReady]);
 
   return (
     <div className="flex h-screen flex-col">
@@ -320,7 +315,7 @@ const Setup = (): JSX.Element => {
       <div className="px-8 text-sm">{latestStatus}</div>
       <div className="py-2"></div>
 
-      <Progress value={progress} className="h-2 w-full rounded-none" />
+      <Progress value={progress} className="h-2 w-full animate-pulse rounded-none" />
 
       <AlertDialog open={showError} onOpenChange={setShowError}>
         <AlertDialogContent>
