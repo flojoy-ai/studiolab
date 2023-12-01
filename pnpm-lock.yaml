@@ -10,10 +10,10 @@ dependencies:
     version: 6.1.3(@codemirror/state@6.3.2)(@codemirror/view@6.22.1)(@lezer/common@1.1.1)
   '@electron-toolkit/preload':
     specifier: ^2.0.0
-    version: 2.0.0(electron@27.1.2)
+    version: 2.0.0(electron@27.1.3)
   '@electron-toolkit/utils':
     specifier: ^2.0.1
-    version: 2.0.1(electron@27.1.2)
+    version: 2.0.1(electron@27.1.3)
   '@radix-ui/react-alert-dialog':
     specifier: ^1.0.5
     version: 1.0.5(@types/react-dom@18.2.17)(@types/react@18.2.39)(react-dom@18.2.0)(react@18.2.0)
@@ -57,11 +57,11 @@ dependencies:
     specifier: ^1.0.7
     version: 1.0.7(@types/react-dom@18.2.17)(@types/react@18.2.39)(react-dom@18.2.0)(react@18.2.0)
   '@tanstack/react-query':
-    specifier: ^5.10.0
-    version: 5.10.0(react@18.2.0)
+    specifier: ^5.12.1
+    version: 5.12.1(react@18.2.0)
   '@tanstack/react-query-devtools':
-    specifier: ^5.10.0
-    version: 5.10.0(@tanstack/react-query@5.10.0)(react@18.2.0)
+    specifier: ^5.12.1
+    version: 5.12.1(@tanstack/react-query@5.12.1)(react@18.2.0)
   '@tisoap/react-flow-smart-edge':
     specifier: ^3.0.0
     version: 3.0.0(react-dom@18.2.0)(react@18.2.0)(reactflow@11.10.1)(typescript@5.3.2)
@@ -91,7 +91,7 @@ dependencies:
     version: 5.0.1
   electron-trpc:
     specifier: ^0.5.2
-    version: 0.5.2(@trpc/client@10.44.1)(@trpc/server@10.44.1)(electron@27.1.2)
+    version: 0.5.2(@trpc/client@10.44.1)(@trpc/server@10.44.1)(electron@27.1.3)
   electron-updater:
     specifier: ^6.1.7
     version: 6.1.7
@@ -182,8 +182,8 @@ devDependencies:
     specifier: ^8.2.2
     version: 8.2.2
   electron:
-    specifier: ^27.1.2
-    version: 27.1.2
+    specifier: ^27.1.3
+    version: 27.1.3
   electron-builder:
     specifier: ^24.9.1
     version: 24.9.1
@@ -601,12 +601,12 @@ packages:
       - supports-color
     dev: true
 
-  /@electron-toolkit/preload@2.0.0(electron@27.1.2):
+  /@electron-toolkit/preload@2.0.0(electron@27.1.3):
     resolution: {integrity: sha512-zpZDzbqJTZQC5d4LRs2EKruKWnqah+T75s+niBYFemYLtiW5TTZcWi3Q8UxHqnwTudDMuWJb233aaS2yjx3Xiw==}
     peerDependencies:
       electron: '>=13.0.0'
     dependencies:
-      electron: 27.1.2
+      electron: 27.1.3
     dev: false
 
   /@electron-toolkit/tsconfig@1.0.1(@types/node@20.10.1):
@@ -617,12 +617,12 @@ packages:
       '@types/node': 20.10.1
     dev: true
 
-  /@electron-toolkit/utils@2.0.1(electron@27.1.2):
+  /@electron-toolkit/utils@2.0.1(electron@27.1.3):
     resolution: {integrity: sha512-3nnjd3D1NIjxdzNrvR5fkJ3kbJNbRkpHppv0/pSbMX6I0DaBzpPXeSfDYuJJKzZrAc3CmGcJa0MU4+AjEOlT4g==}
     peerDependencies:
       electron: '>=13.0.0'
     dependencies:
-      electron: 27.1.2
+      electron: 27.1.3
     dev: false
 
   /@electron/asar@3.2.8:
@@ -927,8 +927,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@floating-ui/core@1.5.0:
-    resolution: {integrity: sha512-kK1h4m36DQ0UHGj5Ah4db7R0rHemTqqO0QLvUqi1/mUUp3LuAWbWxdxSIf/XsnH9VS6rRVPLJCncjRzUvyCLXg==}
+  /@floating-ui/core@1.5.1:
+    resolution: {integrity: sha512-QgcKYwzcc8vvZ4n/5uklchy8KVdjJwcOeI+HnnTNclJjs2nYsy23DOCf+sSV1kBwD9yDAoVKCkv/gEPzgQU3Pw==}
     dependencies:
       '@floating-ui/utils': 0.1.6
     dev: false
@@ -936,7 +936,7 @@ packages:
   /@floating-ui/dom@1.5.3:
     resolution: {integrity: sha512-ClAbQnEqJAKCJOEbbLo5IUlZHkNszqhuxS4fHAVxRPXPya6Ysf2G8KypnYcOTpx6I8xcgF9bbHb6g/2KpbV8qA==}
     dependencies:
-      '@floating-ui/core': 1.5.0
+      '@floating-ui/core': 1.5.1
       '@floating-ui/utils': 0.1.6
     dev: false
 
@@ -2212,31 +2212,31 @@ packages:
     dependencies:
       defer-to-connect: 2.0.1
 
-  /@tanstack/query-core@5.10.0:
-    resolution: {integrity: sha512-wlw/l2E+U70iABaJnOtZIJN/5VMhuj4RPViafwUYiIGoqw1VqqqaxBnBL90qLhWswoOaK8RAj3+NiG0duk+cRg==}
+  /@tanstack/query-core@5.12.1:
+    resolution: {integrity: sha512-WbZztNmKq0t6QjdNmHzezbi/uifYo9j6e2GLJkodsYaYUlzMbAp91RDyeHkIZrm7EfO4wa6Sm5sxJZm5SPlh6w==}
     dev: false
 
-  /@tanstack/query-devtools@5.10.0:
-    resolution: {integrity: sha512-ZN17ZHiPFc8B1AZplueTLI6qxqNPuelV/8Q6gx2coNac2++AD1gq8NvCQxfq9HoaqFJM8xqS3oPYxa3HZZTo8w==}
+  /@tanstack/query-devtools@5.12.1:
+    resolution: {integrity: sha512-AUWLgdZEYq/ckMZrtKpofOwqxuFiEIdy3gZOh/ouIBVra9ijXVTxYt5cZFSjXJT4q/o0DMii6xMZuIJx2qXZ6g==}
     dev: false
 
-  /@tanstack/react-query-devtools@5.10.0(@tanstack/react-query@5.10.0)(react@18.2.0):
-    resolution: {integrity: sha512-amQN/6BdSMiYtILISk5j3IrZZiWz+HOHjJdcJNZHaTpzS7aIM1Z82bghCSoPdBtS7P1KbdoW35aD4glm9EkIuQ==}
+  /@tanstack/react-query-devtools@5.12.1(@tanstack/react-query@5.12.1)(react@18.2.0):
+    resolution: {integrity: sha512-imHdhA2KGDPAPbBEyztjYDhwn2HioTk6uPc7g6W0xORKTmHETQnAuWttqUHg8VHI3CHi5ACHPUAckoHg/PllMQ==}
     peerDependencies:
-      '@tanstack/react-query': ^5.10.0
+      '@tanstack/react-query': ^5.12.1
       react: ^18.0.0
     dependencies:
-      '@tanstack/query-devtools': 5.10.0
-      '@tanstack/react-query': 5.10.0(react@18.2.0)
+      '@tanstack/query-devtools': 5.12.1
+      '@tanstack/react-query': 5.12.1(react@18.2.0)
       react: 18.2.0
     dev: false
 
-  /@tanstack/react-query@5.10.0(react@18.2.0):
-    resolution: {integrity: sha512-LeJsyXUvhq1TBsEbt3SSEaxP2Att1sv/qW588GL/bvjxPxsLUBWKGuFJ5Z1YP+/nJqVmcXJE8AtvZaaxE9rsKQ==}
+  /@tanstack/react-query@5.12.1(react@18.2.0):
+    resolution: {integrity: sha512-pEqa0VENgw/0DunBAlnL7mruouCudclK/GecpgE5ayMAnLFW+FjBgMjNpMPeoSORzJKBsYgkgM7DYb3LQhXQxA==}
     peerDependencies:
       react: ^18.0.0
     dependencies:
-      '@tanstack/query-core': 5.10.0
+      '@tanstack/query-core': 5.12.1
       react: 18.2.0
     dev: false
 
@@ -2522,8 +2522,8 @@ packages:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
     dev: true
 
-  /@types/node@18.18.14:
-    resolution: {integrity: sha512-iSOeNeXYNYNLLOMDSVPvIFojclvMZ/HDY2dU17kUlcsOsSQETbWIslJbYLZgA+ox8g2XQwSHKTkght1a5X26lQ==}
+  /@types/node@18.19.0:
+    resolution: {integrity: sha512-667KNhaD7U29mT5wf+TZUnrzPrlL2GNQ5N0BMjO2oNULhBxX0/FKCkm6JMu0Jh7Z+1LwUlR21ekd7KhIboNFNw==}
     dependencies:
       undici-types: 5.26.5
 
@@ -3119,8 +3119,8 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001565
-      electron-to-chromium: 1.4.597
-      node-releases: 2.0.13
+      electron-to-chromium: 1.4.600
+      node-releases: 2.0.14
       update-browserslist-db: 1.0.13(browserslist@4.22.1)
     dev: true
 
@@ -3748,11 +3748,11 @@ packages:
       - supports-color
     dev: true
 
-  /electron-to-chromium@1.4.597:
-    resolution: {integrity: sha512-0XOQNqHhg2YgRVRUrS4M4vWjFCFIP2ETXcXe/0KIQBjXE9Cpy+tgzzYfuq6HGai3hWq0YywtG+5XK8fyG08EjA==}
+  /electron-to-chromium@1.4.600:
+    resolution: {integrity: sha512-KD6CWjf1BnQG+NsXuyiTDDT1eV13sKuYsOUioXkQweYTQIbgHkXPry9K7M+7cKtYHnSUPitVaLrXYB1jTkkYrw==}
     dev: true
 
-  /electron-trpc@0.5.2(@trpc/client@10.44.1)(@trpc/server@10.44.1)(electron@27.1.2):
+  /electron-trpc@0.5.2(@trpc/client@10.44.1)(@trpc/server@10.44.1)(electron@27.1.3):
     resolution: {integrity: sha512-lJTeTwrd/E1C3VGFvdSBQggdmdDeHGrrpnuiB1e3bQR/1f91HmprySMygs9e4i12+CLqR+RIyKTQWLKCNjy5/Q==}
     peerDependencies:
       '@trpc/client': '>10.0.0'
@@ -3762,7 +3762,7 @@ packages:
       '@trpc/client': 10.44.1(@trpc/server@10.44.1)
       '@trpc/server': 10.44.1
       debug: 4.3.4
-      electron: 27.1.2
+      electron: 27.1.3
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -3804,14 +3804,14 @@ packages:
       - supports-color
     dev: true
 
-  /electron@27.1.2:
-    resolution: {integrity: sha512-Dy6BUuGLiIJv+zfsXwr78TV2TNppi24rXF4PIIS+OjDblEKdkI9r1iM8JUd3/x3sbGUy5mdLMSPhvmu//IhkgA==}
+  /electron@27.1.3:
+    resolution: {integrity: sha512-7eD8VMhhlL5J531OOawn00eMthUkX1e3qN5Nqd7eMK8bg5HxQBrn8bdPlvUEnCano9KhrVwaDnGeuzWoDOGpjQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
     requiresBuild: true
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 18.18.14
+      '@types/node': 18.19.0
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -3864,7 +3864,7 @@ packages:
       is-weakref: 1.0.2
       object-inspect: 1.13.1
       object-keys: 1.1.1
-      object.assign: 4.1.4
+      object.assign: 4.1.5
       regexp.prototype.flags: 1.5.1
       safe-array-concat: 1.0.1
       safe-regex-test: 1.0.0
@@ -4987,7 +4987,7 @@ packages:
     dependencies:
       array-includes: 3.1.7
       array.prototype.flat: 1.3.2
-      object.assign: 4.1.4
+      object.assign: 4.1.5
       object.values: 1.1.7
     dev: true
 
@@ -5250,8 +5250,8 @@ packages:
     dev: true
     optional: true
 
-  /node-releases@2.0.13:
-    resolution: {integrity: sha512-uYr7J37ae/ORWdZeQ1xxMJe3NtdmqMC/JZK+geofDrkLUApKRHPd18/TxtBOJ4A0/+uUIliorNrfYV6s1b02eQ==}
+  /node-releases@2.0.14:
+    resolution: {integrity: sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==}
     dev: true
 
   /normalize-path@3.0.0:
@@ -5309,8 +5309,8 @@ packages:
     engines: {node: '>=0.8.0'}
     dev: false
 
-  /object.assign@4.1.4:
-    resolution: {integrity: sha512-1mxKf0e58bvyjSCtKYY4sRe9itRk3PJpquJOjeIkz885CczcI4IvJJDLPS72oowuSh+pBxUFROpX+TU++hxhZQ==}
+  /object.assign@4.1.5:
+    resolution: {integrity: sha512-byy+U7gp+FVwmyzKPYhW2h5l3crpmGsxl7X2s8y43IgxvG4g3QZ6CffDtsNQy1WsmZpQbO+ybo0AlW7TY6DcBQ==}
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.5
