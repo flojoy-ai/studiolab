@@ -38,7 +38,7 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
+    # - snap # TODO: painful to configure this, snapcraft keeps 404
     - deb
   maintainer: electronjs.org
   category: Utility
