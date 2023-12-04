@@ -38,7 +38,7 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, FlojoyBlock]:
             if not file.endswith(".py"):
                 continue
 
-            block_name = file.strip(".py")
+            block_name = file.rstrip(".py")
             block_path = os.path.join(root, file)
             block_type = os.path.relpath(
                 os.path.splitext(block_path)[0], blocks_dir
