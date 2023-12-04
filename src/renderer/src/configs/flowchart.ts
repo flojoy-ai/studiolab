@@ -25,5 +25,5 @@ export const nodeTypes = {
   'flojoy.logic.true': TrueBlock,
   'flojoy.logic.false': FalseBlock,
   'flojoy.visualization.big_num': BigNumberBlock,
-  'flojoy.visualization.progress_bar': ProgressBlock,
+  'flojoy.visualization.progress_bar': ProgressBlock
 };

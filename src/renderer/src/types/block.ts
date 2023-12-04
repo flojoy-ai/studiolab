@@ -9,7 +9,7 @@ export type BlockType =
   | 'flojoy.math.arithmetic.subtract'
   | 'flojoy.math.constant';
 
-export type IntrinsicParameterValue = number | string
+export type IntrinsicParameterValue = number | string;
 
 export type BlockData = {
   block_type: BlockType;

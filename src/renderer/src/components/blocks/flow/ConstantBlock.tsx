@@ -9,9 +9,9 @@ const ConstantBlock = ({ id, data }: BlockProps) => {
   return (
     <>
       {/*TODO: Find a more typesafe way to do this*/}
-      <div className="p-1 w-24">
+      <div className="w-24 p-1">
         <Input
-          onChange={e => update(id, "val", parseInt(e.target.value, 10))}
+          onChange={(e) => update(id, 'val', parseInt(e.target.value, 10))}
           type="number"
           value={data.intrinsic_parameters['val']}
         />
