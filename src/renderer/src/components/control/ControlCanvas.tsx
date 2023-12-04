@@ -1,7 +1,5 @@
 import ReactFlow, {
-  Controls,
-  Background,
-  MiniMap
+  Background
   // NodeDragHandler,
   // SelectionDragHandler,
   // OnNodesDelete,
@@ -11,6 +9,9 @@ import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { nodeTypes } from '@/configs/control';
+import ControlControlsTopLeft from './ControlControlsTopLeft';
+import FlowControlsTopRight from '../flow/FlowControlsTopRight';
+import CanvasControlsBottomLeft from '../reactflow/CanvasControlsBottomLeft';
 // import { useCallback, useState } from 'react';
 // import useUndoRedo from '@/hooks/useUndoRedo';
 
@@ -57,9 +58,10 @@ const ControlCanvas = () => {
       proOptions={{ hideAttribution: true }}
       className="rounded-lg bg-background"
     >
+      <ControlControlsTopLeft />
+      <FlowControlsTopRight />
+      <CanvasControlsBottomLeft />
       <Background />
-      <Controls />
-      <MiniMap />
     </ReactFlow>
   );
 };

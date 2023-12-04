@@ -1,15 +1,15 @@
-import { Hash } from 'lucide-react';
+import { Percent } from 'lucide-react';
 import { Handle, Position } from 'reactflow';
 
-const BigNumberBlock = () => {
+const ProgressBlock = () => {
   return (
     <>
       <div className="border p-4">
-        <Hash />
+        <Percent />
       </div>
       <Handle type="target" position={Position.Left} id="x" />
     </>
   );
 };
 
-export default BigNumberBlock;
+export default ProgressBlock;

@@ -6,10 +6,12 @@ from pydantic import BaseModel
 BlockType = Literal[
     "flojoy.control.toggle",
     "flojoy.control.slider",
-    "flojoy.math.rand",
+    "flojoy.visualization.big_num",
+    "flojoy.visualization.progress_bar",
     "flojoy.math.arithmetic.add",
     "flojoy.math.arithmetic.subtract",
     "flojoy.math.constant",
+    "flojoy.math.rand",
     "flojoy.logic.sequence",
     "flojoy.logic.clock",
     "flojoy.logic.conditional",

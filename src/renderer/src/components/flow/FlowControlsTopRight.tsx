@@ -2,7 +2,6 @@ import { Button } from '../ui/Button';
 
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import ClearCanvasButton from './ClearCanvasButton';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { trpcClient } from '@/main';
 
@@ -14,16 +13,22 @@ const FlowControlsTopRight = (): JSX.Element => {
     }))
   );
 
-  const { running, setRunning } = useLifecycleStore(
+  const { flowRunning, setFlowRunning } = useLifecycleStore(
     useShallow((state) => ({
-      running: state.running,
-      setRunning: state.setRunning
+      flowRunning: state.flowRunning,
+      setFlowRunning: state.setFlowRunning
     }))
   );
 
   const onCancel = async () => {
-    await trpcClient.cancelFlowchart.mutate();
-    setRunning(false);
+    await trpcClient.cancelFlowchart.mutate(
+      JSON.stringify({
+        event: {
+          event_type: 'cancel'
+        }
+      })
+    );
+    setFlowRunning(false);
   };
 
   const onStart = async () => {
@@ -35,19 +40,18 @@ const FlowControlsTopRight = (): JSX.Element => {
         }
       })
     );
-    setRunning(true);
+    setFlowRunning(true);
   };
 
   return (
     <div className="absolute right-0 z-50 flex gap-2 p-4">
-      {!running ? (
-        <Button onClick={onStart}>Run</Button>
+      {!flowRunning ? (
+        <Button onClick={onStart}>Run Flowchart</Button>
       ) : (
         <Button onClick={onCancel} variant="destructive">
           Interrupt
         </Button>
       )}
-      <ClearCanvasButton />
     </div>
   );
 };

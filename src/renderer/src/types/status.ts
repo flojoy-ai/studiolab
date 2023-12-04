@@ -15,4 +15,5 @@ export type SetupStatus = {
     | 'install-dependencies'
     | 'spawn-captain';
   message: string;
+  percent: number;
 };

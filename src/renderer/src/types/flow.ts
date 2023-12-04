@@ -27,6 +27,14 @@ export interface FlowStateUpdateEvent {
   data: any;
 }
 
+export interface FlowReadyEvent {
+  event_type: 'ready';
+}
+
 export interface FlowSocketMessage {
   event: FlowStartEvent | FlowControlEvent | FlowCancelEvent;
+}
+
+export interface FlowSocketReply {
+  event: FlowStateUpdateEvent | FlowReadyEvent;
 }

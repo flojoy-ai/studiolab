@@ -17,8 +17,8 @@ export const flowchartRouter = t.router({
       // log.debug('sending update to ws', data);
       websocket.send(data.toString());
     });
-    ipcMain.on('flowchart-cancel', () => {
-      websocket.send(JSON.stringify({ event: { event_type: 'cancel' } }));
+    ipcMain.on('flowchart-cancel', (data) => {
+      websocket.send(data.toString());
       websocket.close();
     });
   }),
@@ -26,7 +26,7 @@ export const flowchartRouter = t.router({
     // log.debug('trpc udpate received');
     ipcMain.emit('flowchart-update', opts.input);
   }),
-  cancelFlowchart: t.procedure.mutation(async () => {
-    ipcMain.emit('flowchart-cancel');
+  cancelFlowchart: t.procedure.input(z.string()).mutation((opts) => {
+    ipcMain.emit('flowchart-cancel', opts.input);
   })
 });

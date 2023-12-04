@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SetupStatus } from '@/types/status';
-import SetupStep from '@/components/index/SetupStep';
+// import SetupStep from '@/components/index/SetupStep';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,35 +11,48 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/AlertDialog';
-import { Button } from '@/components/ui/Button';
+// import { Button } from '@/components/ui/Button';
 import { useLifecycleStore } from '@/stores/lifecycle';
-import { useNavigate } from 'react-router-dom';
 import { isPackaged } from '@/utils/build';
 import { trpcClient } from '@/main';
+import { Progress } from '@/components/ui/Progress';
+import logo from '../../../../../build/logo.png';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
-const Index = (): JSX.Element => {
-  const captainReady = useLifecycleStore((state) => state.captainReady);
+const Setup = (): JSX.Element => {
+  const [latestStatus, setLatestStatus] = useState<string>('');
+  const [progress, setProgress] = useState(13);
+
+  const { setCaptainReady } = useLifecycleStore((state) => ({
+    setCaptainReady: state.setCaptainReady
+  }));
 
   const [setupStatuses, setSetupStatuses] = useState<SetupStatus[]>([
     {
       status: 'running',
       stage: 'check-python-installation',
-      message: 'Making sure Python 3.11 is installed on this machine.'
+      message: 'Making sure Python 3.11 is installed on this machine.',
+      percent: 10
     },
     {
       status: 'pending',
       stage: 'check-pipx-installation',
-      message: 'Check if Pipx is installed on this machine.'
+      message: 'Check if Pipx is installed on this machine.',
+      percent: 30
     },
     {
       status: 'pending',
       stage: 'install-dependencies',
-      message: 'Configure all the magic behind Flojoy Studio.'
+      message: 'Configure all the magic behind Flojoy Studio.',
+      percent: 50
     },
     {
       status: 'pending',
       stage: 'spawn-captain',
-      message: 'Start the Flojoy Studio backend.'
+      message: 'Start the Flojoy Studio backend.',
+      percent: 70
     }
   ]);
 
@@ -48,7 +61,6 @@ const Index = (): JSX.Element => {
   const [errorDesc, setErrorDesc] = useState<string>('');
   const [errorActionName, setErrorActionName] = useState<string>('');
   const [needRestart, setNeedRestart] = useState<boolean>(false);
-  const navigate = useNavigate();
 
   const checkPythonInstallation = async (): Promise<void> => {
     try {
@@ -56,14 +68,16 @@ const Index = (): JSX.Element => {
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'completed',
-        message: `Python ${data.split(' ')[1]} is installed!`
+        message: `Python ${data.split(' ')[1]} is installed!`,
+        percent: 20
       });
     } catch (err) {
       console.error(err);
       updateSetupStatus({
         stage: 'check-python-installation',
         status: 'error',
-        message: 'Cannot find any Python 3.11 installation on this machine :('
+        message: 'Cannot find any Python 3.11 installation on this machine :(',
+        percent: 0
       });
       setErrorTitle('Could not find Python 3.11 :(');
       setErrorDesc('Please install Python 3.11 and try again!');
@@ -77,14 +91,16 @@ const Index = (): JSX.Element => {
       updateSetupStatus({
         stage: 'check-pipx-installation',
         status: 'completed',
-        message: `Pipx ${data} is installed!`
+        message: `Pipx ${data} is installed!`,
+        percent: 40
       });
     } catch (err) {
       updateSetupStatus({
         stage: 'check-pipx-installation',
         status: 'warning',
         message:
-          'Pipx is not currently installed, we will install it for you and restart Flojoy Studio!'
+          'Pipx is not currently installed, we will install it for you and restart Flojoy Studio!',
+        percent: 0
       });
       setNeedRestart(true);
     }
@@ -101,7 +117,8 @@ const Index = (): JSX.Element => {
           updateSetupStatus({
             stage: 'install-dependencies',
             status: 'running',
-            message: `Flojoy Studio needs to restart for changes to take effect, restarting in ${i} second(s)`
+            message: `Flojoy Studio needs to restart for changes to take effect, restarting in ${i} second(s)`,
+            percent: 60
           });
           await new Promise((resolve) => setTimeout(resolve, 1000));
         }
@@ -117,14 +134,16 @@ const Index = (): JSX.Element => {
         updateSetupStatus({
           stage: 'install-dependencies',
           status: 'completed',
-          message: 'Finished setting up all the magic behind Flojoy Studio.'
+          message: 'Finished setting up all the magic behind Flojoy Studio.',
+          percent: 60
         });
       }
     } catch (err) {
       updateSetupStatus({
         stage: 'install-dependencies',
         status: 'error',
-        message: 'Something went wrong when installing dependencies...'
+        message: 'Something went wrong when installing dependencies...',
+        percent: 0
       });
       setErrorTitle('Something went wrong :(');
       // TODO: automate the log reporting part
@@ -142,7 +161,8 @@ const Index = (): JSX.Element => {
       updateSetupStatus({
         stage: 'spawn-captain',
         status: 'error',
-        message: 'Something went wrong when starting Flojoy Studio...'
+        message: 'Something went wrong when starting Flojoy Studio...',
+        percent: 0
       });
       setErrorTitle('Something went wrong :(');
       // TODO: automate the log reporting part
@@ -178,6 +198,8 @@ const Index = (): JSX.Element => {
         return status;
       });
     });
+    setLatestStatus(setupStatus.message);
+    setProgress(setupStatus.percent);
   };
 
   useEffect(() => {
@@ -205,7 +227,8 @@ const Index = (): JSX.Element => {
         updateSetupStatus({
           stage: 'check-pipx-installation',
           status: 'running',
-          message: 'Checking if Pipx is installed on this machine!'
+          message: 'Checking if Pipx is installed on this machine!',
+          percent: 30
         });
         checkPipxInstallation();
         break;
@@ -214,7 +237,8 @@ const Index = (): JSX.Element => {
         updateSetupStatus({
           stage: 'install-dependencies',
           status: 'running',
-          message: 'Working hard to set everything up! This may take a while for the first time...'
+          message: 'Working hard to set everything up! This may take a while for the first time...',
+          percent: 50
         });
         installDependencies();
         break;
@@ -223,7 +247,8 @@ const Index = (): JSX.Element => {
         updateSetupStatus({
           stage: 'spawn-captain',
           status: 'running',
-          message: 'Almost there, starting Flojoy Studio...'
+          message: 'Almost there, starting Flojoy Studio...',
+          percent: 90
         });
         spawnCaptain();
         break;
@@ -231,47 +256,81 @@ const Index = (): JSX.Element => {
     }
   }, [setupStatuses]);
 
+  const { readyState } = useWebSocket('ws://localhost:2333/status', {
+    retryOnError: true,
+    shouldReconnect: () => true
+  });
+
   useEffect(() => {
-    if (captainReady) {
-      navigate('/flow');
-      trpcClient.spawnControlWindow.mutate();
+    if (readyState === ReadyState.OPEN) {
+      setCaptainReady(true);
+      trpcClient.spawnFlowWindow.mutate();
+    } else {
+      setCaptainReady(false);
     }
-  }, [captainReady]);
+  }, [readyState]);
 
   return (
-    <div className="main-content flex flex-col items-center p-4">
-      <div className="py-4"></div>
-      <div className="text-4xl font-bold">Welcome to Flojoy Studio!</div>
-      <div className="py-1"></div>
-      <div className="">
-        We are excited to have you here, please give us some time to get everything ready :)
-      </div>
+    <div className="flex h-screen flex-col">
+      {/* <div className="py-4"></div> */}
+      {/* <div className="text-4xl font-bold">Welcome to Flojoy Studio!</div> */}
+      {/* <div className="py-1"></div> */}
+      {/* <div className=""> */}
+      {/*   We are excited to have you here, please give us some time to get everything ready :) */}
+      {/* </div> */}
+      {/**/}
+      {/* <div className="py-4"></div> */}
+      {/**/}
+      {/* <div className="flex flex-col gap-2 rounded-xl bg-background p-4 md:w-1/2"> */}
+      {/*   {setupStatuses.map((status, idx) => ( */}
+      {/*     <SetupStep status={status.status} key={idx} message={status.message} /> */}
+      {/*   ))} */}
+      {/* </div> */}
+      {/**/}
+      {/* <div className="py-4"></div> */}
+      {/**/}
+      {/* {setupStatuses.find((status) => status.status === 'error') && ( */}
+      {/*   <Button */}
+      {/*     onClick={async (): Promise<void> => { */}
+      {/*       if (isPackaged()) { */}
+      {/*         await trpcClient.restartFlojoyStudio.mutate(); */}
+      {/*       } else { */}
+      {/*         alert( */}
+      {/*           'Restart is not supported for dev build, please relaunch Flojoy Studio manually!' */}
+      {/*         ); */}
+      {/*       } */}
+      {/*     }} */}
+      {/*   > */}
+      {/*     Retry */}
+      {/*   </Button> */}
+      {/* )} */}
 
-      <div className="py-4"></div>
-
-      <div className="flex flex-col gap-2 rounded-xl bg-background p-4 md:w-1/2">
-        {setupStatuses.map((status, idx) => (
-          <SetupStep status={status.status} key={idx} message={status.message} />
-        ))}
-      </div>
-
-      <div className="py-4"></div>
-
-      {setupStatuses.find((status) => status.status === 'error') && (
+      <div className="absolute right-2 top-2">
         <Button
-          onClick={async (): Promise<void> => {
-            if (isPackaged()) {
-              await trpcClient.restartFlojoyStudio.mutate();
-            } else {
-              alert(
-                'Restart is not supported for dev build, please relaunch Flojoy Studio manually!'
-              );
-            }
+          size="icon"
+          variant="ghost"
+          onClick={() => {
+            trpcClient.closeSetupWindow.mutate();
           }}
         >
-          Retry
+          <X />
         </Button>
-      )}
+      </div>
+
+      <div className="grow"></div>
+
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="logo" className="h-20 w-20 " />
+          <span className="font-ponymaker text-6xl text-flojoy">Flojoy</span>
+        </div>
+      </div>
+
+      <div className="py-2"></div>
+      <div className="px-2 text-center text-sm">{latestStatus}</div>
+      <div className="py-1"></div>
+
+      <Progress value={progress} className="h-2 w-full animate-pulse rounded-none" />
 
       <AlertDialog open={showError} onOpenChange={setShowError}>
         <AlertDialogContent>
@@ -289,4 +348,4 @@ const Index = (): JSX.Element => {
   );
 };
 
-export default Index;
+export default Setup;

@@ -26,7 +26,7 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, Callable]:
             if not file.endswith(".py"):
                 continue
 
-            block_name = file.strip(".py")
+            block_name = file.rstrip(".py")
 
             block_path = os.path.join(root, file)
 

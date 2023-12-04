@@ -171,7 +171,7 @@ export const useFlowchartStore = create<FlowchartState>()(
       ),
       {
         name: 'flow-state',
-        storage: createJSONStorage(() => sessionStorage)
+        storage: createJSONStorage(() => localStorage)
       }
     )
   )

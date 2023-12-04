@@ -13,6 +13,7 @@ const BlocksLibrary = () => {
       </div>
       <div className="py-2"></div>
       <div className="flex flex-col gap-2">
+        {/* TODO: This should be auto generated */}
         <BlockCard
           name="Add"
           desc="Add a bunch of stuff together"
@@ -20,7 +21,6 @@ const BlocksLibrary = () => {
         />
         <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" />
         <BlockCard name="Toggle" desc="flipflop" block_type="flojoy.control.toggle" />
-        <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.bignum" />
         <BlockCard name="Function Definition" desc="a -> b" block_type="flojoy.logic.function" />
         <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" />
         <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" />
@@ -33,6 +33,12 @@ const BlocksLibrary = () => {
         />
         <BlockCard name="True" desc="trueing" block_type="flojoy.logic.true" />
         <BlockCard name="False" desc="no" block_type="flojoy.logic.false" />
+        <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.big_num" />
+        <BlockCard
+          name="Progress Bar"
+          desc="progress bar"
+          block_type="flojoy.visualization.progress_bar"
+        />
       </div>
     </div>
   );

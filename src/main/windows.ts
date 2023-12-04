@@ -1,12 +1,87 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron';
+import { app, shell, BrowserWindow, ipcMain, nativeTheme } from 'electron';
 
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import log from 'electron-log/main';
 
+// TODO: DRY this up
+
 let blocksLibraryWindow: BrowserWindow | null = null;
 let controlWindow: BrowserWindow | null = null;
+let flowWindow: BrowserWindow | null = null;
+let setupWindow: BrowserWindow | null = null;
+
+export async function spawnFlowWindow(): Promise<void> {
+  await closeSetupWindow();
+
+  if (flowWindow) {
+    if (flowWindow.isMinimized()) flowWindow.restore();
+    flowWindow.focus();
+    return;
+  }
+
+  // Create the browser window.
+  flowWindow = new BrowserWindow({
+    width: 900,
+    height: 670,
+    show: false,
+    autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
+    trafficLightPosition: {
+      x: 15,
+      y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    },
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  flowWindow.on('ready-to-show', () => {
+    if (flowWindow) {
+      flowWindow.show();
+    }
+  });
+
+  flowWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    flowWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/flow');
+  } else {
+    flowWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'flow' });
+  }
+
+  app.on('before-quit', () => {
+    if (flowWindow) {
+      flowWindow.removeAllListeners('close');
+    }
+  });
+
+  const logListener = (event): void => {
+    if (flowWindow && !flowWindow.isDestroyed()) {
+      flowWindow.webContents.send('status-bar-logging', event);
+    } else {
+      log.error("Can't send message to statusBar: mainWindow is destroyed");
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+  });
+
+  flowWindow.on('closed', () => {
+    flowWindow = null;
+  });
+}
 
 export async function spawnBlocksLibraryWindow(): Promise<void> {
   if (blocksLibraryWindow) {
@@ -23,6 +98,7 @@ export async function spawnBlocksLibraryWindow(): Promise<void> {
     alwaysOnTop: true,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
     trafficLightPosition: {
       x: 15,
       y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
@@ -86,6 +162,7 @@ export async function spawnControlWindow(): Promise<void> {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
     trafficLightPosition: {
       x: 15,
       y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
@@ -113,7 +190,7 @@ export async function spawnControlWindow(): Promise<void> {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     controlWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/control');
   } else {
-    controlWindow.loadFile(join(__dirname, '../renderer/index.html' + '#/control'));
+    controlWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'control' });
   }
 
   const logListener = (event): void => {
@@ -154,4 +231,82 @@ export async function spawnControlWindow(): Promise<void> {
   controlWindow.on('closed', () => {
     controlWindow = null;
   });
+}
+
+export async function spawnSetupWindow(): Promise<void> {
+  if (setupWindow) {
+    if (setupWindow.isMinimized()) setupWindow.restore();
+    setupWindow.focus();
+    return;
+  }
+
+  // Create the browser window.
+  setupWindow = new BrowserWindow({
+    width: 640,
+    height: 360,
+    show: false,
+    frame: false,
+    // autoHideMenuBar: true,
+    // titleBarStyle: 'hidden',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#000000' : '#ffffff',
+    // trafficLightPosition: {
+    //   x: 15,
+    //   y: 15 // macOS traffic lights seem to be 14px in diameter. If you want them vertically centered, set this to `titlebar_height / 2 - 7`.
+    // },
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
+  });
+
+  setupWindow.on('ready-to-show', () => {
+    if (setupWindow) {
+      setupWindow.show();
+    }
+  });
+
+  setupWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
+
+  // HMR for renderer base on electron-vite cli.
+  // Load the remote URL for development or the local html file for production.
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    setupWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '#/setup');
+  } else {
+    setupWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'setup' });
+  }
+
+  const logListener = (event): void => {
+    if (setupWindow) {
+      if (!setupWindow.isDestroyed()) {
+        setupWindow.webContents.send('status-bar-logging', event);
+      } else {
+        log.error("Can't send message to statusBar: mainWindow is destroyed");
+      }
+    }
+  };
+
+  ipcMain.on('status-bar-logging', logListener);
+
+  app.on('window-all-closed', () => {
+    ipcMain.removeListener('status-bar-logging', logListener);
+  });
+
+  app.on('before-quit', () => {
+    if (setupWindow) {
+      setupWindow.removeAllListeners('close');
+    }
+  });
+
+  setupWindow.on('closed', () => {
+    setupWindow = null;
+  });
+}
+
+export async function closeSetupWindow(): Promise<void> {
+  setupWindow?.close();
+  setupWindow = null;
 }

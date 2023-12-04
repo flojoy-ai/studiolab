@@ -26,6 +26,10 @@ class FlowStateUpdateEvent(BaseModel):
     data: Any
 
 
+class FlowReadyEvent(BaseModel):
+    event_type: Literal["ready"] = "ready"
+
+
 class FlowSocketMessage(BaseModel):
     event: Union[FlowStartEvent, FlowCancelEvent, FlowControlEvent] = Field(
         ..., discriminator="event_type"

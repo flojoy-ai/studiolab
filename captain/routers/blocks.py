@@ -10,6 +10,7 @@ from captain.logging import logger
 from captain.types.events import (
     FlowCancelEvent,
     FlowControlEvent,
+    FlowReadyEvent,
     FlowSocketMessage,
     FlowStartEvent,
     FlowStateUpdateEvent,
@@ -51,12 +52,11 @@ async def websocket_flowchart(websocket: WebSocket):
                 if flow is None:
                     fc = FlowChart.from_react_flow(rf)
                     logger.info("Creating flow from react flow instance")
-
                     loop = asyncio.get_event_loop()
                     scheduler = AsyncIOThreadSafeScheduler(loop)
                     flow = Flow(fc, publish_fn, start_obs, scheduler)
-
-                    start_obs.on_next({})
+                    send_msg(FlowReadyEvent().model_dump_json())
+                    logger.info("flow ready")
             case FlowCancelEvent():
                 if flow is not None:
                     flow.destroy()

@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: ai.flojoy.studio
 productName: flojoy-studio
 
 directories:
@@ -15,6 +15,8 @@ extraResources:
   - main.py
   - pyproject.toml
   - poetry.lock
+
+afterSign: ./scripts/notarize.js
 
 win:
   executableName: flojoy-studio
@@ -38,14 +40,15 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
+    # - snap # TODO: painful to configure this, snapcraft keeps 404
     - deb
-  maintainer: electronjs.org
+  maintainer: flojoy.ai
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: flojoy-ai
+  repo: studiolab
