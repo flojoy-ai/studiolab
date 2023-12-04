@@ -1,9 +1,6 @@
 import { Handle, Position } from 'reactflow';
-import { BlockProps } from '@/types/block';
 
-const RandBlock = ({ data }: BlockProps) => {
-  const { label } = data;
-
+const RandBlock = () => {
   return (
     <>
       <div className="border p-2">rand</div>
