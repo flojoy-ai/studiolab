@@ -13,13 +13,19 @@ const BlocksLibrary = () => {
       </div>
       <div className="py-2"></div>
       <div className="flex flex-col gap-2">
+        {/* TODO: This should be auto generated */}
         <BlockCard
           name="Add"
           desc="Add a bunch of stuff together"
           block_type="flojoy.math.arithmetic.add"
         />
         <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" />
-        <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.bignum" />
+        <BlockCard name="Big Number" desc="Big number" block_type="flojoy.visualization.big_num" />
+        <BlockCard
+          name="Progress Bar"
+          desc="progress bar"
+          block_type="flojoy.visualization.progress_bar"
+        />
       </div>
     </div>
   );

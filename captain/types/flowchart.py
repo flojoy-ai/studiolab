@@ -5,7 +5,8 @@ from pydantic import BaseModel
 # TODO: This is hardcoded for now
 BlockType = Literal[
     "flojoy.control.slider",
-    "flojoy.visualization.bignum",
+    "flojoy.visualization.big_num",
+    "flojoy.visualization.progress_bar",
     "flojoy.math.arithmetic.add",
     "flojoy.math.arithmetic.subtract",
     "flojoy.math.constant",

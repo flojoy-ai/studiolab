@@ -3,7 +3,8 @@ import { NodeProps } from 'reactflow';
 // TODO: This should not be hardcoded
 export type BlockType =
   | 'flojoy.control.slider'
-  | 'flojoy.visualization.bignum'
+  | 'flojoy.control.progress_bar'
+  | 'flojoy.visualization.big_num'
   | 'flojoy.math.arithmetic.add'
   | 'flojoy.math.arithmetic.subtract'
   | 'flojoy.math.constant';
