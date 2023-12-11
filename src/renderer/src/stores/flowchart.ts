@@ -105,7 +105,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             if (!n.width || !n.height) return false;
 
             return (
-              n.type === 'function' &&
+              n.type === 'flojoy.logic.function' &&
               n.position.x < position.x &&
               n.position.x + n.width > position.x &&
               n.position.y < position.y &&
@@ -118,15 +118,15 @@ export const useFlowchartStore = create<FlowchartState>()(
           const adjustedPosition = !parent
             ? position
             : {
-                x: position.x - parent.position.x,
-                y: position.y - parent.position.y
-              };
+              x: position.x - parent.position.x,
+              y: position.y - parent.position.y
+            };
 
           const intrinsic_parameters: Record<string, IntrinsicParameterValue> =
             block_type === 'flojoy.math.constant'
               ? {
-                  val: 0
-                }
+                val: 0
+              }
               : {};
 
           set({
@@ -139,7 +139,9 @@ export const useFlowchartStore = create<FlowchartState>()(
                   label: block_type,
                   block_type,
                   intrinsic_parameters
-                }
+                },
+                parentNode: parent ? parent.id : undefined,
+                extent: parent ? 'parent' : undefined
               }
             ])
           });
