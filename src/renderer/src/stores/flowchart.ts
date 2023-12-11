@@ -118,15 +118,15 @@ export const useFlowchartStore = create<FlowchartState>()(
           const adjustedPosition = !parent
             ? position
             : {
-              x: position.x - parent.position.x,
-              y: position.y - parent.position.y
-            };
+                x: position.x - parent.position.x,
+                y: position.y - parent.position.y
+              };
 
           const intrinsic_parameters: Record<string, IntrinsicParameterValue> =
             block_type === 'flojoy.math.constant'
               ? {
-                val: 0
-              }
+                  val: 0
+                }
               : {};
 
           set({
