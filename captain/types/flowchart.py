@@ -115,7 +115,12 @@ class FlowChart(BaseModel):
         # TODO: This func can raise KeyError, needs more error handling logic
         # and throw a better error message.
 
-        edges = join_function_edges(edges)
+        function_blocks = {
+            block.id: block
+            for block in blocks
+            if block.block_type == "flojoy.intrinsics.function"
+        }
+        edges = join_function_edges(edges, function_blocks)
 
         for edge in edges:
             if edge.target not in fc_blocks:
@@ -158,7 +163,9 @@ class FlowChart(BaseModel):
         return FlowChart.from_blocks_edges(blocks, edges)
 
 
-def join_function_edges(edges: list[FCConnection]):
+def join_function_edges(
+    edges: list[FCConnection], function_blocks: dict[BlockID, _Block]
+):
     joined_edges = []
     while edges:
         e1 = edges.pop()
@@ -176,6 +183,7 @@ def join_function_edges(edges: list[FCConnection]):
                         targetParam=e2.targetParam,
                     )
                 )
+        # join in -> B and A -> f_in into A -> B
         elif e1.sourceParam == "in":
             joinable = [
                 e for e in edges if e.target == e1.source and e.targetParam == "f_in"
@@ -203,6 +211,7 @@ def join_function_edges(edges: list[FCConnection]):
                         targetParam=e2.targetParam,
                     )
                 )
+        # join f_out -> D and out -> C into C -> D
         elif e1.sourceParam == "f_out":
             joinable = [
                 e for e in edges if e.target == e1.source and e.targetParam == "out"
