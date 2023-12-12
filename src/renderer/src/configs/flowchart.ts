@@ -2,7 +2,6 @@ import AddBlock from '@/components/blocks/flow/AddBlock';
 import BigNumberBlock from '@/components/blocks/flow/BigNumberBlock';
 import ProgressBlock from '@/components/blocks/flow/ProgressBlock';
 import SliderBlock from '@/components/blocks/flow/SliderBlock';
-import FunctionBlock from '@/components/blocks/flow/FunctionBlock';
 import SequenceBlock from '@/components/blocks/flow/SequenceBlock';
 import ConstantBlock from '@/components/blocks/flow/ConstantBlock';
 import ConditionalBlock from '@/components/blocks/flow/ConditionalBlock';
@@ -11,6 +10,7 @@ import FalseBlock from '@/components/blocks/flow/FalseBlock';
 import RandBlock from '@/components/blocks/flow/RandBlock';
 import ToggleBlock from '@/components/blocks/flow/ToggleBlock';
 import ClockBlock from '@/components/blocks/flow/ClockBlock';
+import FunctionDefinitionBlock from '@/components/blocks/flow/FunctionDefinitionBlock';
 
 export const nodeTypes = {
   'flojoy.control.slider': SliderBlock,
@@ -19,11 +19,11 @@ export const nodeTypes = {
   'flojoy.math.constant': ConstantBlock,
   'flojoy.math.rand': RandBlock,
   'flojoy.logic.conditional': ConditionalBlock,
-  'flojoy.logic.function': FunctionBlock,
   'flojoy.logic.sequence': SequenceBlock,
   'flojoy.logic.clock': ClockBlock,
   'flojoy.logic.true': TrueBlock,
   'flojoy.logic.false': FalseBlock,
   'flojoy.visualization.big_num': BigNumberBlock,
-  'flojoy.visualization.progress_bar': ProgressBlock
+  'flojoy.visualization.progress_bar': ProgressBlock,
+  'flojoy.intrinsics.function': FunctionDefinitionBlock
 };

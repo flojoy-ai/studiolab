@@ -12,12 +12,14 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
 
 import { nodeTypes } from '@/configs/flowchart';
 import CanvasControlsBottomLeft from '../reactflow/CanvasControlsBottomLeft';
 import FlowControlsBottomRight from './FlowControlsBottomRight';
+import { useContextMenu } from '@/hooks/useContextMenu';
+import { ContextMenu } from './ContextMenu';
 
 const edgeTypes = {
   smart: SmartBezierEdge
@@ -27,6 +29,8 @@ const FlowCanvas = () => {
   const [reactFlowInstance, setReactFlowInstance] = useState<undefined | ReactFlowInstance>(
     undefined
   );
+  const reactFlowRef = useRef<HTMLDivElement | null>(null);
+  const { menu, onPaneClick, onNodeContextMenu } = useContextMenu(reactFlowRef);
 
   const { takeSnapshot } = useUndoRedo();
   const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode } = useFlowchartStore(
@@ -98,6 +102,7 @@ const FlowCanvas = () => {
 
   return (
     <ReactFlow
+      ref={reactFlowRef}
       nodes={nodes}
       nodeTypes={nodeTypes}
       edges={edges}
@@ -112,6 +117,8 @@ const FlowCanvas = () => {
       onDragOver={onDragOver}
       onDrop={onDrop}
       onInit={setReactFlowInstance}
+      onPaneClick={onPaneClick}
+      onNodeContextMenu={onNodeContextMenu}
       proOptions={{ hideAttribution: true }}
       className="rounded-lg bg-background"
     >
@@ -120,6 +127,7 @@ const FlowCanvas = () => {
       <FlowControlsBottomRight />
       <CanvasControlsBottomLeft />
       <Background />
+      {menu && <ContextMenu onClick={onPaneClick} {...menu} />}
     </ReactFlow>
   );
 };

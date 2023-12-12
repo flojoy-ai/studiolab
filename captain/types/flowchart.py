@@ -1,6 +1,8 @@
+from pprint import pformat
 from typing import Literal, TypeAlias
 
 from pydantic import BaseModel
+from captain.logging import logger
 
 # TODO: This is hardcoded for now
 BlockType = Literal[
@@ -18,6 +20,7 @@ BlockType = Literal[
     "flojoy.logic.true",
     "flojoy.logic.false",
     "flojoy.visualization.bignum",
+    "flojoy.intrinsics.function",
 ]
 
 BlockID: TypeAlias = str
@@ -81,7 +84,9 @@ class _Block(BaseModel):
 
     id: BlockID
     block_type: BlockType
-    intrinsic_parameters: dict[str, IntrinsicParameterValue]
+    intrinsic_parameters: dict[str, IntrinsicParameterValue] = {}
+    inputs: dict[str, str] = {}
+    outputs: dict[str, str] = {}
 
 
 class FCBlock(_Block):
@@ -110,6 +115,8 @@ class FlowChart(BaseModel):
         # TODO: This func can raise KeyError, needs more error handling logic
         # and throw a better error message.
 
+        edges = join_function_edges(edges)
+
         for edge in edges:
             if edge.target not in fc_blocks:
                 fc_blocks[edge.target] = FCBlock.from_block(block_lookup[edge.target])
@@ -119,7 +126,11 @@ class FlowChart(BaseModel):
             fc_blocks[edge.source].outs.append(edge)
 
         for block_id, block in block_lookup.items():
-            if block_id not in fc_blocks:
+            # Erase functions at runtime
+            if (
+                block_id not in fc_blocks
+                and block.block_type != "flojoy.intrinsics.function"
+            ):
                 fc_blocks[block_id] = FCBlock.from_block(block)
 
         return FlowChart(blocks=list(fc_blocks.values()))
@@ -134,6 +145,7 @@ class FlowChart(BaseModel):
             )
             for n in rf.nodes
         ]
+        print(rf.edges)
         edges = [
             FCConnection(
                 target=e.target,
@@ -144,3 +156,67 @@ class FlowChart(BaseModel):
             for e in rf.edges
         ]
         return FlowChart.from_blocks_edges(blocks, edges)
+
+
+def join_function_edges(edges: list[FCConnection]):
+    joined_edges = []
+    while edges:
+        e1 = edges.pop()
+        # join A -> f_in and in -> B into A -> B
+        if e1.targetParam == "f_in":
+            joinable = [
+                e for e in edges if e.source == e1.target and e.sourceParam == "in"
+            ]
+            for e2 in joinable:
+                edges.append(
+                    FCConnection(
+                        source=e1.source,
+                        target=e2.target,
+                        sourceParam=e1.sourceParam,
+                        targetParam=e2.targetParam,
+                    )
+                )
+        elif e1.sourceParam == "in":
+            joinable = [
+                e for e in edges if e.target == e1.source and e.targetParam == "f_in"
+            ]
+            for e2 in joinable:
+                edges.append(
+                    FCConnection(
+                        source=e2.source,
+                        target=e1.target,
+                        sourceParam=e2.sourceParam,
+                        targetParam=e1.targetParam,
+                    )
+                )
+        # join C -> out and f_out -> D into C -> D
+        elif e1.targetParam == "out":
+            joinable = [
+                e for e in edges if e.source == e1.target and e.sourceParam == "f_out"
+            ]
+            for e2 in joinable:
+                edges.append(
+                    FCConnection(
+                        source=e1.source,
+                        target=e2.target,
+                        sourceParam=e1.sourceParam,
+                        targetParam=e2.targetParam,
+                    )
+                )
+        elif e1.sourceParam == "f_out":
+            joinable = [
+                e for e in edges if e.target == e1.source and e.targetParam == "out"
+            ]
+            for e2 in joinable:
+                edges.append(
+                    FCConnection(
+                        source=e2.source,
+                        target=e1.target,
+                        sourceParam=e2.sourceParam,
+                        targetParam=e1.targetParam,
+                    )
+                )
+        else:
+            joined_edges.append(e1)
+
+    return joined_edges

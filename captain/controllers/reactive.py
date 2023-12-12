@@ -102,7 +102,6 @@ class Flow:
         self.publish_scheduler = publish_scheduler
 
         funcs = import_blocks(BLOCKS_DIR)
-        logger.info(funcs)
 
         for block in flowchart.blocks:
             if funcs[block.block_type].is_ui_input:

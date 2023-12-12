@@ -22,6 +22,7 @@ import { useUndoRedoStore } from './undoredo';
 
 import { shared } from 'use-broadcast-ts';
 import { nodeTypes } from '@/configs/control';
+import { Draft } from 'immer';
 
 interface FlowchartState {
   nodes: Node<BlockData>[];
@@ -31,6 +32,8 @@ interface FlowchartState {
   setNodes: (nodes: Node<BlockData>[]) => void;
   setEdges: (edges: Edge[]) => void;
   setControls: (edges: Node[]) => void;
+
+  updateBlock: (id: string, mutation: (block: Draft<Node<BlockData>>) => void) => void;
 
   updateIntrinsicParameter: (
     id: string,
@@ -45,6 +48,7 @@ interface FlowchartState {
   onConnect: OnConnect;
 
   addNode: (block_type: BlockType, position: XYPosition, parent?: string) => void;
+  deleteNode: (id: string) => void;
   reset: () => void;
 }
 
@@ -60,18 +64,26 @@ export const useFlowchartStore = create<FlowchartState>()(
         setEdges: (edges: Edge[]) => set({ edges }),
         setControls: (controls: Node[]) => set({ controls }),
 
-        updateIntrinsicParameter: (
-          id: string,
-          paramName: string,
-          paramVal: IntrinsicParameterValue
-        ) => {
+        updateBlock: (id: string, mutation: (block: Draft<Node<BlockData>>) => void) => {
           set((state) => {
             const block = state.nodes.find((n) => n.id === id);
             if (!block) {
               throw new Error('Tried to update intrinsic parameter for non-existant block');
             }
-            block.data.intrinsic_parameters[paramName] = paramVal;
+            mutation(block);
           });
+        },
+
+        updateIntrinsicParameter: function (
+          id: string,
+          paramName: string,
+          paramVal: IntrinsicParameterValue
+        ) {
+          this.updateBlock(id, (block) => (block.data.intrinsic_parameters[paramName] = paramVal));
+        },
+
+        updateLabel: function (id: string, label: string) {
+          this.updateBlock(id, (block) => (block.data.label = label));
         },
 
         onNodesChange: (changes: NodeChange[]) =>
@@ -129,6 +141,20 @@ export const useFlowchartStore = create<FlowchartState>()(
                 }
               : {};
 
+          const inputs: BlockData['inputs'] =
+            block_type === 'flojoy.intrinsics.function'
+              ? {
+                  In: 'int'
+                }
+              : {};
+
+          const outputs: BlockData['outputs'] =
+            block_type === 'flojoy.intrinsics.function'
+              ? {
+                  Out: 'int'
+                }
+              : {};
+
           set({
             nodes: get().nodes.concat([
               {
@@ -138,7 +164,9 @@ export const useFlowchartStore = create<FlowchartState>()(
                 data: {
                   label: block_type,
                   block_type,
-                  intrinsic_parameters
+                  intrinsic_parameters,
+                  inputs,
+                  outputs
                 },
                 parentNode: parent ? parent.id : undefined,
                 extent: parent ? 'parent' : undefined
@@ -161,6 +189,14 @@ export const useFlowchartStore = create<FlowchartState>()(
             });
           }
         },
+
+        deleteNode: (id: string) => {
+          set({
+            nodes: get().nodes.filter((n) => n.id !== id),
+            edges: get().edges.filter((e) => e.source !== id && e.target !== id)
+          });
+        },
+
         reset: () => {
           set({
             nodes: [],

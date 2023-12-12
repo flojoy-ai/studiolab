@@ -21,7 +21,6 @@ const BlocksLibrary = () => {
         />
         <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" />
         <BlockCard name="Toggle" desc="flipflop" block_type="flojoy.control.toggle" />
-        <BlockCard name="Function Definition" desc="a -> b" block_type="flojoy.logic.function" />
         <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" />
         <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" />
         <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" />
@@ -39,7 +38,13 @@ const BlocksLibrary = () => {
           desc="progress bar"
           block_type="flojoy.visualization.progress_bar"
         />
+        <BlockCard
+          name="Function Definition"
+          desc="a -> b"
+          block_type="flojoy.intrinsics.function"
+        />
       </div>
+      <div className="py-6"></div>
     </div>
   );
 };
