@@ -11,6 +11,7 @@ import RandBlock from '@/components/blocks/flow/RandBlock';
 import ToggleBlock from '@/components/blocks/flow/ToggleBlock';
 import ClockBlock from '@/components/blocks/flow/ClockBlock';
 import FunctionDefinitionBlock from '@/components/blocks/flow/FunctionDefinitionBlock';
+import FunctionInstanceBlock from '@/components/blocks/flow/FunctionInstanceBlock';
 
 export const nodeTypes = {
   'flojoy.control.slider': SliderBlock,
@@ -25,5 +26,6 @@ export const nodeTypes = {
   'flojoy.logic.false': FalseBlock,
   'flojoy.visualization.big_num': BigNumberBlock,
   'flojoy.visualization.progress_bar': ProgressBlock,
-  'flojoy.intrinsics.function': FunctionDefinitionBlock
+  'flojoy.intrinsics.function': FunctionDefinitionBlock,
+  function_instance: FunctionInstanceBlock
 };

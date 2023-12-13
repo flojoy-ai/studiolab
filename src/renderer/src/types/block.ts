@@ -1,4 +1,4 @@
-import { NodeProps } from 'reactflow';
+import { Node, Edge, NodeProps } from 'reactflow';
 
 // TODO: This should not be hardcoded
 export type BlockType =
@@ -16,11 +16,12 @@ export type BlockType =
   | 'flojoy.logic.true'
   | 'flojoy.logic.false'
   | 'flojoy.visualization.bignum'
-  | 'flojoy.intrinsics.function';
+  | 'flojoy.intrinsics.function'
+  | 'function_instance';
 
 export type IntrinsicParameterValue = number | string;
 
-type Name = string;
+export type Name = string;
 type FlojoyType = 'str' | 'int' | 'bool';
 
 export type BlockData = {
@@ -32,3 +33,23 @@ export type BlockData = {
 };
 
 export type BlockProps = NodeProps<BlockData>;
+
+type RegularBlockAddPayload = {
+  variant: 'builtin';
+  block_type: BlockType;
+};
+
+type FunctionBlockAddPayload = {
+  variant: 'function_instance';
+  name: string;
+};
+
+export type BlockAddPayload = RegularBlockAddPayload | FunctionBlockAddPayload;
+
+// A function is just a subflow, so we can define it using
+// the parent function definition block and the child nodes and edges
+export type FunctionDefinition = {
+  block: BlockData;
+  nodes: Node<BlockData>[];
+  edges: Edge[];
+};

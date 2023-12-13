@@ -12,7 +12,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import { useCallback, useRef, useState } from 'react';
+import { DragEventHandler, useCallback, useRef, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
 
 import { nodeTypes } from '@/configs/flowchart';
@@ -20,6 +20,7 @@ import CanvasControlsBottomLeft from '../reactflow/CanvasControlsBottomLeft';
 import FlowControlsBottomRight from './FlowControlsBottomRight';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { ContextMenu } from './ContextMenu';
+import { BlockAddPayload } from '@/types/block';
 
 const edgeTypes = {
   smart: SmartBezierEdge
@@ -33,16 +34,20 @@ const FlowCanvas = () => {
   const { menu, onPaneClick, onNodeContextMenu } = useContextMenu(reactFlowRef);
 
   const { takeSnapshot } = useUndoRedo();
-  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode } = useFlowchartStore(
-    useShallow((state) => ({
-      edges: state.edges,
-      onEdgesChange: state.onEdgesChange,
-      nodes: state.nodes,
-      onNodesChange: state.onNodesChange,
-      onConnect: state.onConnect,
-      addNode: state.addNode
-    }))
-  );
+  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode, functionDefinitions } =
+    useFlowchartStore(
+      useShallow((state) => ({
+        edges: state.edges,
+        onEdgesChange: state.onEdgesChange,
+        nodes: state.nodes,
+        onNodesChange: state.onNodesChange,
+        onConnect: state.onConnect,
+        addNode: state.addNode,
+        functionDefinitions: state.functionDefinitions
+      }))
+    );
+
+  console.log(functionDefinitions);
 
   const onNodeDragStart: NodeDragHandler = useCallback(() => {
     // 👇 make dragging a node undoable
@@ -65,12 +70,12 @@ const FlowCanvas = () => {
     takeSnapshot();
   }, [takeSnapshot]);
 
-  const onDragOver = useCallback((event) => {
+  const onDragOver: DragEventHandler<HTMLDivElement> = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  const onDrop = useCallback(
+  const onDrop: DragEventHandler<HTMLDivElement> = useCallback(
     (event) => {
       event.preventDefault();
 
@@ -80,12 +85,14 @@ const FlowCanvas = () => {
         return;
       }
 
-      const block_type = event.dataTransfer.getData('application/reactflow');
+      const data = event.dataTransfer.getData('application/reactflow');
 
       // check if the dropped element is valid
-      if (typeof block_type === 'undefined' || !block_type) {
+      if (data === '') {
         return;
       }
+
+      const payload = JSON.parse(data) as BlockAddPayload;
 
       // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
       // and you don't need to subtract the reactFlowBounds.left/top anymore
@@ -95,7 +102,7 @@ const FlowCanvas = () => {
         y: event.clientY
       });
 
-      addNode(block_type, position);
+      addNode(payload, position);
     },
     [reactFlowInstance]
   );
