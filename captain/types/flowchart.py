@@ -1,8 +1,9 @@
 from pprint import pformat
-from typing import Literal, TypeAlias
+from typing import Literal, Tuple, TypeAlias
 
 from pydantic import BaseModel
 from captain.logging import logger
+from captain.utils.list_utils import partition_by
 
 # TODO: This is hardcoded for now
 BlockType = Literal[
@@ -21,6 +22,7 @@ BlockType = Literal[
     "flojoy.logic.false",
     "flojoy.visualization.bignum",
     "flojoy.intrinsics.function",
+    "function_instance",
 ]
 
 BlockID: TypeAlias = str
@@ -40,6 +42,7 @@ IntrinsicParameterValue: TypeAlias = str | int
 
 
 class RFNodeData(BaseModel):
+    label: str
     block_type: BlockType
     intrinsic_parameters: dict[str, IntrinsicParameterValue]
 
@@ -57,6 +60,12 @@ class RFEdge(BaseModel):
 
 
 class ReactFlow(BaseModel):
+    nodes: list[RFNode]
+    edges: list[RFEdge]
+
+
+class FunctionDefinition(BaseModel):
+    block_data: RFNodeData
     nodes: list[RFNode]
     edges: list[RFEdge]
 
@@ -141,16 +150,26 @@ class FlowChart(BaseModel):
         return FlowChart(blocks=list(fc_blocks.values()))
 
     @staticmethod
-    def from_react_flow(rf: ReactFlow):
+    def from_react_flow(
+        rf: ReactFlow, function_definitions: dict[str, FunctionDefinition] | None = None
+    ):
+        nodes = rf.nodes
+        edges = rf.edges
+        logger.info(f"Function definitions: {function_definitions}")
+        logger.info(f"Nodes ({len(nodes)}): {nodes}")
+        logger.info(f"Edges ({len(edges)}): {edges}")
+
+        if function_definitions:
+            nodes, edges = inline_function_instances(nodes, edges, function_definitions)
+
         blocks = [
             _Block(
                 id=n.id,
                 block_type=n.data.block_type,
                 intrinsic_parameters=n.data.intrinsic_parameters,
             )
-            for n in rf.nodes
+            for n in nodes
         ]
-        print(rf.edges)
         edges = [
             FCConnection(
                 target=e.target,
@@ -158,9 +177,40 @@ class FlowChart(BaseModel):
                 sourceParam=e.sourceHandle,
                 targetParam=e.targetHandle,
             )
-            for e in rf.edges
+            for e in edges
         ]
+
         return FlowChart.from_blocks_edges(blocks, edges)
+
+
+def inline_function_instances(
+    nodes: list[RFNode],
+    edges: list[RFEdge],
+    function_definitions: dict[str, FunctionDefinition],
+) -> Tuple[list[RFNode], list[RFEdge]]:
+    # TODO: Last thing that's broken, needs to be fixed
+    function_instances, nodes = partition_by(
+        lambda n: n.data.block_type == "function_instance", nodes
+    )
+    for func in function_instances:
+        defn = function_definitions[func.data.label]
+        inlined_nodes = [
+            RFNode(id=f"{func.id}-{body_node.id}", data=body_node.data)
+            for body_node in defn.nodes
+        ]
+        inlined_edges = [
+            RFEdge(
+                target=f"{func.id}-{body_edge.target}",
+                source=f"{func.id}-{body_edge.source}",
+                targetHandle=body_edge.targetHandle,
+                sourceHandle=body_edge.sourceHandle,
+            )
+            for body_edge in defn.edges
+        ]
+        nodes.extend(inlined_nodes)
+        edges.extend(inlined_edges)
+
+    return nodes, edges
 
 
 def join_edges(e1: FCConnection, e2: FCConnection) -> FCConnection:

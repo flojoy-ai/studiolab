@@ -49,7 +49,7 @@ export type BlockAddPayload = RegularBlockAddPayload | FunctionBlockAddPayload;
 // A function is just a subflow, so we can define it using
 // the parent function definition block and the child nodes and edges
 export type FunctionDefinition = {
-  block: BlockData;
+  block_data: BlockData;
   nodes: Node<BlockData>[];
   edges: Edge[];
 };

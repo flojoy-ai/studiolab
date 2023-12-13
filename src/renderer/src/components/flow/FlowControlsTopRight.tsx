@@ -6,10 +6,11 @@ import { useLifecycleStore } from '@/stores/lifecycle';
 import { trpcClient } from '@/main';
 
 const FlowControlsTopRight = (): JSX.Element => {
-  const { edges, nodes } = useFlowchartStore(
+  const { edges, nodes, functionDefinitions } = useFlowchartStore(
     useShallow((state) => ({
       edges: state.edges,
-      nodes: state.nodes
+      nodes: state.nodes,
+      functionDefinitions: state.functionDefinitions
     }))
   );
 
@@ -36,7 +37,8 @@ const FlowControlsTopRight = (): JSX.Element => {
       JSON.stringify({
         event: {
           event_type: 'start',
-          rf: { nodes, edges }
+          rf: { nodes, edges },
+          function_definitions: functionDefinitions
         }
       })
     );

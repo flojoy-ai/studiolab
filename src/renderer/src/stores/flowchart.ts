@@ -91,7 +91,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             );
 
             state.functionDefinitions[node.data.label] = {
-              block: node.data,
+              block_data: node.data,
               nodes: bodyNodes,
               edges: bodyEdges
             };
@@ -179,8 +179,8 @@ export const useFlowchartStore = create<FlowchartState>()(
                 block_type: 'function_instance',
                 label: payload.name,
                 intrinsic_parameters: {},
-                inputs: definition.block.inputs,
-                outputs: definition.block.outputs
+                inputs: definition.block_data.inputs,
+                outputs: definition.block_data.outputs
               };
               break;
             }

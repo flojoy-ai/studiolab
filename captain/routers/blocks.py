@@ -48,9 +48,9 @@ async def websocket_flowchart(websocket: WebSocket):
             continue
 
         match message.event:
-            case FlowStartEvent(rf=rf):
+            case FlowStartEvent(rf=rf, function_definitions=function_definitions):
                 if flow is None:
-                    fc = FlowChart.from_react_flow(rf)
+                    fc = FlowChart.from_react_flow(rf, function_definitions)
 
                     logger.info("Creating flow from react flow instance")
                     loop = asyncio.get_event_loop()
