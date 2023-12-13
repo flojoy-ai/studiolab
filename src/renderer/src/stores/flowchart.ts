@@ -190,7 +190,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             nodes: get().nodes.concat([
               {
                 id: uuid,
-                type: block_type,
+                type: data.block_type,
                 position: adjustedPosition,
                 data,
                 parentNode: parent ? parent.id : undefined,
@@ -198,16 +198,16 @@ export const useFlowchartStore = create<FlowchartState>()(
               }
             ])
           });
-          if (Object.keys(nodeTypes).includes(block_type)) {
+          if (Object.keys(nodeTypes).includes(data.block_type)) {
             set({
               controls: get().controls.concat([
                 {
                   id: uuid,
-                  type: block_type,
+                  type: data.block_type,
                   position: position,
                   data: {
-                    label: block_type,
-                    block_type
+                    label: data.block_type,
+                    block_type: data.block_type
                   }
                 }
               ])
