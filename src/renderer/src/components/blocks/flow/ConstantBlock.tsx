@@ -1,17 +1,21 @@
 import { Input } from '@/components/ui/Input';
-import { useFlowchartStore } from '@/stores/flowchart';
+import { useBlockUpdate } from '@/stores/flowchart';
 import { BlockProps } from '@/types/block';
 import { Handle, Position } from 'reactflow';
 
 const ConstantBlock = ({ id, data }: BlockProps) => {
-  const update = useFlowchartStore((state) => state.updateIntrinsicParameter);
+  const updateBlock = useBlockUpdate(id);
 
   return (
     <>
       {/*TODO: Find a more typesafe way to do this*/}
       <div className="w-24 p-1">
         <Input
-          onChange={(e) => update(id, 'val', parseInt(e.target.value, 10))}
+          onChange={(e) =>
+            updateBlock((block) => {
+              block.data.intrinsic_parameters['val'] = parseInt(e.target.value, 10);
+            })
+          }
           type="number"
           value={data.intrinsic_parameters['val']}
         />

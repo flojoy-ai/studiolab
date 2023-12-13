@@ -163,69 +163,80 @@ class FlowChart(BaseModel):
         return FlowChart.from_blocks_edges(blocks, edges)
 
 
+def join_edges(e1: FCConnection, e2: FCConnection) -> FCConnection:
+    logger.info(f"Joining {e1.sourceParam} to {e2.targetParam}")
+    return FCConnection(
+        source=e1.source,
+        target=e2.target,
+        sourceParam=e1.sourceParam,
+        targetParam=e2.targetParam,
+    )
+
+
+INTERNAL_PREFIX = "FUNC-INTERNAL_"
+
+
+# TODO: Come up with a better algorithm for this
 def join_function_edges(
     edges: list[FCConnection], function_blocks: dict[BlockID, _Block]
-):
+) -> list[FCConnection]:
     joined_edges = []
     while edges:
+        logger.info(f"Current queue: {edges}")
         e1 = edges.pop()
-        # join A -> f_in and in -> B into A -> B
-        if e1.targetParam == "f_in":
-            joinable = [
-                e for e in edges if e.source == e1.target and e.sourceParam == "in"
-            ]
-            for e2 in joinable:
-                edges.append(
-                    FCConnection(
-                        source=e1.source,
-                        target=e2.target,
-                        sourceParam=e1.sourceParam,
-                        targetParam=e2.targetParam,
-                    )
-                )
-        # join in -> B and A -> f_in into A -> B
-        elif e1.sourceParam == "in":
-            joinable = [
-                e for e in edges if e.target == e1.source and e.targetParam == "f_in"
-            ]
-            for e2 in joinable:
-                edges.append(
-                    FCConnection(
-                        source=e2.source,
-                        target=e1.target,
-                        sourceParam=e2.sourceParam,
-                        targetParam=e1.targetParam,
-                    )
-                )
-        # join C -> out and f_out -> D into C -> D
-        elif e1.targetParam == "out":
-            joinable = [
-                e for e in edges if e.source == e1.target and e.sourceParam == "f_out"
-            ]
-            for e2 in joinable:
-                edges.append(
-                    FCConnection(
-                        source=e1.source,
-                        target=e2.target,
-                        sourceParam=e1.sourceParam,
-                        targetParam=e2.targetParam,
-                    )
-                )
-        # join f_out -> D and out -> C into C -> D
-        elif e1.sourceParam == "f_out":
-            joinable = [
-                e for e in edges if e.target == e1.source and e.targetParam == "out"
-            ]
-            for e2 in joinable:
-                edges.append(
-                    FCConnection(
-                        source=e2.source,
-                        target=e1.target,
-                        sourceParam=e2.sourceParam,
-                        targetParam=e1.targetParam,
-                    )
-                )
-        else:
-            joined_edges.append(e1)
+        logger.info(f"Current edge: {e1}")
+        src_func = function_blocks.get(e1.source)
+        dst_func = function_blocks.get(e1.target)
 
+        if dst_func is None and src_func is None:
+            logger.info("Edge not touching functions, skipping join")
+            joined_edges.append(e1)
+            continue
+
+        # join A -> in and FUNC-INTERNAL_in -> B into A -> B
+        if dst_func and not e1.targetParam.startswith(INTERNAL_PREFIX):
+            logger.info("Case 1")
+            joinable = [
+                e2
+                for e2 in edges
+                if e2.source == e1.target
+                and e2.sourceParam == f"{INTERNAL_PREFIX}{e1.targetParam}"
+            ]
+            for e2 in joinable:
+                edges.append(join_edges(e1, e2))
+        # join FUNC-INTERNAL_in -> B and A -> in into A -> B
+        elif src_func and e1.sourceParam.startswith(INTERNAL_PREFIX):
+            logger.info("Case 2")
+            param_name = e1.sourceParam.removeprefix(INTERNAL_PREFIX)
+            joinable = [
+                e2
+                for e2 in edges
+                if e2.target == e1.source and e2.targetParam == param_name
+            ]
+            for e2 in joinable:
+                edges.append(join_edges(e2, e1))
+        # join C -> FUNC-INTERNAL_out and out -> D into C -> D
+        elif dst_func and e1.targetParam.startswith(INTERNAL_PREFIX):
+            logger.info("Case 3")
+            param_name = e1.targetParam.removeprefix(INTERNAL_PREFIX)
+            joinable = [
+                e2
+                for e2 in edges
+                if e2.source == e1.target and e2.sourceParam == param_name
+            ]
+            for e2 in joinable:
+                edges.append(join_edges(e1, e2))
+        # join out -> D and and C -> FUNC-INTERNAL_out into C -> D
+        elif src_func and not e1.sourceParam.startswith(INTERNAL_PREFIX):
+            logger.info("Case 4")
+            joinable = [
+                e2
+                for e2 in edges
+                if e2.target == e1.source
+                and e2.targetParam == f"{INTERNAL_PREFIX}{e1.sourceParam}"
+            ]
+            for e2 in joinable:
+                edges.append(join_edges(e2, e1))
+
+    logger.info(joined_edges)
     return joined_edges

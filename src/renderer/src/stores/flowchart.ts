@@ -23,6 +23,7 @@ import { useUndoRedoStore } from './undoredo';
 import { shared } from 'use-broadcast-ts';
 import { nodeTypes } from '@/configs/control';
 import { Draft } from 'immer';
+import _ from 'lodash';
 
 interface FlowchartState {
   nodes: Node<BlockData>[];
@@ -34,12 +35,6 @@ interface FlowchartState {
   setControls: (edges: Node[]) => void;
 
   updateBlock: (id: string, mutation: (block: Draft<Node<BlockData>>) => void) => void;
-
-  updateIntrinsicParameter: (
-    id: string,
-    paramName: string,
-    paramVal: IntrinsicParameterValue
-  ) => void;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -64,7 +59,7 @@ export const useFlowchartStore = create<FlowchartState>()(
         setEdges: (edges: Edge[]) => set({ edges }),
         setControls: (controls: Node[]) => set({ controls }),
 
-        updateBlock: (id: string, mutation: (block: Draft<Node<BlockData>>) => void) => {
+        updateBlock(id: string, mutation: (block: Draft<Node<BlockData>>) => void) {
           set((state) => {
             const block = state.nodes.find((n) => n.id === id);
             if (!block) {
@@ -72,18 +67,6 @@ export const useFlowchartStore = create<FlowchartState>()(
             }
             mutation(block);
           });
-        },
-
-        updateIntrinsicParameter: function (
-          id: string,
-          paramName: string,
-          paramVal: IntrinsicParameterValue
-        ) {
-          this.updateBlock(id, (block) => (block.data.intrinsic_parameters[paramName] = paramVal));
-        },
-
-        updateLabel: function (id: string, label: string) {
-          this.updateBlock(id, (block) => (block.data.label = label));
         },
 
         onNodesChange: (changes: NodeChange[]) =>
@@ -117,7 +100,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             if (!n.width || !n.height) return false;
 
             return (
-              n.type === 'flojoy.logic.function' &&
+              n.type === 'flojoy.intrinsics.function' &&
               n.position.x < position.x &&
               n.position.x + n.width > position.x &&
               n.position.y < position.y &&
@@ -144,14 +127,14 @@ export const useFlowchartStore = create<FlowchartState>()(
           const inputs: BlockData['inputs'] =
             block_type === 'flojoy.intrinsics.function'
               ? {
-                  In: 'int'
+                  inp: 'int'
                 }
               : {};
 
           const outputs: BlockData['outputs'] =
             block_type === 'flojoy.intrinsics.function'
               ? {
-                  Out: 'int'
+                  out: 'int'
                 }
               : {};
 
@@ -212,3 +195,9 @@ export const useFlowchartStore = create<FlowchartState>()(
     )
   )
 );
+
+export const useBlockUpdate = (id: string) => {
+  const update = useFlowchartStore((state) => state.updateBlock);
+
+  return _.curry(update)(id);
+};

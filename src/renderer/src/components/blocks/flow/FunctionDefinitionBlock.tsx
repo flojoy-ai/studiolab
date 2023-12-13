@@ -1,20 +1,31 @@
 import { Handle, Position } from 'reactflow';
 import { BlockProps } from '@/types/block';
 import { Input } from '@/components/ui/Input';
+import { useBlockUpdate } from '@/stores/flowchart';
 
-const FunctionDefinitionBlock = ({ data }: BlockProps) => {
+const FunctionDefinitionBlock = ({ id, data }: BlockProps) => {
   const ins = Object.entries(data.inputs);
   const outs = Object.entries(data.outputs);
+
+  const updateBlock = useBlockUpdate(id);
 
   return (
     <>
       <div className="relative h-64 w-[512px] border">
-        <Input className="mx-auto w-fit" value={data.label} />
+        <Input
+          className="mx-auto w-fit"
+          value={data.label}
+          onChange={(e) =>
+            updateBlock((block) => {
+              block.data.label = e.target.value;
+            })
+          }
+        />
         <div className="absolute left-2 top-1/2 flex -translate-y-1/2 flex-col gap-2">
           {ins.map(([name]) => (
             <div key={`input-block-${name}`} className="relative border px-4 py-3">
               <div>{name}</div>
-              <Handle type="target" position={Position.Right} id={name} />
+              <Handle type="source" position={Position.Right} id={`FUNC-INTERNAL_${name}`} />
             </div>
           ))}
         </div>
@@ -22,7 +33,7 @@ const FunctionDefinitionBlock = ({ data }: BlockProps) => {
           {outs.map(([name]) => (
             <div key={`output-block-${name}`} className="relative border px-4 py-3">
               <div>{name}</div>
-              <Handle type="source" position={Position.Left} id={name} />
+              <Handle type="target" position={Position.Left} id={`FUNC-INTERNAL_${name}`} />
             </div>
           ))}
         </div>
@@ -32,7 +43,7 @@ const FunctionDefinitionBlock = ({ data }: BlockProps) => {
             type="target"
             position={Position.Left}
             style={{ top: i * 20 }}
-            id={`f_${name}`}
+            id={name}
           />
         ))}
         {outs.map(([name], i) => (
@@ -41,7 +52,7 @@ const FunctionDefinitionBlock = ({ data }: BlockProps) => {
             type="source"
             position={Position.Right}
             style={{ top: i * 20 }}
-            id={`f_${name}`}
+            id={name}
           />
         ))}
       </div>

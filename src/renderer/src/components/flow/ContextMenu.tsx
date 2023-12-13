@@ -66,7 +66,7 @@ export const ContextMenu = ({
   const addFunctionParameter = () => {
     updateBlock(id, (block) => {
       const numInputs = Object.keys(block.data.inputs).length;
-      block.data.inputs[`In${numInputs}`] = 'int';
+      block.data.inputs[`in${numInputs}`] = 'int';
       updateNodeInternals(id);
     });
   };
@@ -82,7 +82,7 @@ export const ContextMenu = ({
   const addFunctionOutput = () => {
     updateBlock(id, (block) => {
       const numOutputs = Object.keys(block.data.outputs).length;
-      block.data.outputs[`Out${numOutputs}`] = 'int';
+      block.data.outputs[`out${numOutputs}`] = 'int';
       updateNodeInternals(id);
     });
   };
