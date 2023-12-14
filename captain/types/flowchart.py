@@ -65,7 +65,7 @@ class ReactFlow(BaseModel):
 
 
 class FunctionDefinition(BaseModel):
-    block_data: RFNodeData
+    block: RFNode
     nodes: list[RFNode]
     edges: list[RFEdge]
 
@@ -117,19 +117,20 @@ class FlowChart(BaseModel):
     blocks: list[FCBlock]
 
     @staticmethod
-    def from_blocks_edges(blocks: list[_Block], edges: list[FCConnection]):
+    def from_blocks_edges(
+        blocks: list[_Block], edges: list[FCConnection], function_blocks: set[BlockID]
+    ):
         block_lookup = {block.id: block for block in blocks}
         fc_blocks: dict[BlockID, FCBlock] = {}
 
         # TODO: This func can raise KeyError, needs more error handling logic
         # and throw a better error message.
 
-        function_blocks = {
-            block.id: block
-            for block in blocks
-            if block.block_type == "flojoy.intrinsics.function"
-        }
+        logger.info(f"Function blocks: \n{pformat(function_blocks)}")
         edges = join_function_edges(edges, function_blocks)
+
+        logger.info(f"Blocks after join: \n{pformat(blocks)}")
+        logger.info(f"Edges after join: \n{pformat(edges)}")
 
         for edge in edges:
             if edge.target not in fc_blocks:
@@ -155,9 +156,16 @@ class FlowChart(BaseModel):
     ):
         nodes = rf.nodes
         edges = rf.edges
-        logger.info(f"Function definitions: {function_definitions}")
-        logger.info(f"Nodes ({len(nodes)}): {nodes}")
-        logger.info(f"Edges ({len(edges)}): {edges}")
+        logger.info(f"Function definitions: \n{pformat(function_definitions)}")
+        logger.info(f"Nodes ({len(nodes)}): \n{pformat(nodes)}")
+        logger.info(f"Edges ({len(edges)}): \n{pformat(edges)}")
+
+        function_blocks = set(
+            node.id
+            for node in nodes
+            if node.data.block_type == "flojoy.intrinsics.function"
+            or node.data.block_type == "function_instance"
+        )
 
         if function_definitions:
             nodes, edges = inline_function_instances(nodes, edges, function_definitions)
@@ -180,7 +188,7 @@ class FlowChart(BaseModel):
             for e in edges
         ]
 
-        return FlowChart.from_blocks_edges(blocks, edges)
+        return FlowChart.from_blocks_edges(blocks, edges, function_blocks)
 
 
 def inline_function_instances(
@@ -200,13 +208,19 @@ def inline_function_instances(
         ]
         inlined_edges = [
             RFEdge(
-                target=f"{func.id}-{body_edge.target}",
-                source=f"{func.id}-{body_edge.source}",
+                target=f"{func.id}-{body_edge.target}"
+                if body_edge.target != defn.block.id
+                else func.id,
+                source=f"{func.id}-{body_edge.source}"
+                if body_edge.source != defn.block.id
+                else func.id,
                 targetHandle=body_edge.targetHandle,
                 sourceHandle=body_edge.sourceHandle,
             )
             for body_edge in defn.edges
         ]
+        logger.info(f"Nodes added from inline: \n{pformat(inlined_nodes)}")
+        logger.info(f"Edges added from inline: \n{pformat(inlined_edges)}")
         nodes.extend(inlined_nodes)
         edges.extend(inlined_edges)
 
@@ -228,24 +242,24 @@ INTERNAL_PREFIX = "FUNC-INTERNAL_"
 
 # TODO: Come up with a better algorithm for this
 def join_function_edges(
-    edges: list[FCConnection], function_blocks: dict[BlockID, _Block]
+    edges: list[FCConnection], function_blocks: set[BlockID]
 ) -> list[FCConnection]:
     joined_edges = []
     while edges:
-        logger.info(f"Current queue: {edges}")
         e1 = edges.pop()
-        logger.info(f"Current edge: {e1}")
-        src_func = function_blocks.get(e1.source)
-        dst_func = function_blocks.get(e1.target)
+        src_func = e1.source in function_blocks
+        dst_func = e1.target in function_blocks
 
-        if dst_func is None and src_func is None:
-            logger.info("Edge not touching functions, skipping join")
+        logger.info(f"Processing edge {e1}")
+        logger.info(f"src_func: {src_func}")
+        logger.info(f"dst_func: {dst_func}")
+
+        if not dst_func and not src_func:
             joined_edges.append(e1)
             continue
 
         # join A -> in and FUNC-INTERNAL_in -> B into A -> B
         if dst_func and not e1.targetParam.startswith(INTERNAL_PREFIX):
-            logger.info("Case 1")
             joinable = [
                 e2
                 for e2 in edges
@@ -256,7 +270,6 @@ def join_function_edges(
                 edges.append(join_edges(e1, e2))
         # join FUNC-INTERNAL_in -> B and A -> in into A -> B
         elif src_func and e1.sourceParam.startswith(INTERNAL_PREFIX):
-            logger.info("Case 2")
             param_name = e1.sourceParam.removeprefix(INTERNAL_PREFIX)
             joinable = [
                 e2
@@ -267,7 +280,6 @@ def join_function_edges(
                 edges.append(join_edges(e2, e1))
         # join C -> FUNC-INTERNAL_out and out -> D into C -> D
         elif dst_func and e1.targetParam.startswith(INTERNAL_PREFIX):
-            logger.info("Case 3")
             param_name = e1.targetParam.removeprefix(INTERNAL_PREFIX)
             joinable = [
                 e2
@@ -278,7 +290,6 @@ def join_function_edges(
                 edges.append(join_edges(e1, e2))
         # join out -> D and and C -> FUNC-INTERNAL_out into C -> D
         elif src_func and not e1.sourceParam.startswith(INTERNAL_PREFIX):
-            logger.info("Case 4")
             joinable = [
                 e2
                 for e2 in edges
@@ -288,5 +299,4 @@ def join_function_edges(
             for e2 in joinable:
                 edges.append(join_edges(e2, e1))
 
-    logger.info(joined_edges)
     return joined_edges
