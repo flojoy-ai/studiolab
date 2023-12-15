@@ -11,12 +11,12 @@ const ConstantBlock = ({ id, data }: BlockProps) => {
       {/*TODO: Find a more typesafe way to do this*/}
       <div className="w-24 p-1">
         <Input
-          onChange={(e) =>
+          onChange={(e) => {
             updateBlock((block) => {
-              block.data.intrinsic_parameters['val'] = parseInt(e.target.value, 10);
-            })
-          }
-          type="number"
+              const val = parseInt(e.target.value, 10);
+              block.data.intrinsic_parameters['val'] = isNaN(val) ? '' : val;
+            });
+          }}
           value={data.intrinsic_parameters['val']}
         />
       </div>
