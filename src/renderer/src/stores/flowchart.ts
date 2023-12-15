@@ -13,7 +13,7 @@ import {
   applyEdgeChanges,
   XYPosition
 } from 'reactflow';
-import { BlockData, FunctionDefinition, Name } from '@/types/block';
+import { BlockData, Name } from '@/types/block';
 
 import { v4 as uuidv4 } from 'uuid';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -31,7 +31,7 @@ interface FlowchartState {
   edges: Edge[];
   controls: Node[];
 
-  functionDefinitions: Record<Name, FunctionDefinition>;
+  functionDefinitionBlocks: Record<Name, Node<BlockData>>;
 
   setNodes: (nodes: Node<BlockData>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -61,7 +61,7 @@ export const useFlowchartStore = create<FlowchartState>()(
         edges: [] as Edge[],
         controls: [] as Node[],
 
-        functionDefinitions: {},
+        functionDefinitionBlocks: {},
 
         setNodes: (nodes: Node<BlockData>[]) => set({ nodes }),
         setEdges: (edges: Edge[]) => set({ edges }),
@@ -80,34 +80,25 @@ export const useFlowchartStore = create<FlowchartState>()(
         saveDefinition: (definitionBlockId: string) => {
           set((state) => {
             const node = state.nodes.find((n) => n.id === definitionBlockId);
-            if (node === undefined || node.data.block_type !== 'flojoy.intrinsics.function') {
+            if (node?.data.block_type !== 'flojoy.intrinsics.function') {
               return;
             }
-            const bodyNodes = state.nodes.filter((n) => n.parentNode === definitionBlockId);
-            const bodyNodeIds = new Set(bodyNodes.map((n) => n.id));
-            bodyNodeIds.add(definitionBlockId);
-            const bodyEdges = state.edges.filter(
-              (e) => bodyNodeIds.has(e.target) && bodyNodeIds.has(e.source)
-            );
 
-            state.functionDefinitions[node.data.label] = {
-              block: node,
-              nodes: bodyNodes,
-              edges: bodyEdges
-            };
+            state.functionDefinitionBlocks[node.data.label] = node;
           });
         },
 
         removeDefinition: (name: string) => {
           set((state) => {
-            delete state.functionDefinitions[name];
+            delete state.functionDefinitionBlocks[name];
           });
         },
 
-        onNodesChange: (changes: NodeChange[]) =>
+        onNodesChange: (changes: NodeChange[]) => {
           set({
             nodes: applyNodeChanges(changes, get().nodes)
-          }),
+          });
+        },
         onEdgesChange: (changes: EdgeChange[]) => {
           set({
             edges: applyEdgeChanges(changes, get().edges)
@@ -168,7 +159,7 @@ export const useFlowchartStore = create<FlowchartState>()(
               };
               break;
             case 'function_instance': {
-              const definitions = get().functionDefinitions;
+              const definitions = get().functionDefinitionBlocks;
               if (!(payload.name in definitions)) {
                 throw new Error(`Undefined function block ${payload.name}`);
               }
@@ -179,8 +170,8 @@ export const useFlowchartStore = create<FlowchartState>()(
                 block_type: 'function_instance',
                 label: payload.name,
                 intrinsic_parameters: {},
-                inputs: definition.block.data.inputs,
-                outputs: definition.block.data.outputs
+                inputs: definition.data.inputs,
+                outputs: definition.data.outputs
               };
               break;
             }

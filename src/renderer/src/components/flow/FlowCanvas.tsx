@@ -34,20 +34,17 @@ const FlowCanvas = () => {
   const { menu, onPaneClick, onNodeContextMenu } = useContextMenu(reactFlowRef);
 
   const { takeSnapshot } = useUndoRedo();
-  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode, functionDefinitions } =
-    useFlowchartStore(
-      useShallow((state) => ({
-        edges: state.edges,
-        onEdgesChange: state.onEdgesChange,
-        nodes: state.nodes,
-        onNodesChange: state.onNodesChange,
-        onConnect: state.onConnect,
-        addNode: state.addNode,
-        functionDefinitions: state.functionDefinitions
-      }))
-    );
-
-  console.log(functionDefinitions);
+  const { edges, onEdgesChange, nodes, onNodesChange, onConnect, addNode } = useFlowchartStore(
+    useShallow((state) => ({
+      edges: state.edges,
+      onEdgesChange: state.onEdgesChange,
+      nodes: state.nodes,
+      onNodesChange: state.onNodesChange,
+      onConnect: state.onConnect,
+      addNode: state.addNode,
+      saveDefinition: state.saveDefinition
+    }))
+  );
 
   const onNodeDragStart: NodeDragHandler = useCallback(() => {
     // 👇 make dragging a node undoable

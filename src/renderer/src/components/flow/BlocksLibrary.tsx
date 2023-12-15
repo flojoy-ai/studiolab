@@ -6,7 +6,7 @@ import { X } from 'lucide-react';
 
 const BlocksLibrary = () => {
   const { functionDefinitions, removeDefinition } = useFlowchartStore((state) => ({
-    functionDefinitions: state.functionDefinitions,
+    functionDefinitions: state.functionDefinitionBlocks,
     removeDefinition: state.removeDefinition
   }));
 
