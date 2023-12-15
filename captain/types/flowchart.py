@@ -2,6 +2,7 @@ from pprint import pformat
 from typing import Literal, Tuple, TypeAlias
 
 from pydantic import BaseModel
+
 from captain.logging import logger
 from captain.utils.list_utils import partition_by
 
@@ -44,7 +45,7 @@ IntrinsicParameterValue: TypeAlias = str | int
 class RFNodeData(BaseModel):
     label: str
     block_type: BlockType
-    intrinsic_parameters: dict[str, IntrinsicParameterValue]
+    intrinsic_parameters: dict[str, IntrinsicParameterValue] = {}
 
 
 class RFNode(BaseModel):
@@ -196,7 +197,6 @@ def inline_function_instances(
     edges: list[RFEdge],
     function_definitions: dict[str, FunctionDefinition],
 ) -> Tuple[list[RFNode], list[RFEdge]]:
-    # TODO: Last thing that's broken, needs to be fixed
     function_instances, nodes = partition_by(
         lambda n: n.data.block_type == "function_instance", nodes
     )

@@ -1,9 +1,13 @@
+import { useFlowchartStore } from '@/stores/flowchart';
 import { BlockProps } from '@/types/block';
 import { Handle, Position } from 'reactflow';
 
 const FunctionInstanceBlock = ({ data }: BlockProps) => {
-  const ins = Object.entries(data.inputs);
-  const outs = Object.entries(data.outputs);
+  const functionDefinitionBlocks = useFlowchartStore((state) => state.functionDefinitionBlocks);
+  const definitionBlock = functionDefinitionBlocks[data.label];
+
+  const ins = Object.entries(definitionBlock.data.inputs);
+  const outs = Object.entries(definitionBlock.data.outputs);
 
   return (
     <>

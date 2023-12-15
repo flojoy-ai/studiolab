@@ -40,13 +40,25 @@ type ContextMenuFunctionSectionProps = {
 const ContextMenuFunctionSection = ({ id }: ContextMenuFunctionSectionProps) => {
   const updateBlock = useBlockUpdate(id);
   const updateNodeInternals = useUpdateNodeInternals();
-  const saveDefinition = useFlowchartStore((state) => state.saveDefinition);
+  const { saveDefinition, functionDefinitionBlocks } = useFlowchartStore((state) => ({
+    saveDefinition: state.saveDefinition,
+    functionDefinitionBlocks: state.functionDefinitionBlocks
+  }));
+
+  const withAfterUpdate = (func: () => void) => {
+    return () => {
+      func();
+      if (Object.values(functionDefinitionBlocks).find((b) => b.id === id)) {
+        saveDefinition(id);
+      }
+      updateNodeInternals(id);
+    };
+  };
 
   const addFunctionParameter = () => {
     updateBlock((block) => {
       const numInputs = Object.keys(block.data.inputs).length;
       block.data.inputs[`in${numInputs}`] = 'int';
-      updateNodeInternals(id);
     });
   };
 
@@ -54,7 +66,6 @@ const ContextMenuFunctionSection = ({ id }: ContextMenuFunctionSectionProps) => 
     updateBlock((block) => {
       const inputs = Object.entries(block.data.inputs).slice(0, -1);
       block.data.inputs = Object.fromEntries(inputs);
-      updateNodeInternals(id);
     });
   };
 
@@ -62,7 +73,6 @@ const ContextMenuFunctionSection = ({ id }: ContextMenuFunctionSectionProps) => 
     updateBlock((block) => {
       const numOutputs = Object.keys(block.data.outputs).length;
       block.data.outputs[`out${numOutputs}`] = 'int';
-      updateNodeInternals(id);
     });
   };
 
@@ -70,7 +80,6 @@ const ContextMenuFunctionSection = ({ id }: ContextMenuFunctionSectionProps) => 
     updateBlock((block) => {
       const outputs = Object.entries(block.data.outputs).slice(0, -1);
       block.data.outputs = Object.fromEntries(outputs);
-      updateNodeInternals(id);
     });
   };
 
@@ -80,16 +89,16 @@ const ContextMenuFunctionSection = ({ id }: ContextMenuFunctionSectionProps) => 
         Save Definition
       </ContextMenuItem>
       <hr />
-      <ContextMenuItem icon={Plus} onClick={addFunctionParameter}>
+      <ContextMenuItem icon={Plus} onClick={withAfterUpdate(addFunctionParameter)}>
         Add Parameter
       </ContextMenuItem>
-      <ContextMenuItem icon={Plus} onClick={addFunctionOutput}>
+      <ContextMenuItem icon={Plus} onClick={withAfterUpdate(addFunctionOutput)}>
         Add Output
       </ContextMenuItem>
-      <ContextMenuItem icon={Minus} onClick={removeFunctionParameter}>
+      <ContextMenuItem icon={Minus} onClick={withAfterUpdate(removeFunctionParameter)}>
         Remove Parameter
       </ContextMenuItem>
-      <ContextMenuItem icon={Minus} onClick={removeFunctionOutput}>
+      <ContextMenuItem icon={Minus} onClick={withAfterUpdate(removeFunctionOutput)}>
         Remove Output
       </ContextMenuItem>
     </>

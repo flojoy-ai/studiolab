@@ -39,7 +39,7 @@ interface FlowchartState {
 
   updateBlock: (id: string, mutation: (block: Draft<Node<BlockData>>) => void) => void;
 
-  saveDefinition: (definition: string) => void;
+  saveDefinition: (definitionBlockId: string) => void;
   removeDefinition: (name: string) => void;
 
   onNodesChange: OnNodesChange;
