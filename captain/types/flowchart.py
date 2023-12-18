@@ -41,7 +41,7 @@ IntrinsicParameterValue: TypeAlias = str | int
 
 
 class RFBuiltinBlockData(BaseModel):
-    label: str
+    label: str = ""
     block_type: BlockType
     intrinsic_parameters: dict[str, IntrinsicParameterValue] = {}
 
@@ -59,6 +59,10 @@ RFBlockData = Annotated[
 BD = TypeVar("BD", bound=RFBlockData)
 
 
+# TODO: Replace this with a better way
+# Using generics causes some issues with Pydantic's type inference,
+# which makes it so you have to explicitly specify the type when
+# instantiating this manually (when writing tests), which is kinda annoying
 class RFNode(BaseModel, Generic[BD]):
     id: BlockID
     data: BD
@@ -77,7 +81,7 @@ class ReactFlow(BaseModel):
 
 
 class FunctionDefinition(BaseModel):
-    block: RFNode
+    block: RFNode[RFBuiltinBlockData]
     nodes: list[RFNode[RFBlockData]]
     edges: list[RFEdge]
 
@@ -180,26 +184,33 @@ class FlowChart(BaseModel):
         )
 
         nodes, edges = inline_function_instances(nodes, edges, function_definitions)
+        blocks, cons = convert_rf_nodes_edges(nodes, edges)
 
-        blocks = [
-            _Block(
-                id=n.id,
-                block_type=n.data.block_type,
-                intrinsic_parameters=n.data.intrinsic_parameters,
-            )
-            for n in nodes
-        ]
-        edges = [
-            FCConnection(
-                target=e.target,
-                source=e.source,
-                sourceParam=e.sourceHandle,
-                targetParam=e.targetHandle,
-            )
-            for e in edges
-        ]
+        return FlowChart.from_blocks_edges(blocks, cons, function_blocks)
 
-        return FlowChart.from_blocks_edges(blocks, edges, function_blocks)
+
+def convert_rf_nodes_edges(
+    nodes: list[RFNode[RFBuiltinBlockData]], edges: list[RFEdge]
+):
+    blocks = [
+        _Block(
+            id=n.id,
+            block_type=n.data.block_type,
+            intrinsic_parameters=n.data.intrinsic_parameters,
+        )
+        for n in nodes
+    ]
+    cons = [
+        FCConnection(
+            target=e.target,
+            source=e.source,
+            sourceParam=e.sourceHandle,
+            targetParam=e.targetHandle,
+        )
+        for e in edges
+    ]
+
+    return blocks, cons
 
 
 def inline_function_instances(

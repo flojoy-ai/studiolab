@@ -1,13 +1,17 @@
 import { useFlowchartStore } from '@/stores/flowchart';
 import { FunctionInstanceData } from '@/types/block';
-import { Handle, NodeProps, Position } from 'reactflow';
+import { Handle, NodeProps, Position, useUpdateNodeInternals } from 'reactflow';
 
-const FunctionInstanceBlock = ({ data }: NodeProps<FunctionInstanceData>) => {
+const FunctionInstanceBlock = ({ id, data }: NodeProps<FunctionInstanceData>) => {
   const functionDefinitionBlocks = useFlowchartStore((state) => state.functionDefinitionBlocks);
   const defn = functionDefinitionBlocks[data.definition_block_id];
 
   const ins = Object.entries(defn.data.inputs);
   const outs = Object.entries(defn.data.outputs);
+
+  const updateNodeInternals = useUpdateNodeInternals();
+
+  updateNodeInternals(id);
 
   return (
     <>

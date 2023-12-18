@@ -94,6 +94,7 @@ class Flow:
         publish_fn: Callable[[BlockID, Any], None],
         start_obs: Observable,
         publish_scheduler: SchedulerBase | None = None,
+        publish_sample_time: float = 1 / 30,
     ) -> None:
         self.flowchart = flowchart
         self.control_subjects = {}
@@ -110,7 +111,7 @@ class Flow:
                 )
                 self.control_subjects[block.id] = Subject()
 
-        self.subscriptions = self.connect(block_funcs=funcs)
+        self.subscriptions = self.connect(funcs, publish_sample_time)
 
     @staticmethod
     def from_json(data: str, publish_fn: Callable, start_obs: Observable):
@@ -125,9 +126,7 @@ class Flow:
             sub.dispose()
 
     def connect(
-        self,
-        block_funcs: Mapping[BlockType, FlojoyBlock],
-        publish_sample_time: float = 1 / 30,
+        self, block_funcs: Mapping[BlockType, FlojoyBlock], publish_sample_time: float
     ):
         """Connects all of block functions in a flow chart using RxPY.
 

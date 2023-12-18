@@ -15,7 +15,6 @@ export type BlockType =
   | 'flojoy.logic.conditional'
   | 'flojoy.logic.true'
   | 'flojoy.logic.false'
-  | 'flojoy.visualization.bignum'
   | 'flojoy.intrinsics.function';
 
 export type IntrinsicParameterValue = number | string;
