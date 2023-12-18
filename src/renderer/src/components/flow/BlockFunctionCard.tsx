@@ -1,10 +1,10 @@
-import { BlockAddPayload, BlockData } from '@/types/block';
+import { BlockAddPayload, BuiltinBlockData } from '@/types/block';
 import { Button } from '../ui/Button';
 import { DragEventHandler } from 'react';
 import { Node } from 'reactflow';
 
 type Props = {
-  definitionBlock: Node<BlockData>;
+  definitionBlock: Node<BuiltinBlockData>;
 };
 
 const BlockFunctionCard = ({ definitionBlock }: Props): JSX.Element => {

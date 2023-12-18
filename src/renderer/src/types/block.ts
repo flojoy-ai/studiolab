@@ -16,16 +16,15 @@ export type BlockType =
   | 'flojoy.logic.true'
   | 'flojoy.logic.false'
   | 'flojoy.visualization.bignum'
-  | 'flojoy.intrinsics.function'
-  | 'function_instance';
+  | 'flojoy.intrinsics.function';
 
 export type IntrinsicParameterValue = number | string;
 
 export type Name = string;
-export type BlockId = string;
+export type BlockID = string;
 type FlojoyType = 'str' | 'int' | 'bool';
 
-export type BlockData = {
+export type BuiltinBlockData = {
   block_type: BlockType;
   label: string;
   intrinsic_parameters: Record<string, IntrinsicParameterValue>;
@@ -33,7 +32,7 @@ export type BlockData = {
   outputs: Record<Name, FlojoyType>;
 };
 
-export type BlockProps = NodeProps<BlockData>;
+export type BlockProps = NodeProps<BuiltinBlockData>;
 
 type RegularBlockAddPayload = {
   variant: 'builtin';
@@ -50,8 +49,8 @@ export type BlockAddPayload = RegularBlockAddPayload | FunctionBlockAddPayload;
 // A function is just a subflow, so we can define it using
 // the parent function definition block and the child nodes and edges
 export type FunctionDefinition = {
-  block: Node<BlockData>;
-  nodes: Node<BlockData>[];
+  block: Node<BuiltinBlockData>;
+  nodes: Node<BuiltinBlockData>[];
   edges: Edge[];
 };
 
@@ -59,3 +58,5 @@ export type FunctionInstanceData = {
   block_type: 'function_instance';
   definition_block_id: string;
 };
+
+export type BlockData = BuiltinBlockData | FunctionInstanceData;

@@ -1,17 +1,17 @@
 import { useFlowchartStore } from '@/stores/flowchart';
-import { BlockProps } from '@/types/block';
-import { Handle, Position } from 'reactflow';
+import { FunctionInstanceData } from '@/types/block';
+import { Handle, NodeProps, Position } from 'reactflow';
 
-const FunctionInstanceBlock = ({ data }: BlockProps) => {
+const FunctionInstanceBlock = ({ data }: NodeProps<FunctionInstanceData>) => {
   const functionDefinitionBlocks = useFlowchartStore((state) => state.functionDefinitionBlocks);
-  const definitionBlock = functionDefinitionBlocks[data.label];
+  const defn = functionDefinitionBlocks[data.definition_block_id];
 
-  const ins = Object.entries(definitionBlock.data.inputs);
-  const outs = Object.entries(definitionBlock.data.outputs);
+  const ins = Object.entries(defn.data.inputs);
+  const outs = Object.entries(defn.data.outputs);
 
   return (
     <>
-      <div className="border p-4">{data.label}</div>
+      <div className="border p-4">{defn.data.label}</div>
       {ins.map(([name], i) => (
         <Handle
           key={`input-handle-${name}`}

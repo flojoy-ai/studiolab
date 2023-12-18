@@ -1,10 +1,9 @@
 from pprint import pformat
-from typing import Literal, Tuple, TypeAlias
+from typing import Annotated, Literal, Tuple, TypeAlias, TypeVar, Union, Generic, cast
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from captain.logging import logger
-from captain.utils.list_utils import partition_by
 
 # TODO: This is hardcoded for now
 BlockType = Literal[
@@ -23,7 +22,6 @@ BlockType = Literal[
     "flojoy.logic.false",
     "flojoy.visualization.bignum",
     "flojoy.intrinsics.function",
-    "function_instance",
 ]
 
 BlockID: TypeAlias = str
@@ -42,15 +40,28 @@ RFHandleID: TypeAlias = str
 IntrinsicParameterValue: TypeAlias = str | int
 
 
-class RFNodeData(BaseModel):
+class RFBuiltinBlockData(BaseModel):
     label: str
     block_type: BlockType
     intrinsic_parameters: dict[str, IntrinsicParameterValue] = {}
 
 
-class RFNode(BaseModel):
+class RFFunctionInstanceData(BaseModel):
+    block_type: Literal["function_instance"]
+    definition_block_id: BlockID
+
+
+RFBlockData = Annotated[
+    Union[RFBuiltinBlockData, RFFunctionInstanceData],
+    Field(discriminator="block_type"),
+]
+
+BD = TypeVar("BD", bound=RFBlockData)
+
+
+class RFNode(BaseModel, Generic[BD]):
     id: BlockID
-    data: RFNodeData
+    data: BD
 
 
 class RFEdge(BaseModel):
@@ -61,13 +72,13 @@ class RFEdge(BaseModel):
 
 
 class ReactFlow(BaseModel):
-    nodes: list[RFNode]
+    nodes: list[RFNode[RFBlockData]]
     edges: list[RFEdge]
 
 
 class FunctionDefinition(BaseModel):
     block: RFNode
-    nodes: list[RFNode]
+    nodes: list[RFNode[RFBlockData]]
     edges: list[RFEdge]
 
 
@@ -168,8 +179,7 @@ class FlowChart(BaseModel):
             or node.data.block_type == "function_instance"
         )
 
-        if function_definitions:
-            nodes, edges = inline_function_instances(nodes, edges, function_definitions)
+        nodes, edges = inline_function_instances(nodes, edges, function_definitions)
 
         blocks = [
             _Block(
@@ -193,38 +203,51 @@ class FlowChart(BaseModel):
 
 
 def inline_function_instances(
-    nodes: list[RFNode],
+    nodes: list[RFNode[RFBlockData]],
     edges: list[RFEdge],
-    function_definitions: dict[str, FunctionDefinition],
-) -> Tuple[list[RFNode], list[RFEdge]]:
-    function_instances, nodes = partition_by(
-        lambda n: n.data.block_type == "function_instance", nodes
-    )
-    for func in function_instances:
-        defn = function_definitions[func.data.label]
-        inlined_nodes = [
-            RFNode(id=f"{func.id}-{body_node.id}", data=body_node.data)
-            for body_node in defn.nodes
-        ]
-        inlined_edges = [
-            RFEdge(
-                target=f"{func.id}-{body_edge.target}"
-                if body_edge.target != defn.block.id
-                else func.id,
-                source=f"{func.id}-{body_edge.source}"
-                if body_edge.source != defn.block.id
-                else func.id,
-                targetHandle=body_edge.targetHandle,
-                sourceHandle=body_edge.sourceHandle,
-            )
-            for body_edge in defn.edges
-        ]
-        logger.info(f"Nodes added from inline: \n{pformat(inlined_nodes)}")
-        logger.info(f"Edges added from inline: \n{pformat(inlined_edges)}")
-        nodes.extend(inlined_nodes)
-        edges.extend(inlined_edges)
+    function_definitions: dict[str, FunctionDefinition] | None,
+) -> Tuple[list[RFNode[RFBuiltinBlockData]], list[RFEdge]]:
+    if not function_definitions:
+        return cast(list[RFNode[RFBuiltinBlockData]], nodes), edges
 
-    return nodes, edges
+    next_nodes: list[RFNode] = []
+
+    done_inlining = True
+    for node in nodes:
+        match node.data:
+            case RFBuiltinBlockData():
+                next_nodes.append(node)
+            case RFFunctionInstanceData(definition_block_id=defn_id):
+                done_inlining = False
+
+                defn = function_definitions[defn_id]
+                inlined_nodes = [
+                    RFNode(id=f"{node.id}-{body_node.id}", data=body_node.data)
+                    for body_node in defn.nodes
+                ]
+                inlined_edges = [
+                    RFEdge(
+                        target=f"{node.id}-{body_edge.target}"
+                        if body_edge.target != defn.block.id
+                        else node.id,
+                        source=f"{node.id}-{body_edge.source}"
+                        if body_edge.source != defn.block.id
+                        else node.id,
+                        targetHandle=body_edge.targetHandle,
+                        sourceHandle=body_edge.sourceHandle,
+                    )
+                    for body_edge in defn.edges
+                ]
+
+                logger.info(f"Nodes added from inline: \n{pformat(inlined_nodes)}")
+                logger.info(f"Edges added from inline: \n{pformat(inlined_edges)}")
+                next_nodes.extend(inlined_nodes)
+                edges.extend(inlined_edges)
+
+    if not done_inlining:
+        return inline_function_instances(next_nodes, edges, function_definitions)
+
+    return next_nodes, edges
 
 
 def join_edges(e1: FCConnection, e2: FCConnection) -> FCConnection:
