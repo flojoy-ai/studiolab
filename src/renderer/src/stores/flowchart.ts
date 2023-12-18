@@ -73,6 +73,10 @@ export const useFlowchartStore = create<FlowchartState>()(
             if (!block) {
               throw new Error('Tried to update non-existant block');
             }
+            if (!isBuiltinBlock(block)) {
+              throw new Error("Can't update non-builtin block");
+            }
+
             mutation(block);
           });
         },
@@ -80,7 +84,7 @@ export const useFlowchartStore = create<FlowchartState>()(
         saveDefinition: (definitionBlockId: BlockID) => {
           set((state) => {
             const node = state.nodes.find((n) => n.id === definitionBlockId);
-            if (node?.data.block_type !== 'flojoy.intrinsics.function') {
+            if (!node || !isFunctionDefinitionBlock(node)) {
               return;
             }
 
@@ -224,6 +228,14 @@ export const useFlowchartStore = create<FlowchartState>()(
     )
   )
 );
+
+const isBuiltinBlock = (node: Node<BlockData>): node is Node<BuiltinBlockData> => {
+  return node.data.block_type !== 'function_instance';
+};
+
+const isFunctionDefinitionBlock = (node: Node<BlockData>): node is Node<BuiltinBlockData> => {
+  return node.data.block_type === 'flojoy.intrinsics.function';
+};
 
 export const useBlockUpdate = (id: string) => {
   const update = useFlowchartStore((state) => state.updateBlock);
