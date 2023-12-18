@@ -53,3 +53,8 @@ export type FunctionDefinition = {
   nodes: Node<BlockData>[];
   edges: Edge[];
 };
+
+export type FunctionInstanceData = {
+  block_type: 'function_instance';
+  definition_block_id: string;
+};
