@@ -22,6 +22,7 @@ export type BlockType =
 export type IntrinsicParameterValue = number | string;
 
 export type Name = string;
+export type BlockId = string;
 type FlojoyType = 'str' | 'int' | 'bool';
 
 export type BlockData = {
@@ -41,7 +42,7 @@ type RegularBlockAddPayload = {
 
 type FunctionBlockAddPayload = {
   variant: 'function_instance';
-  name: string;
+  definition_block_id: string;
 };
 
 export type BlockAddPayload = RegularBlockAddPayload | FunctionBlockAddPayload;

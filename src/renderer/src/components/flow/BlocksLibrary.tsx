@@ -10,6 +10,8 @@ const BlocksLibrary = () => {
     removeDefinition: state.removeDefinition
   }));
 
+  console.log(functionDefinitions);
+
   return (
     <div className="grow flex-col rounded-lg bg-background p-4">
       <div className="flex items-center">
@@ -69,13 +71,13 @@ const BlocksLibrary = () => {
             Custom functions are listed here. Try defining one using the &quot;Function
             definition&quot; block.
           </div>
-          {Object.keys(functionDefinitions).map((functionName) => (
-            <div key={functionName} className="flex items-center gap-2">
-              <BlockFunctionCard name={functionName} />
+          {Object.entries(functionDefinitions).map(([blockId, block]) => (
+            <div key={blockId} className="flex items-center gap-2">
+              <BlockFunctionCard definitionBlock={block} />
               <X
                 className="cursor-pointer duration-200 hover:text-muted-foreground"
                 size={20}
-                onClick={() => removeDefinition(functionName)}
+                onClick={() => removeDefinition(blockId)}
               />
             </div>
           ))}

@@ -1,7 +1,7 @@
 import { Handle, Position } from 'reactflow';
 import { BlockProps } from '@/types/block';
 import { Input } from '@/components/ui/Input';
-import { useBlockUpdate } from '@/stores/flowchart';
+import { useBlockUpdate, useFlowchartStore } from '@/stores/flowchart';
 
 const FunctionDefinitionBlock = ({ id, data }: BlockProps) => {
   const ins = Object.entries(data.inputs);
@@ -9,12 +9,22 @@ const FunctionDefinitionBlock = ({ id, data }: BlockProps) => {
 
   const updateBlock = useBlockUpdate(id);
 
+  const { saveDefinition, functionDefinitions } = useFlowchartStore((state) => ({
+    saveDefinition: state.saveDefinition,
+    functionDefinitions: state.functionDefinitionBlocks
+  }));
+
   return (
     <>
       <div className="relative h-64 w-[512px] border">
         <Input
           className="mx-auto w-fit"
           value={data.label}
+          onBlur={() => {
+            if (data.label !== functionDefinitions[id].data.label) {
+              saveDefinition(id);
+            }
+          }}
           onChange={(e) =>
             updateBlock((block) => {
               block.data.label = e.target.value;

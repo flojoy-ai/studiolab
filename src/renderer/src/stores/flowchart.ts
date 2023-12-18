@@ -13,7 +13,7 @@ import {
   applyEdgeChanges,
   XYPosition
 } from 'reactflow';
-import { BlockData, Name } from '@/types/block';
+import { BlockData, BlockId } from '@/types/block';
 
 import { v4 as uuidv4 } from 'uuid';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -31,7 +31,7 @@ interface FlowchartState {
   edges: Edge[];
   controls: Node[];
 
-  functionDefinitionBlocks: Record<Name, Node<BlockData>>;
+  functionDefinitionBlocks: Record<BlockId, Node<BlockData>>;
 
   setNodes: (nodes: Node<BlockData>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -77,20 +77,20 @@ export const useFlowchartStore = create<FlowchartState>()(
           });
         },
 
-        saveDefinition: (definitionBlockId: string) => {
+        saveDefinition: (definitionBlockId: BlockId) => {
           set((state) => {
             const node = state.nodes.find((n) => n.id === definitionBlockId);
             if (node?.data.block_type !== 'flojoy.intrinsics.function') {
               return;
             }
 
-            state.functionDefinitionBlocks[node.data.label] = node;
+            state.functionDefinitionBlocks[node.id] = node;
           });
         },
 
-        removeDefinition: (name: string) => {
+        removeDefinition: (definitionBlockId: BlockId) => {
           set((state) => {
-            delete state.functionDefinitionBlocks[name];
+            delete state.functionDefinitionBlocks[definitionBlockId];
           });
         },
 
@@ -160,15 +160,15 @@ export const useFlowchartStore = create<FlowchartState>()(
               break;
             case 'function_instance': {
               const definitions = get().functionDefinitionBlocks;
-              if (!(payload.name in definitions)) {
-                throw new Error(`Undefined function block ${payload.name}`);
+              if (!(payload.definition_block_id in definitions)) {
+                throw new Error(`Undefined function block ${payload.definition_block_id}`);
               }
 
-              const definition = definitions[payload.name];
+              const definition = definitions[payload.definition_block_id];
 
               data = {
                 block_type: 'function_instance',
-                label: payload.name,
+                label: definition.data.label,
                 intrinsic_parameters: {},
                 inputs: definition.data.inputs,
                 outputs: definition.data.outputs

@@ -1,16 +1,17 @@
-import { BlockAddPayload } from '@/types/block';
+import { BlockAddPayload, BlockData } from '@/types/block';
 import { Button } from '../ui/Button';
 import { DragEventHandler } from 'react';
+import { Node } from 'reactflow';
 
 type Props = {
-  name: string;
+  definitionBlock: Node<BlockData>;
 };
 
-const BlockFunctionCard = ({ name }: Props): JSX.Element => {
+const BlockFunctionCard = ({ definitionBlock }: Props): JSX.Element => {
   const onDragStart: DragEventHandler<HTMLButtonElement> = (event) => {
     const payload: BlockAddPayload = {
       variant: 'function_instance',
-      name
+      definition_block_id: definitionBlock.id
     };
 
     event.dataTransfer.setData('application/reactflow', JSON.stringify(payload));
@@ -19,10 +20,11 @@ const BlockFunctionCard = ({ name }: Props): JSX.Element => {
     // actual block is going to look like!
     event.dataTransfer.setDragImage(event.target as HTMLButtonElement, 0, 0);
   };
+  console.log(definitionBlock);
 
   return (
     <Button variant="secondary" draggable onDragStart={onDragStart}>
-      <div>{name}</div>
+      <div>{definitionBlock.data.label}</div>
     </Button>
   );
 };
