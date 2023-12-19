@@ -21,7 +21,7 @@ const FunctionDefinitionBlock = ({ id, data }: BlockProps) => {
           className="mx-auto w-fit"
           value={data.label}
           onBlur={() => {
-            if (data.label !== functionDefinitions[id].data.label) {
+            if (id in functionDefinitions && data.label !== functionDefinitions[id].data.label) {
               saveDefinition(id);
             }
           }}

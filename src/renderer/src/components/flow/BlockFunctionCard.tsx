@@ -20,7 +20,6 @@ const BlockFunctionCard = ({ definitionBlock }: Props): JSX.Element => {
     // actual block is going to look like!
     event.dataTransfer.setDragImage(event.target as HTMLButtonElement, 0, 0);
   };
-  console.log(definitionBlock);
 
   return (
     <Button variant="secondary" draggable onDragStart={onDragStart}>

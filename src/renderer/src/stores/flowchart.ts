@@ -99,6 +99,12 @@ export const useFlowchartStore = create<FlowchartState>()(
         },
 
         onNodesChange: (changes: NodeChange[]) => {
+          for (const change of changes) {
+            if (change.type === 'remove' && change.id in get().functionDefinitionBlocks) {
+              get().removeDefinition(change.id);
+            }
+          }
+
           set({
             nodes: applyNodeChanges(changes, get().nodes)
           });
@@ -180,7 +186,7 @@ export const useFlowchartStore = create<FlowchartState>()(
           set({
             nodes: get().nodes.concat([
               {
-                id: uuid,
+                id: `${data.block_type}-${uuid}`,
                 type: data.block_type,
                 position: adjustedPosition,
                 data,
@@ -207,8 +213,8 @@ export const useFlowchartStore = create<FlowchartState>()(
         },
 
         deleteNode: (id: string) => {
+          get().onNodesChange([{ type: 'remove', id }]);
           set({
-            nodes: get().nodes.filter((n) => n.id !== id),
             edges: get().edges.filter((e) => e.source !== id && e.target !== id)
           });
         },
