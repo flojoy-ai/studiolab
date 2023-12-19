@@ -2,6 +2,7 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { FunctionInstanceData } from '@/types/block';
 import { Handle, NodeProps, Position, useUpdateNodeInternals } from 'reactflow';
 
+// TODO: Figure out what to do with instance blocks when the original definition is removed
 const FunctionInstanceBlock = ({ id, data }: NodeProps<FunctionInstanceData>) => {
   const functionDefinitionBlocks = useFlowchartStore((state) => state.functionDefinitionBlocks);
   const defn = functionDefinitionBlocks[data.definition_block_id];

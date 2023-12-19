@@ -199,7 +199,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             set({
               controls: get().controls.concat([
                 {
-                  id: uuid,
+                  id: `${data.block_type}-${uuid}`,
                   type: data.block_type,
                   position: position,
                   data: {
