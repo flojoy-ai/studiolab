@@ -103,14 +103,13 @@ def basic_function_flow():
 def test_basic_function_instance_inlining(basic_function_flow):
     nodes, edges, definitions = basic_function_flow
 
-    nodes, edges = inline_function_instances(nodes, edges, definitions)
+    nodes, edges = inline_function_instances(nodes, edges, definitions, set())
     assert len(nodes) == 4
     assert len(edges) == 5
     assert "add_two_instance" not in [node.id for node in nodes]
 
     _, cons = convert_rf_nodes_edges(nodes, edges)
     cons = join_function_edges(cons, {"add_two_def", "add_two_instance"})
-    print(cons)
     assert all(
         INTERNAL_PREFIX not in e.targetParam and INTERNAL_PREFIX not in e.sourceParam
         for e in cons
