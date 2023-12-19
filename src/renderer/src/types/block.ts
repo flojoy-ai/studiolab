@@ -49,7 +49,7 @@ export type BlockAddPayload = RegularBlockAddPayload | FunctionBlockAddPayload;
 // the parent function definition block and the child nodes and edges
 export type FunctionDefinition = {
   block: Node<BuiltinBlockData>;
-  nodes: Node<BuiltinBlockData>[];
+  nodes: Node<BlockData>[];
   edges: Edge[];
 };
 
