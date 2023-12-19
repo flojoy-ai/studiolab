@@ -67,6 +67,9 @@ class RFNode(BaseModel, Generic[BD]):
     id: BlockID
     data: BD
 
+    def __repr__(self):
+        return f"RFNode(id={self.id}, data={self.data})"
+
 
 class RFEdge(BaseModel):
     target: BlockID
@@ -84,6 +87,15 @@ class FunctionDefinition(BaseModel):
     block: RFNode[RFBuiltinBlockData]
     nodes: list[RFNode[RFBlockData]]
     edges: list[RFEdge]
+
+    @staticmethod
+    def from_nodes_edges(
+        block: RFNode[RFBuiltinBlockData],
+        nodes_edges: Tuple[list[RFNode[RFBlockData]], list[RFEdge]],
+    ):
+        return FunctionDefinition(
+            block=block, nodes=nodes_edges[0], edges=nodes_edges[1]
+        )
 
 
 """
@@ -176,14 +188,11 @@ class FlowChart(BaseModel):
         logger.info(f"Nodes ({len(nodes)}): \n{pformat(nodes)}")
         logger.info(f"Edges ({len(edges)}): \n{pformat(edges)}")
 
-        function_blocks = set(
-            node.id
-            for node in nodes
-            if node.data.block_type == "flojoy.intrinsics.function"
-            or node.data.block_type == "function_instance"
-        )
+        function_blocks = set()
 
-        nodes, edges = inline_function_instances(nodes, edges, function_definitions)
+        nodes, edges = inline_function_instances(
+            nodes, edges, function_definitions, function_blocks
+        )
         blocks, cons = convert_rf_nodes_edges(nodes, edges)
 
         return FlowChart.from_blocks_edges(blocks, cons, function_blocks)
@@ -217,18 +226,27 @@ def inline_function_instances(
     nodes: list[RFNode[RFBlockData]],
     edges: list[RFEdge],
     function_definitions: dict[str, FunctionDefinition] | None,
+    function_blocks: set[str],
 ) -> Tuple[list[RFNode[RFBuiltinBlockData]], list[RFEdge]]:
+    # TODO: Make things not blow up when you try to use recursion
+    # This may require rethinking how we deal with functions
     if not function_definitions:
         return cast(list[RFNode[RFBuiltinBlockData]], nodes), edges
 
     next_nodes: list[RFNode] = []
+    next_edges: list[RFEdge] = edges[:]
 
     done_inlining = True
     for node in nodes:
         match node.data:
             case RFBuiltinBlockData():
+                if node.data.block_type == "flojoy.intrinsics.function":
+                    function_blocks.add(node.id)
                 next_nodes.append(node)
             case RFFunctionInstanceData(definition_block_id=defn_id):
+                function_blocks.add(node.id)
+
+                logger.info(f"Inlining {pformat(node)}")
                 done_inlining = False
 
                 defn = function_definitions[defn_id]
@@ -238,9 +256,13 @@ def inline_function_instances(
                 ]
                 inlined_edges = [
                     RFEdge(
+                        # If the body edge is connected to the internal 'out', then we want to make the target
+                        # the function instance's id instead so it can be joined later
                         target=f"{node.id}-{body_edge.target}"
                         if body_edge.target != defn.block.id
                         else node.id,
+                        # Likewise, if the body edge is connected to the internal 'in', then we want to make the source
+                        # the function instance's id instead
                         source=f"{node.id}-{body_edge.source}"
                         if body_edge.source != defn.block.id
                         else node.id,
@@ -253,12 +275,14 @@ def inline_function_instances(
                 logger.info(f"Nodes added from inline: \n{pformat(inlined_nodes)}")
                 logger.info(f"Edges added from inline: \n{pformat(inlined_edges)}")
                 next_nodes.extend(inlined_nodes)
-                edges.extend(inlined_edges)
+                next_edges.extend(inlined_edges)
 
     if not done_inlining:
-        return inline_function_instances(next_nodes, edges, function_definitions)
+        return inline_function_instances(
+            next_nodes, next_edges, function_definitions, function_blocks
+        )
 
-    return next_nodes, edges
+    return next_nodes, next_edges
 
 
 def join_edges(e1: FCConnection, e2: FCConnection) -> FCConnection:
