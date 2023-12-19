@@ -108,6 +108,13 @@ export const useFlowchartStore = create<FlowchartState>()(
           set({
             nodes: applyNodeChanges(changes, get().nodes)
           });
+          // Delete corresponding nodes in control canvas
+          set({
+            controls: applyNodeChanges(
+              changes.filter((c) => c.type === 'remove'),
+              get().controls
+            )
+          });
         },
         onEdgesChange: (changes: EdgeChange[]) => {
           set({
@@ -117,6 +124,13 @@ export const useFlowchartStore = create<FlowchartState>()(
         onControlsChange: (changes: NodeChange[]) => {
           set({
             controls: applyNodeChanges(changes, get().controls)
+          });
+          // Delete corresponding nodes in flow chart
+          set({
+            nodes: applyNodeChanges(
+              changes.filter((c) => c.type === 'remove'),
+              get().nodes
+            )
           });
         },
 
