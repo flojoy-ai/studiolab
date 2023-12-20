@@ -1,4 +1,5 @@
 from captain.lib.block import FlojoyBlock
+from captain.logging import logger
 
 
 class fibs(FlojoyBlock):
@@ -6,7 +7,7 @@ class fibs(FlojoyBlock):
         self.prev = 0
         self.cur = 1
 
-    def __call__(self, x=None):  # type: ignore
+    def on_next(self, x: int, y: int):  # type: ignore
         temp = self.cur
         self.cur += self.prev
         self.prev = temp
