@@ -51,7 +51,6 @@ class FlojoyBlock(metaclass=ABCMeta):
     def memoize(self, func: Callable[[], T], deps: list[Any]) -> T:
         # First time calling the hook
         if self.__hook_index >= len(self.__hooks):
-            print(f"Initial hook setup ({self.__hook_index})")
             val = func()
             self.__hooks.append((val, deps))
             self.__hook_index += 1
@@ -63,15 +62,14 @@ class FlojoyBlock(metaclass=ABCMeta):
             raise ValueError("Number of dependencies for hook should not change")
 
         if all(a == b for a, b in zip(deps, prev_deps)):
-            self.__hook_index += 1
-            return memoized_val
+            val = memoized_val
         else:
             # deps changed, recompute value
-            new_val = func()
-            self.__hooks[self.__hook_index] = (new_val, deps)
+            val = func()
+            self.__hooks[self.__hook_index] = (val, deps)
 
-            self.__hook_index += 1
-            return new_val
+        self.__hook_index += 1
+        return val
 
     def effect(self, func: Callable[[], None], deps: list[Any]) -> None:
         self.memoize(func, deps)
