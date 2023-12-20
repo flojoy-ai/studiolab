@@ -42,6 +42,7 @@ const BlocksLibrary = () => {
             <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" />
             <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" />
             <BlockCard name="Rand" desc="?" block_type="flojoy.math.rand" />
+            <BlockCard name="Fibs" desc="1 1 2 3 5 8 13 ..." block_type="flojoy.math.fibs" />
             <BlockCard
               name="Conditional"
               desc="if ... then ... else"

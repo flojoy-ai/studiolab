@@ -8,7 +8,8 @@ from reactivex import Observable, Subject
 from reactivex.abc import DisposableBase, SchedulerBase
 from reactivex.scheduler import ThreadPoolScheduler
 
-from captain.lib.block_import import FlojoyBlock, import_blocks
+from captain.lib.block_import import BlockImport, import_blocks
+from captain.lib.block import FlojoyBlock
 from captain.logging import logger
 from captain.types.builtins import Ignore
 from captain.types.events import FlowControlEvent
@@ -87,6 +88,7 @@ class Flow:
 
     flowchart: FlowChart
     control_subjects: dict[BlockID, Subject]
+    blocks: dict[BlockID, FlojoyBlock]
 
     def __init__(
         self,
@@ -101,17 +103,20 @@ class Flow:
         self.on_publish = publish_fn
         self.start_obs = start_obs
         self.publish_scheduler = publish_scheduler
+        self.blocks = {}
 
-        funcs = import_blocks(BLOCKS_DIR)
+        block_imports = import_blocks(BLOCKS_DIR)
 
         for block in flowchart.blocks:
-            if funcs[block.block_type].is_ui_input:
+            block_import = block_imports[block.block_type]
+            if block_import.is_ui_input:
                 logger.info(
                     f"Creating a Subject for {block.block_type}({block.id}) to react to changes."
                 )
                 self.control_subjects[block.id] = Subject()
+            self.blocks[block.id] = block_import.make_instance()
 
-        self.subscriptions = self.connect(funcs, publish_sample_time)
+        self.subscriptions = self.connect(publish_sample_time)
 
     @staticmethod
     def from_json(data: str, publish_fn: Callable, start_obs: Observable):
@@ -125,9 +130,7 @@ class Flow:
         for sub in self.subscriptions:
             sub.dispose()
 
-    def connect(
-        self, block_funcs: Mapping[BlockType, FlojoyBlock], publish_sample_time: float
-    ):
+    def connect(self, publish_sample_time: float):
         """Connects all of block functions in a flow chart using RxPY.
 
         To run the flow chart, push an item to the start observable.
@@ -161,15 +164,13 @@ class Flow:
                     on_error=lambda e: logger.error(e),
                 )
 
-                fj_block = block_funcs[block.block_type]
-
                 # A lot of the lambdas being passed created are partially applied,
                 # this is because Python has weird late binding with lambdas in a loop.
                 # Instead of using captured values, we need to pass it as a parameter
                 # so that it binds to the value and not the name.
                 #
                 def run_block(blk: FCBlock, kwargs: dict[str, Any]):
-                    fn = block_funcs[blk.block_type]
+                    fn = self.blocks[blk.id]
                     logger.info(f"Running block {blk.block_type} ({blk.id})")
                     res = fn(**kwargs)
                     match res:
@@ -206,6 +207,8 @@ class Flow:
                     on_error=lambda e: logger.error(e),
                 )  # for logging purpose only
                 subscriptions.append(disposable)
+
+                fj_block = self.blocks[block.id]
 
                 # Split blocks that return multiple things into individual observables
                 if is_typeddict(fj_block.output):

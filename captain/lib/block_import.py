@@ -5,25 +5,34 @@ from typing import Callable, Mapping, Type, TypeAlias
 from dataclasses import dataclass
 
 from captain.types.flowchart import BlockType
+from captain.logging import logger
+from captain.lib.block import FlojoyBlock, LambdaBlock
 
 Name: TypeAlias = str
 
+ClassBlock: TypeAlias = type[FlojoyBlock]
+FunctionBlock: TypeAlias = Callable
+
 
 @dataclass
-class FlojoyBlock:
-    func: Callable
+class BlockImport:
+    block: ClassBlock | FunctionBlock
     inputs: Mapping[Name, Type]
     output: Type
 
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
-
     @property
     def is_ui_input(self) -> bool:
-        return getattr(self.func, "ui_input", False)
+        return getattr(self.block, "ui_input", False)
+
+    def make_instance(self) -> FlojoyBlock:
+        match self.block:
+            case type():
+                return self.block(self.inputs, self.output)
+            case _:
+                return LambdaBlock(self.block, self.inputs, self.output)
 
 
-def import_blocks(blocks_dir: str) -> Mapping[BlockType, FlojoyBlock]:
+def import_blocks(blocks_dir: str) -> Mapping[BlockType, BlockImport]:
     folder_path = os.path.join(blocks_dir, "flojoy")
     if not os.path.exists(folder_path):
         raise ValueError(
@@ -54,12 +63,30 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, FlojoyBlock]:
                 raise ValueError(f"Could not get loader from {block_path}")
 
             spec.loader.exec_module(module)
-            func = getattr(module, block_name)
+            block = getattr(module, block_name)
 
-            sig = inspect.signature(func)
+            match block:
+                case type():
+                    if not issubclass(block, FlojoyBlock):
+                        raise ImportError(
+                            f"Class block imported from {block_path} does not inherit from FlojoyBlock"
+                        )
+                    sig = inspect.signature(block.__call__)
+                    # methods have a self parameter that needs to be ignored
+                    parameters = [
+                        param
+                        for name, param in sig.parameters.items()
+                        if name != "self"
+                    ]
+                    sig = sig.replace(parameters=parameters)
+                case _:
+                    sig = inspect.signature(block)
+
+            logger.info(sig)
+
             inputs = {name: param.annotation for name, param in sig.parameters.items()}
             outputs = sig.return_annotation
 
-            functions[block_type] = FlojoyBlock(func, inputs, outputs)
+            functions[block_type] = BlockImport(block, inputs, outputs)
 
     return functions

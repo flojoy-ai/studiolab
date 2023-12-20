@@ -12,6 +12,7 @@ import ToggleBlock from '@/components/blocks/flow/ToggleBlock';
 import ClockBlock from '@/components/blocks/flow/ClockBlock';
 import FunctionDefinitionBlock from '@/components/blocks/flow/FunctionDefinitionBlock';
 import FunctionInstanceBlock from '@/components/blocks/flow/FunctionInstanceBlock';
+import FibsBlock from '@/components/blocks/flow/FibsBlock';
 
 export const nodeTypes = {
   'flojoy.control.slider': SliderBlock,
@@ -19,6 +20,7 @@ export const nodeTypes = {
   'flojoy.math.arithmetic.add': AddBlock,
   'flojoy.math.constant': ConstantBlock,
   'flojoy.math.rand': RandBlock,
+  'flojoy.math.fibs': FibsBlock,
   'flojoy.logic.conditional': ConditionalBlock,
   'flojoy.logic.sequence': SequenceBlock,
   'flojoy.logic.clock': ClockBlock,
