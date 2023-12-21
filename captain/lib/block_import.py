@@ -71,7 +71,7 @@ def import_blocks(blocks_dir: str) -> Mapping[BlockType, BlockImport]:
                         raise ImportError(
                             f"Class block imported from {block_path} does not inherit from FlojoyBlock"
                         )
-                    sig = inspect.signature(block.__call__)
+                    sig = inspect.signature(block.on_next)
                     # methods have a self parameter that needs to be ignored
                     parameters = [
                         param
