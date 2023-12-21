@@ -1,5 +1,5 @@
 from typing import TypeVar, Callable, Any, Mapping, Type, TypeAlias
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 T = TypeVar("T")
 Name: TypeAlias = str
@@ -10,6 +10,7 @@ class FlojoyBlock(metaclass=ABCMeta):
     __output: Type
     __hooks: list
     __hook_index: int
+    on_next: Callable
 
     def __init__(self, inputs: Mapping[Name, Type], output: Type):
         self.__inputs = inputs
@@ -40,10 +41,6 @@ class FlojoyBlock(metaclass=ABCMeta):
     def __call__(self, *args, **kwargs) -> Any:
         self.__hook_index = 0
         return self.on_next(*args, **kwargs)
-
-    @abstractmethod
-    def on_next(self, *args, **kwargs):
-        ...
 
     def publish(self):
         pass

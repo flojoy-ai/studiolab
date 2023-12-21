@@ -6,7 +6,7 @@ class fibs(FlojoyBlock):
         self.prev = 0
         self.cur = 1
 
-    def on_next(self, x=None):  # type: ignore
+    def on_next(self, x=None):
         temp = self.cur
         self.cur += self.prev
         self.prev = temp
