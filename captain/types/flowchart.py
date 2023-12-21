@@ -15,6 +15,7 @@ BlockType = Literal[
     "flojoy.math.arithmetic.subtract",
     "flojoy.math.constant",
     "flojoy.math.rand",
+    "flojoy.math.fibs",
     "flojoy.logic.sequence",
     "flojoy.logic.clock",
     "flojoy.logic.conditional",
