@@ -8,12 +8,12 @@ from reactivex import Observable, Subject
 from reactivex.abc import DisposableBase, SchedulerBase
 from reactivex.scheduler import ThreadPoolScheduler
 
-from captain.lib.block_import import BlockImport, import_blocks
 from captain.lib.block import FlojoyBlock
+from captain.lib.block_import import import_blocks
 from captain.logging import logger
 from captain.types.builtins import Ignore
 from captain.types.events import FlowControlEvent
-from captain.types.flowchart import BlockID, BlockType, FCBlock, FlowChart
+from captain.types.flowchart import BlockID, FCBlock, FlowChart
 
 BLOCKS_DIR = "blocks"
 
