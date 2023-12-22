@@ -4,12 +4,14 @@ import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
 import { useLifecycleStore } from '@/stores/lifecycle';
 import { trpcClient } from '@/main';
+import { FunctionDefinition, Name } from '@/types/block';
 
 const FlowControlsTopRight = (): JSX.Element => {
-  const { edges, nodes } = useFlowchartStore(
+  const { edges, nodes, functionDefinitionBlocks } = useFlowchartStore(
     useShallow((state) => ({
       edges: state.edges,
-      nodes: state.nodes
+      nodes: state.nodes,
+      functionDefinitionBlocks: state.functionDefinitionBlocks
     }))
   );
 
@@ -32,11 +34,26 @@ const FlowControlsTopRight = (): JSX.Element => {
   };
 
   const onStart = async () => {
+    const functionDefinitions: Record<Name, FunctionDefinition> = {};
+    for (const [name, block] of Object.entries(functionDefinitionBlocks)) {
+      const bodyNodes = nodes.filter((n) => n.parentNode === block.id);
+      const bodyNodeIds = new Set(bodyNodes.map((n) => n.id));
+      bodyNodeIds.add(block.id);
+      const bodyEdges = edges.filter((e) => bodyNodeIds.has(e.target) && bodyNodeIds.has(e.source));
+
+      functionDefinitions[name] = {
+        block,
+        nodes: bodyNodes,
+        edges: bodyEdges
+      };
+    }
+
     await trpcClient.startFlowchart.mutate(
       JSON.stringify({
         event: {
           event_type: 'start',
-          rf: { nodes, edges }
+          rf: { nodes, edges },
+          function_definitions: functionDefinitions
         }
       })
     );

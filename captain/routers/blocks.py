@@ -1,14 +1,9 @@
-# import asyncio
-# from asyncio import Future
-# from typing import Any
-
-# import reactivex.operators as ops
-
 from typing import Any
 
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
 from reactivex import Subject
+from reactivex.scheduler.eventloop import AsyncIOThreadSafeScheduler
 
 from captain.controllers.reactive import Flow
 from captain.logging import logger
@@ -22,9 +17,7 @@ from captain.types.events import (
 )
 from captain.types.flowchart import BlockID, FlowChart
 from captain.utils.ws import send_message_factory
-
-# from reactivex import create
-# from reactivex.subject import BehaviorSubject
+import asyncio
 
 
 router = APIRouter(tags=["blocks"], prefix="/blocks")
@@ -48,7 +41,6 @@ async def websocket_flowchart(websocket: WebSocket):
 
     while True:
         data = await websocket.receive_text()
-        logger.info(f"Got message {data}")
         try:
             message = FlowSocketMessage.model_validate_json(data)
         except ValidationError as e:
@@ -56,14 +48,22 @@ async def websocket_flowchart(websocket: WebSocket):
             continue
 
         match message.event:
-            case FlowStartEvent(rf=rf):
+            case FlowStartEvent(rf=rf, function_definitions=function_definitions):
                 if flow is None:
-                    fc = FlowChart.from_react_flow(rf)
+                    fc = FlowChart.from_react_flow(rf, function_definitions)
+
                     logger.info("Creating flow from react flow instance")
-                    flow = Flow(fc, publish_fn, start_obs)
+                    loop = asyncio.get_event_loop()
+                    scheduler = AsyncIOThreadSafeScheduler(loop)
+                    flow = Flow(fc, publish_fn, start_obs, scheduler)
+
                     send_msg(FlowReadyEvent().model_dump_json())
                     logger.info("flow ready")
+
+                    start_obs.on_next({})
             case FlowCancelEvent():
+                if flow is not None:
+                    flow.destroy()
                 flow = None
                 logger.info("Cancelling flow")
             case FlowControlEvent():
