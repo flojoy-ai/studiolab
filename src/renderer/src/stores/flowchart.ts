@@ -93,6 +93,19 @@ export const useFlowchartStore = create<FlowchartState>()(
         },
 
         removeDefinition: (definitionBlockId: BlockID) => {
+          const instances = get().nodes.filter(
+            (n) =>
+              n.data.block_type === 'function_instance' &&
+              n.data.definition_block_id === definitionBlockId
+          );
+          const instanceIds = new Set(instances.map((n) => n.id));
+
+          set({
+            edges: get().edges.filter(
+              (e) => !instanceIds.has(e.source) && !instanceIds.has(e.target)
+            ),
+            nodes: get().nodes.filter((n) => !instanceIds.has(n.id))
+          });
           set((state) => {
             delete state.functionDefinitionBlocks[definitionBlockId];
           });
