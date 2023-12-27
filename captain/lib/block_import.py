@@ -1,7 +1,18 @@
 import inspect
 import importlib.util
 import os
-from typing import Callable, Mapping, Type, TypeAlias
+from typing import (
+    Callable,
+    Mapping,
+    Type,
+    TypeAlias,
+    Any,
+    Union,
+    is_typeddict,
+    get_origin,
+    get_args,
+)
+from types import UnionType
 from dataclasses import dataclass
 
 from captain.types.flowchart import BlockType
@@ -30,6 +41,32 @@ class BlockImport:
                 return self.block(self.inputs, self.output)
             case _:
                 return LambdaBlock(self.block, self.inputs, self.output)
+
+    def as_serializable(self) -> dict[str, Any]:
+        inputs = stringify_type_dict(self.inputs)
+
+        if is_typeddict(self.output):
+            outputs = stringify_type_dict(self.output.__annotations__)
+        else:
+            outputs = {"value": self.output.__name__}
+
+        return {"inputs": inputs, "outputs": outputs}
+
+
+def stringify_type(t: Type):
+    type_constructor = get_origin(t)
+    if type_constructor is None:
+        return t.__name__
+
+    if type_constructor is UnionType or type_constructor is Union:
+        return " | ".join(stringify_type(arg_t) for arg_t in get_args(t))
+    else:
+        inside = ", ".join(stringify_type(arg_t) for arg_t in get_args(t))
+        return f"{type_constructor.__name__}[{inside}]"
+
+
+def stringify_type_dict(types: Mapping[str, Type]):
+    return {k: stringify_type(t) for k, t in types.items()}
 
 
 def import_blocks(blocks_dir: str) -> Mapping[BlockType, BlockImport]:

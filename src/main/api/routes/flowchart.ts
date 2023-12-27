@@ -1,11 +1,11 @@
-import { t } from '../trpc';
+import { PYTHON_BACKEND_URI, t } from '../trpc';
 import { WebSocket } from 'ws';
 import { ipcMain } from 'electron';
 import { z } from 'zod';
 
 export const flowchartRouter = t.router({
   startFlowchart: t.procedure.input(z.string()).mutation((opts) => {
-    const websocket = new WebSocket('ws://127.0.0.1:2333/blocks/flowchart');
+    const websocket = new WebSocket(`ws://${PYTHON_BACKEND_URI}/blocks/flowchart`);
     websocket.on('open', () => {
       websocket.send(opts.input);
     });

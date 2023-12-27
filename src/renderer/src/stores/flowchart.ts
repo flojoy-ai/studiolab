@@ -155,19 +155,20 @@ export const useFlowchartStore = create<FlowchartState>()(
 
           let data: BlockData;
           switch (payload.variant) {
-            case 'builtin':
+            case 'builtin': {
+              const { block_type, block } = payload;
               data = {
-                block_type: payload.block_type,
-                label: payload.block_type,
-                intrinsic_parameters:
-                  payload.block_type === 'flojoy.math.constant' ? { val: 0 } : {},
+                block_type,
+                label: block_type,
+                intrinsic_parameters: block_type === 'flojoy.math.constant' ? { val: 0 } : {},
                 // TODO: Change this when builtin blocks will actually
                 // use the inputs and outputs fields to render their handles
                 // based on python function information
-                inputs: payload.block_type === 'flojoy.intrinsics.function' ? { inp: 'int' } : {},
-                outputs: payload.block_type === 'flojoy.intrinsics.function' ? { out: 'int' } : {}
+                inputs: block.inputs,
+                outputs: block.outputs
               };
               break;
+            }
             case 'function_instance': {
               const definitions = get().functionDefinitionBlocks;
               const defnId = payload.definition_block_id;

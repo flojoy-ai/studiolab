@@ -14,8 +14,7 @@ from captain.logging import logger
 from captain.types.builtins import Ignore
 from captain.types.events import FlowControlEvent
 from captain.types.flowchart import BlockID, FCBlock, FlowChart
-
-BLOCKS_DIR = "blocks"
+from captain.constants import BLOCKS_DIR
 
 
 @dataclass

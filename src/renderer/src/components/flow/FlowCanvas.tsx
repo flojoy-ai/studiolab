@@ -12,15 +12,17 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useFlowchartStore } from '@/stores/flowchart';
 import { useShallow } from 'zustand/react/shallow';
-import { DragEventHandler, useCallback, useRef, useState } from 'react';
+import { DragEventHandler, useCallback, useMemo, useRef, useState } from 'react';
 import useUndoRedo from '@/hooks/useUndoRedo';
 
-import { nodeTypes } from '@/configs/flowchart';
+import { builtinNodeTypes } from '@/configs/flowchart';
 import CanvasControlsBottomLeft from '../reactflow/CanvasControlsBottomLeft';
 import FlowControlsBottomRight from './FlowControlsBottomRight';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { ContextMenu } from './ContextMenu';
 import { BlockAddPayload } from '@/types/block';
+import { useBlocks } from '@/hooks/useBlocks';
+import { DefaultBlock } from '../blocks/flow/DefaultBlock';
 
 const edgeTypes = {
   smart: SmartBezierEdge
@@ -45,6 +47,21 @@ const FlowCanvas = () => {
       saveDefinition: state.saveDefinition
     }))
   );
+
+  const blocks = useBlocks();
+
+  const nodeTypes = useMemo(() => {
+    if (!blocks) {
+      return builtinNodeTypes;
+    }
+
+    const importedNodeTypes = Object.fromEntries(Object.keys(blocks).map((b) => [b, DefaultBlock]));
+
+    return {
+      ...importedNodeTypes,
+      ...builtinNodeTypes
+    };
+  }, [blocks]);
 
   const onNodeDragStart: NodeDragHandler = useCallback(() => {
     // 👇 make dragging a node undoable

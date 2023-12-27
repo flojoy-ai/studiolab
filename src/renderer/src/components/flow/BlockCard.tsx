@@ -1,18 +1,21 @@
-import { BlockAddPayload, BlockType } from '@/types/block';
+import { BlockAddPayload } from '@/types/block';
 import { Button } from '../ui/Button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/Tooltip';
 import { DragEventHandler } from 'react';
+import { BlockInfo } from '@shared-types';
 
 type Props = {
   name: string;
-  block_type: BlockType;
+  block_type: string;
+  block: BlockInfo;
   desc: string;
 };
 
-const BlockCard = ({ name, desc, block_type }: Props): JSX.Element => {
+const BlockCard = ({ name, desc, block, block_type }: Props): JSX.Element => {
   const onDragStart: DragEventHandler<HTMLButtonElement> = (event) => {
     const payload: BlockAddPayload = {
       variant: 'builtin',
+      block,
       block_type
     };
 
