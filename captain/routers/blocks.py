@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import APIRouter, WebSocket
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from reactivex import Subject
 from reactivex.scheduler.eventloop import AsyncIOThreadSafeScheduler
@@ -15,12 +16,21 @@ from captain.types.events import (
     FlowStartEvent,
     FlowStateUpdateEvent,
 )
+from captain.lib.block_import import import_blocks
+from captain.constants import BLOCKS_DIR
 from captain.types.flowchart import BlockID, FlowChart
 from captain.utils.ws import send_message_factory
 import asyncio
 
-
 router = APIRouter(tags=["blocks"], prefix="/blocks")
+
+
+@router.get("/")
+async def get_blocks():
+    blocks = import_blocks(BLOCKS_DIR)
+    json = {block_type: block.as_serializable() for block_type, block in blocks.items()}
+
+    return JSONResponse(content=json)
 
 
 @router.websocket("/flowchart")

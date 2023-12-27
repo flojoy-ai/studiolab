@@ -10,31 +10,17 @@ import {
 } from '../../python';
 
 export const setupRouter = t.router({
-  checkPythonInstallation: t.procedure.query(async () => {
-    return await checkPythonInstallation();
-  }),
+  checkPythonInstallation: t.procedure.query(checkPythonInstallation),
 
-  checkPipxInstallation: t.procedure.query(async () => {
-    return await checkPipxInstallation();
-  }),
+  checkPipxInstallation: t.procedure.query(checkPipxInstallation),
 
-  installPipx: t.procedure.mutation(async () => {
-    return await installPipx();
-  }),
+  installPipx: t.procedure.mutation(installPipx),
 
-  pipxEnsurepath: t.procedure.mutation(async () => {
-    return await pipxEnsurepath();
-  }),
+  pipxEnsurepath: t.procedure.mutation(pipxEnsurepath),
 
-  installPoetry: t.procedure.mutation(async () => {
-    return await installPoetry();
-  }),
+  installPoetry: t.procedure.mutation(installPoetry),
 
-  installDependencies: t.procedure.mutation(async () => {
-    return await installDependencies();
-  }),
+  installDependencies: t.procedure.mutation(installDependencies),
 
-  spawnCaptain: t.procedure.mutation(async () => {
-    spawnCaptain();
-  })
+  spawnCaptain: t.procedure.mutation(spawnCaptain)
 });

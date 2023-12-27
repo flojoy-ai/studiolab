@@ -2,7 +2,20 @@ import BlockCard from '@/components/flow/BlockCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/Tabs';
 import { useFlowchartStore } from '@/stores/flowchart';
 import BlockFunctionCard from './BlockFunctionCard';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
+import { useBlocks } from '@/hooks/useBlocks';
+
+const snakeCaseToTitleCase = (s: string) =>
+  s
+    .split('_')
+    .map((s) => s[0].toUpperCase() + s.substring(1))
+    .join(' ');
+
+const getBlockName = (blockType: string) => {
+  const parts = blockType.split('.');
+  const name = parts[parts.length - 1];
+  return snakeCaseToTitleCase(name);
+};
 
 const BlocksLibrary = () => {
   const { functionDefinitions, removeDefinition } = useFlowchartStore((state) => ({
@@ -10,7 +23,25 @@ const BlocksLibrary = () => {
     removeDefinition: state.removeDefinition
   }));
 
-  console.log(functionDefinitions);
+  const blocks = useBlocks();
+
+  const stdlibContent = !blocks ? (
+    <div className="flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
+  ) : (
+    <>
+      {Object.entries(blocks).map(([blockType, block]) => (
+        <BlockCard
+          key={blockType}
+          name={getBlockName(blockType)}
+          desc=""
+          block_type={blockType}
+          block={block}
+        />
+      ))}
+    </>
+  );
 
   return (
     <div className="grow flex-col rounded-lg bg-background p-4">
@@ -30,38 +61,43 @@ const BlocksLibrary = () => {
         </TabsList>
         <TabsContent value="stdlib">
           <div className="flex flex-col gap-2">
+            {stdlibContent}
             {/* TODO: This should be auto generated */}
-            <BlockCard
-              name="Add"
-              desc="Add a bunch of stuff together"
-              block_type="flojoy.math.arithmetic.add"
-            />
-            <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" />
-            <BlockCard name="Toggle" desc="flipflop" block_type="flojoy.control.toggle" />
-            <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" />
-            <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" />
-            <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" />
-            <BlockCard name="Rand" desc="?" block_type="flojoy.math.rand" />
-            <BlockCard name="Fibs" desc="1 1 2 3 5 8 13 ..." block_type="flojoy.math.fibs" />
-            <BlockCard
-              name="Conditional"
-              desc="if ... then ... else"
-              block_type="flojoy.logic.conditional"
-            />
-            <BlockCard name="True" desc="trueing" block_type="flojoy.logic.true" />
-            <BlockCard name="False" desc="no" block_type="flojoy.logic.false" />
-            <BlockCard
-              name="Big Number"
-              desc="Big number"
-              block_type="flojoy.visualization.big_num"
-            />
-            <BlockCard
-              name="Progress Bar"
-              desc="progress bar"
-              block_type="flojoy.visualization.progress_bar"
-            />
+            {/* <BlockCard */}
+            {/*   name="Add" */}
+            {/*   desc="Add a bunch of stuff together" */}
+            {/*   block_type="flojoy.math.arithmetic.add" */}
+            {/* /> */}
+            {/* <BlockCard name="Slider" desc="it slides" block_type="flojoy.control.slider" /> */}
+            {/* <BlockCard name="Toggle" desc="flipflop" block_type="flojoy.control.toggle" /> */}
+            {/* <BlockCard name="Sequence" desc="0..10" block_type="flojoy.logic.sequence" /> */}
+            {/* <BlockCard name="Clock" desc="tick tock" block_type="flojoy.logic.clock" /> */}
+            {/* <BlockCard name="Constant" desc="2" block_type="flojoy.math.constant" /> */}
+            {/* <BlockCard name="Rand" desc="?" block_type="flojoy.math.rand" /> */}
+            {/* <BlockCard name="Fibs" desc="1 1 2 3 5 8 13 ..." block_type="flojoy.math.fibs" /> */}
+            {/* <BlockCard */}
+            {/*   name="Conditional" */}
+            {/*   desc="if ... then ... else" */}
+            {/*   block_type="flojoy.logic.conditional" */}
+            {/* /> */}
+            {/* <BlockCard name="True" desc="trueing" block_type="flojoy.logic.true" /> */}
+            {/* <BlockCard name="False" desc="no" block_type="flojoy.logic.false" /> */}
+            {/* <BlockCard */}
+            {/*   name="Big Number" */}
+            {/*   desc="Big number" */}
+            {/*   block_type="flojoy.visualization.big_num" */}
+            {/* /> */}
+            {/* <BlockCard */}
+            {/*   name="Progress Bar" */}
+            {/*   desc="progress bar" */}
+            {/*   block_type="flojoy.visualization.progress_bar" */}
+            {/* /> */}
             <BlockCard
               name="Function Definition"
+              block={{
+                inputs: { inp: 'int' },
+                outputs: { out: 'int' }
+              }}
               desc="a -> b"
               block_type="flojoy.intrinsics.function"
             />
