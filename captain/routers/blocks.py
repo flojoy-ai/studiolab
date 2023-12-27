@@ -19,7 +19,6 @@ from captain.types.flowchart import BlockID, FlowChart
 from captain.utils.ws import send_message_factory
 import asyncio
 
-
 router = APIRouter(tags=["blocks"], prefix="/blocks")
 
 
