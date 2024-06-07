@@ -1,2 +1,2 @@
-def constant():
-    return 2
+def constant(val: int) -> int:
+    return val

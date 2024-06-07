@@ -13,23 +13,34 @@ import {
   applyEdgeChanges,
   XYPosition
 } from 'reactflow';
-import { BlockType } from '@/types/block';
+import { BuiltinBlockData, BlockID, BlockData } from '@/types/block';
 
 import { v4 as uuidv4 } from 'uuid';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
 import { useUndoRedoStore } from './undoredo';
 
 import { shared } from 'use-broadcast-ts';
 import { nodeTypes } from '@/configs/control';
+import { Draft } from 'immer';
+import _ from 'lodash';
+import { BlockAddPayload } from '@/types/block';
 
 interface FlowchartState {
-  nodes: Node[];
+  nodes: Node<BlockData>[];
   edges: Edge[];
   controls: Node[];
 
-  setNodes: (nodes: Node[]) => void;
+  functionDefinitionBlocks: Record<BlockID, Node<BuiltinBlockData>>;
+
+  setNodes: (nodes: Node<BuiltinBlockData>[]) => void;
   setEdges: (edges: Edge[]) => void;
   setControls: (edges: Node[]) => void;
+
+  updateBlock: (id: string, mutation: (block: Draft<Node<BuiltinBlockData>>) => void) => void;
+
+  saveDefinition: (definitionBlockId: string) => void;
+  removeDefinition: (name: string) => void;
 
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -37,25 +48,85 @@ interface FlowchartState {
 
   onConnect: OnConnect;
 
-  addNode: (block_type: BlockType, position: XYPosition) => void;
+  addNode: (payload: BlockAddPayload, position: XYPosition) => void;
+  deleteNode: (id: string) => void;
   reset: () => void;
 }
 
 export const useFlowchartStore = create<FlowchartState>()(
   shared(
     persist(
-      (set, get) => ({
-        nodes: [] as Node[],
+      immer((set, get) => ({
+        nodes: [] as Node<BlockData>[],
         edges: [] as Edge[],
         controls: [] as Node[],
 
-        setNodes: (nodes: Node[]) => set({ nodes }),
+        functionDefinitionBlocks: {},
+
+        setNodes: (nodes: Node<BlockData>[]) => set({ nodes }),
         setEdges: (edges: Edge[]) => set({ edges }),
         setControls: (controls: Node[]) => set({ controls }),
 
+        updateBlock: (id: string, mutation: (block: Draft<Node<BuiltinBlockData>>) => void) => {
+          set((state) => {
+            const block = state.nodes.find((n) => n.id === id);
+            if (!block) {
+              throw new Error('Tried to update non-existant block');
+            }
+            if (!isBuiltinBlock(block)) {
+              throw new Error("Can't update non-builtin block");
+            }
+
+            mutation(block);
+          });
+        },
+
+        saveDefinition: (definitionBlockId: BlockID) => {
+          set((state) => {
+            const node = state.nodes.find((n) => n.id === definitionBlockId);
+            if (!node || !isFunctionDefinitionBlock(node)) {
+              return;
+            }
+
+            state.functionDefinitionBlocks[node.id] = node;
+          });
+        },
+
+        removeDefinition: (definitionBlockId: BlockID) => {
+          const instances = get().nodes.filter(
+            (n) =>
+              n.data.block_type === 'function_instance' &&
+              n.data.definition_block_id === definitionBlockId
+          );
+          const instanceIds = new Set(instances.map((n) => n.id));
+
+          set({
+            edges: get().edges.filter(
+              (e) => !instanceIds.has(e.source) && !instanceIds.has(e.target)
+            ),
+            nodes: get().nodes.filter((n) => !instanceIds.has(n.id))
+          });
+          set((state) => {
+            delete state.functionDefinitionBlocks[definitionBlockId];
+          });
+        },
+
         onNodesChange: (changes: NodeChange[]) => {
+          for (const change of changes) {
+            if (change.type === 'remove' && change.id in get().functionDefinitionBlocks) {
+              get().removeDefinition(change.id);
+            }
+          }
+
           set({
             nodes: applyNodeChanges(changes, get().nodes)
+          });
+          // Delete corresponding nodes in control canvas
+          set({
+            controls: applyNodeChanges(
+              changes.filter((c) => c.type === 'remove'),
+              get().controls
+            )
           });
         },
         onEdgesChange: (changes: EdgeChange[]) => {
@@ -67,6 +138,13 @@ export const useFlowchartStore = create<FlowchartState>()(
           set({
             controls: applyNodeChanges(changes, get().controls)
           });
+          // Delete corresponding nodes in flow chart
+          set({
+            nodes: applyNodeChanges(
+              changes.filter((c) => c.type === 'remove'),
+              get().nodes
+            )
+          });
         },
 
         onConnect: (connection: Connection) => {
@@ -76,39 +154,98 @@ export const useFlowchartStore = create<FlowchartState>()(
             edges: addEdge(connection, get().edges)
           });
         },
-        addNode: (block_type: BlockType, position: XYPosition) => {
+        addNode: (payload: BlockAddPayload, position: XYPosition) => {
           const undoredoStore = useUndoRedoStore.getState();
           undoredoStore.takeSnapshot();
           const uuid = uuidv4();
+
+          const parent = get().nodes.find((n) => {
+            if (!n.width || !n.height) return false;
+
+            return (
+              n.type === 'flojoy.intrinsics.function' &&
+              n.position.x < position.x &&
+              n.position.x + n.width > position.x &&
+              n.position.y < position.y &&
+              n.position.y + n.height > position.y
+            );
+          });
+
+          // The position of parents within subflows is measured relative to the parent
+          // so we need to convert from absolute position to relative position for child nodes
+          const adjustedPosition = !parent
+            ? position
+            : {
+                x: position.x - parent.position.x,
+                y: position.y - parent.position.y
+              };
+
+          let data: BlockData;
+          switch (payload.variant) {
+            case 'builtin':
+              data = {
+                block_type: payload.block_type,
+                label: payload.block_type,
+                intrinsic_parameters:
+                  payload.block_type === 'flojoy.math.constant' ? { val: 0 } : {},
+                // TODO: Change this when builtin blocks will actually
+                // use the inputs and outputs fields to render their handles
+                // based on python function information
+                inputs: payload.block_type === 'flojoy.intrinsics.function' ? { inp: 'int' } : {},
+                outputs: payload.block_type === 'flojoy.intrinsics.function' ? { out: 'int' } : {}
+              };
+              break;
+            case 'function_instance': {
+              const definitions = get().functionDefinitionBlocks;
+              const defnId = payload.definition_block_id;
+              if (!(defnId in definitions)) {
+                throw new Error(`Undefined function block ${defnId}`);
+              }
+
+              data = {
+                block_type: 'function_instance',
+                definition_block_id: defnId
+              };
+              break;
+            }
+          }
+
           set({
             nodes: get().nodes.concat([
               {
-                id: uuid,
-                type: block_type,
-                position: position,
-                data: {
-                  label: block_type,
-                  block_type
-                }
+                id: `${data.block_type}-${uuid}`,
+                type: data.block_type,
+                position: adjustedPosition,
+                data,
+                parentNode: parent ? parent.id : undefined,
+                extent: parent ? 'parent' : undefined
               }
             ])
           });
-          if (Object.keys(nodeTypes).includes(block_type)) {
+          if (Object.keys(nodeTypes).includes(data.block_type)) {
             set({
               controls: get().controls.concat([
                 {
-                  id: uuid,
-                  type: block_type,
+                  id: `${data.block_type}-${uuid}`,
+                  type: data.block_type,
                   position: position,
                   data: {
-                    label: block_type,
-                    block_type
+                    label: data.block_type,
+                    block_type: data.block_type
                   }
                 }
               ])
             });
           }
         },
+
+        deleteNode: (id: string) => {
+          get().onNodesChange([{ type: 'remove', id }]);
+          set({
+            edges: get().edges.filter((e) => e.source !== id && e.target !== id)
+          });
+        },
+
         reset: () => {
           set({
             nodes: [],
@@ -116,7 +253,7 @@ export const useFlowchartStore = create<FlowchartState>()(
             controls: []
           });
         }
-      }),
+      })),
       {
         name: 'flow-state',
         storage: createJSONStorage(() => localStorage)
@@ -124,3 +261,17 @@ export const useFlowchartStore = create<FlowchartState>()(
     )
   )
 );
+
+const isBuiltinBlock = (node: Node<BlockData>): node is Node<BuiltinBlockData> => {
+  return node.data.block_type !== 'function_instance';
+};
+
+const isFunctionDefinitionBlock = (node: Node<BlockData>): node is Node<BuiltinBlockData> => {
+  return node.data.block_type === 'flojoy.intrinsics.function';
+};
+
+export const useBlockUpdate = (id: string) => {
+  const update = useFlowchartStore((state) => state.updateBlock);
+
+  return _.curry(update)(id);
+};

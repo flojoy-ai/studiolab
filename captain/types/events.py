@@ -2,12 +2,13 @@ from typing import Any, Literal, Union
 
 from pydantic import BaseModel, Field
 
-from captain.types.flowchart import BlockID, ReactFlow
+from captain.types.flowchart import BlockID, FunctionDefinition, ReactFlow
 
 
 class FlowStartEvent(BaseModel):
     event_type: Literal["start"]
     rf: ReactFlow
+    function_definitions: dict[str, FunctionDefinition]
 
 
 class FlowCancelEvent(BaseModel):

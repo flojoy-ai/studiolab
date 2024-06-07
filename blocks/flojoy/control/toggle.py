@@ -2,5 +2,5 @@ from captain.decorators import ui_input
 
 
 @ui_input
-def slider(x: int) -> int:
+def toggle(x: bool):
     return x
