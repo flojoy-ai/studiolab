@@ -57,7 +57,7 @@
     "immer": "^10.0.3",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
-    "lucide-react": "^0.294.0",
+    "lucide-react": "^0.479.0",
     "match-sorter": "^6.3.1",
     "react-router-dom": "^6.20.1",
     "react-use-websocket": "^4.5.0",
